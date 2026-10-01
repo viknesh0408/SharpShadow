@@ -1,0 +1,30 @@
+# Root Gitignore for SharpShadow
+
+# Node dependencies & builds
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Java/Maven artifacts
+target/
+backend/target/
+*.class
+*.jar
+*.war
+
+# Storage & Local runtime data
+backend/storage/
+storage/
+*.log
+
+# IDE & OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.local

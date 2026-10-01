@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Allow: /browse
+Allow: /categories
+Allow: /product/
+Allow: /category/
+
+Disallow: /admin/
+Disallow: /account/
+Disallow: /checkout
+Disallow: /api/
+
+Sitemap: https://sharpshadow.com/sitemap.xml
