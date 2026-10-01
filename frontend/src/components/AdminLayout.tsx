@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   PlusCircle,
+  Github,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -158,6 +159,23 @@ export const AdminLayout: React.FC = () => {
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
           <Outlet />
         </main>
+
+        {/* Admin Footer */}
+        <footer className="px-6 py-4 border-t border-dark-800 text-xs text-slate-500 flex flex-wrap items-center justify-between gap-2">
+          <span>SharpShadow Administration Panel</span>
+          <p className="flex items-center gap-1.5 text-slate-400">
+            <span>Developed by</span>
+            <a
+              href="https://github.com/viknesh0408"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sharp-400 hover:text-sharp-300 font-semibold inline-flex items-center gap-1 transition-colors hover:underline"
+            >
+              <Github className="w-3.5 h-3.5" />
+              <span>Viknesh</span>
+            </a>
+          </p>
+        </footer>
       </div>
     </div>
   );

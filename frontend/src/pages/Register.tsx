@@ -52,7 +52,7 @@ export const Register: React.FC = () => {
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full bg-dark-900 border border-dark-800 rounded-3xl p-8 shadow-card-dark space-y-6">
-        
+
         <div className="text-center space-y-2">
           <Link to="/" className="inline-flex items-center gap-2 mb-2">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sharp-600 to-sharp-500 flex items-center justify-center text-white font-mono font-bold text-lg shadow-sharp-glow">
@@ -71,7 +71,7 @@ export const Register: React.FC = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="John Doe"
+                placeholder="Bakyanath"
                 {...register('name')}
                 className="w-full bg-dark-950 border border-dark-750 focus:border-sharp-500 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 outline-none transition-colors"
               />

@@ -47,7 +47,7 @@ export const Login: React.FC = () => {
   return (
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full bg-dark-900 border border-dark-800 rounded-3xl p-8 shadow-card-dark space-y-6">
-        
+
         <div className="text-center space-y-2">
           <Link to="/" className="inline-flex items-center gap-2 mb-2">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sharp-600 to-sharp-500 flex items-center justify-center text-white font-mono font-bold text-lg shadow-sharp-glow">
@@ -102,13 +102,6 @@ export const Login: React.FC = () => {
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Sign In</span>}
           </button>
         </form>
-
-        {/* Demo credentials hint */}
-        <div className="bg-dark-950 p-3 rounded-xl border border-dark-800 text-[11px] font-mono text-slate-400 space-y-1">
-          <p className="text-slate-300 font-semibold">Demo Customer Credentials:</p>
-          <p>Email: customer@sharpshadow.com</p>
-          <p>Password: Customer@123456</p>
-        </div>
 
         <div className="text-center text-xs text-slate-400">
           <span>Don't have an account? </span>

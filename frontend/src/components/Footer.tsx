@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Zap, DownloadCloud, Sparkles } from 'lucide-react';
+import { ShieldCheck, Zap, DownloadCloud, Sparkles, Github } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
@@ -108,8 +108,23 @@ export const Footer: React.FC = () => {
 
       {/* Copyright */}
       <div className="border-t border-dark-800/80 py-6 text-xs text-slate-400">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© {new Date().getFullYear()} SharpShadow Digital Marketplace. All rights reserved.</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-2">
+            <p>© {new Date().getFullYear()} SharpShadow Digital Marketplace. All rights reserved.</p>
+            <span className="hidden sm:inline text-dark-700">•</span>
+            <p className="flex items-center gap-1.5 text-slate-300">
+              <span>Developed by</span>
+              <a
+                href="https://github.com/viknesh0408"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sharp-400 hover:text-sharp-300 font-semibold inline-flex items-center gap-1.5 transition-colors hover:underline"
+              >
+                <Github className="w-3.5 h-3.5" />
+                <span>Viknesh</span>
+              </a>
+            </p>
+          </div>
           <p className="flex items-center gap-3">
             <span>Photoshop® and PSD are trademarks of Adobe Inc.</span>
             <span>•</span>
