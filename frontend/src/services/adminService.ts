@@ -62,6 +62,11 @@ export const adminService = {
     return res.data.data!;
   },
 
+  async getProductById(id: number | string): Promise<Product> {
+    const res = await api.get<ApiResponse<Product>>(`/admin/products/${id}`);
+    return res.data.data!;
+  },
+
   async createProduct(data: ProductPayload): Promise<Product> {
     const res = await api.post<ApiResponse<Product>>('/admin/products', data);
     return res.data.data!;

@@ -26,6 +26,7 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -102,11 +103,24 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductResponse getBySlug(String slug, Long currentUserId, boolean isAdmin) {
-        Product product = isAdmin
+        Optional<Product> optionalProduct = isAdmin
                 ? productRepository.findBySlug(slug)
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with slug: " + slug))
-                : productRepository.findBySlugAndStatus(slug, "PUBLISHED")
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found or not published: " + slug));
+                : productRepository.findBySlugAndStatus(slug, "PUBLISHED");
+
+        // Fallback: If not found by slug and slug is numeric, check by primary key ID
+        if (optionalProduct.isEmpty() && slug != null && slug.matches("\\d+")) {
+            try {
+                Long id = Long.parseLong(slug);
+                optionalProduct = productRepository.findById(id);
+                if (!isAdmin && optionalProduct.isPresent() && !"PUBLISHED".equals(optionalProduct.get().getStatus())) {
+                    optionalProduct = Optional.empty();
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
+        Product product = optionalProduct
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with identifier: " + slug));
 
         boolean hasPurchased = currentUserId != null &&
                 orderRepository.existsByUserIdAndProductIdAndStatus(currentUserId, product.getId(), OrderStatus.PAID);

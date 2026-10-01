@@ -85,7 +85,7 @@ export const AdminProductForm: React.FC = () => {
 
     if (isEdit && id) {
       setLoading(true);
-      productService.getBySlug(id) // Or by ID
+      adminService.getProductById(id)
         .then((product) => {
           setValue('title', product.title);
           setValue('slug', product.slug);
