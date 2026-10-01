@@ -433,25 +433,6 @@ export const Account: React.FC = () => {
                 Your email is cryptographically bound to your digital product licenses and purchase vault.
               </p>
             </div>
-
-            {/* Account Details & Security */}
-            <div className="bg-dark-950/70 border border-dark-800/80 rounded-2xl p-5 space-y-3">
-              <h3 className="text-xs font-mono text-slate-300 font-semibold uppercase tracking-wider">
-                Account Security & Authentication
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-3 rounded-xl bg-dark-900/60 border border-dark-800">
-                  <span className="text-slate-500 block text-[10px] font-mono uppercase">User Role</span>
-                  <span className="text-white font-semibold font-mono">{user?.role}</span>
-                </div>
-                <div className="p-3 rounded-xl bg-dark-900/60 border border-dark-800">
-                  <span className="text-slate-500 block text-[10px] font-mono uppercase">Protection</span>
-                  <span className="text-emerald-400 font-semibold flex items-center gap-1 font-mono">
-                    <ShieldCheck className="w-3.5 h-3.5" /> BCrypt + JWT
-                  </span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       )}
