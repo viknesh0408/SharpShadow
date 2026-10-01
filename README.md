@@ -198,8 +198,16 @@ RAZORPAY_WEBHOOK_SECRET=whsec_sharpshadow_secret
 ## 8. Verification & Testing
 
 ### Running Backend Unit & Integration Tests:
+
+Inside `backend`:
 ```bash
-cd backend
+# On Windows (PowerShell or CMD) using the included wrapper:
+.\mvnw test
+# Or using the convenience wrapper:
+.\mvn test
+
+# If using global mvn in an existing PowerShell terminal session, refresh your PATH first:
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 mvn test
 ```
 The test suite validates:
