@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
+import { ScrollToTop } from './components/ScrollToTop';
 import { AdminLayout } from './components/AdminLayout';
 import { useAuth } from './context/AuthContext';
 
@@ -67,6 +68,9 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-dark-950 text-slate-100 flex flex-col justify-between selection:bg-sharp-600 selection:text-white">
+      {/* Scroll restoration on link clicks & route changes */}
+      <ScrollToTop />
+
       {/* Hide marketplace header on admin routes */}
       {!isAdminPath && <Navbar />}
 
