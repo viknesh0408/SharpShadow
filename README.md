@@ -117,13 +117,16 @@ cp .env.example .env
 ### Step 2: Running Backend
 Open a terminal in `./backend`:
 ```bash
-# Uses default dev profile (H2 zero-config with seed data)
-mvn spring-boot:run
+# On Windows PowerShell (always prefix with .\ in PowerShell):
+.\mvn spring-boot:run
+
+# Or using the Maven wrapper:
+.\mvnw spring-boot:run
 
 # Or run with MySQL profile
-mvn spring-boot:run -Dspring-boot.run.profiles=mysql
+.\mvn spring-boot:run -Dspring-boot.run.profiles=mysql
 ```
-The backend will launch on `http://localhost:8080`.
+The backend launches on `http://localhost:8085`.
 Default Seed Accounts initialized automatically:
 - **Admin:** `admin@sharpshadow.com` / `Admin@123456`
 - **Customer:** `customer@sharpshadow.com` / `Customer@123456`
