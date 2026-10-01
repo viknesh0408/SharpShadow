@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, ShieldCheck, Download, Layers, Flame, Clock, Zap } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Sparkles, ArrowRight, ShieldCheck, Download, Layers, Flame, Clock, Zap, Search, TrendingUp } from 'lucide-react';
 import { Product, Category } from '../types';
 import { productService } from '../services/productService';
 import { categoryService } from '../services/categoryService';
@@ -8,10 +8,23 @@ import { ProductCard } from '../components/ProductCard';
 import { SkeletonCard } from '../components/SkeletonCard';
 
 export const Home: React.FC = () => {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [latestProducts, setLatestProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  const handleQuickTagClick = (tag: string) => {
+    navigate(`/search?q=${encodeURIComponent(tag)}`);
+  };
 
   useEffect(() => {
     const loadHomeData = async () => {
@@ -125,6 +138,62 @@ export const Home: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* 1.5. PROMINENT SEARCH SECTION (BELOW HERO) */}
+      <section className="relative -mt-12 sm:-mt-16 mb-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 z-30">
+        {/* Outer Backlight Ambient Glow */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-sharp-500/30 via-cyan-500/25 to-sharp-500/30 rounded-[32px] blur-2xl opacity-70 pointer-events-none" />
+
+        <div className="relative bg-dark-900/95 backdrop-blur-2xl border-2 border-dark-750/90 hover:border-sharp-500/50 focus-within:border-sharp-400 focus-within:ring-4 focus-within:ring-sharp-500/15 rounded-3xl p-4 sm:p-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),0_0_30px_rgba(16,185,129,0.12)] transition-all duration-300">
+          <form onSubmit={handleSearchSubmit} className="flex flex-col md:flex-row items-center gap-3">
+            <div className="flex-1 w-full flex items-center gap-3 pl-2 sm:pl-3">
+              <div className="w-12 h-12 rounded-2xl bg-sharp-500/10 border border-sharp-500/25 text-sharp-400 flex items-center justify-center shrink-0 shadow-inner">
+                <Search className="w-6 h-6 stroke-[2.2]" />
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search thousands of editable Photoshop PSD templates, flyers, mockups..."
+                className="w-full bg-transparent text-white placeholder-slate-500 text-base sm:text-lg lg:text-xl font-medium py-3.5 focus:outline-none"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full md:w-auto px-8 sm:px-10 py-4 rounded-2xl bg-gradient-to-r from-sharp-600 via-sharp-500 to-emerald-400 hover:from-sharp-500 hover:to-emerald-300 text-white font-bold text-base shadow-sharp-glow hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 shrink-0"
+            >
+              <span>Search PSDs</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </form>
+
+          {/* Popular / Trending Tags */}
+          <div className="mt-4 pt-4 border-t border-dark-800/80 flex flex-wrap items-center gap-2">
+            <span className="text-slate-400 flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider font-semibold pl-1">
+              <TrendingUp className="w-3.5 h-3.5 text-sharp-400" />
+              Popular:
+            </span>
+            {[
+              'Wedding Invitation',
+              'Business Card Mockup',
+              'Restaurant Menu',
+              'Instagram Post',
+              'Event Flyer PSD',
+              'Risograph Poster',
+            ].map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => handleQuickTagClick(tag)}
+                className="px-3.5 py-1.5 rounded-full bg-dark-950/80 hover:bg-sharp-500/15 border border-dark-800 hover:border-sharp-500/40 text-slate-300 hover:text-sharp-300 text-xs font-medium transition-all shadow-sm active:scale-95"
+              >
+                {tag}
+              </button>
+            ))}
           </div>
         </div>
       </section>

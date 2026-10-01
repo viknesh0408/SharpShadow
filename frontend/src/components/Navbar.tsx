@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, ShoppingBag, User as UserIcon, Menu, X, Shield, LogOut, ChevronDown, Layers } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -11,6 +11,8 @@ export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,17 +42,19 @@ export const Navbar: React.FC = () => {
             </div>
           </Link>
 
-          {/* Desktop Search Bar */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-4 relative">
-            <input
-              type="text"
-              placeholder="Search PSD templates..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-dark-900 border border-dark-750 focus:border-sharp-500 focus:ring-1 focus:ring-sharp-500 text-slate-100 placeholder-slate-500 rounded-full py-2.5 pl-11 pr-4 text-sm transition-all outline-none"
-            />
-            <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </form>
+          {/* Desktop Search Bar (shown on non-homepage views) */}
+          {!isHomePage && (
+            <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-4 relative animate-in fade-in duration-200">
+              <input
+                type="text"
+                placeholder="Search PSD templates..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-dark-900 border border-dark-750 focus:border-sharp-500 focus:ring-1 focus:ring-sharp-500 text-slate-100 placeholder-slate-500 rounded-full py-2.5 pl-11 pr-4 text-sm transition-all outline-none"
+              />
+              <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </form>
+          )}
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-300">
