@@ -87,12 +87,12 @@ export const Cart: React.FC = () => {
             return (
               <div
                 key={item.id}
-                className="bg-dark-900 border border-dark-800 rounded-2xl p-4 sm:p-5 flex items-center gap-4 sm:gap-6 shadow-card-dark"
+                className="bg-dark-900 border border-dark-800 rounded-2xl p-3 sm:p-5 flex items-center gap-3 sm:gap-6 shadow-card-dark"
               >
                 {/* Thumbnail */}
                 <Link
                   to={`/product/${item.slug}`}
-                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-dark-950 shrink-0 border border-dark-750"
+                  className="w-16 h-16 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-dark-950 shrink-0 border border-dark-750"
                 >
                   <img
                     src={item.thumbnailUrl}
@@ -107,25 +107,25 @@ export const Cart: React.FC = () => {
                     {item.category?.name || 'PSD TEMPLATE'}
                   </span>
                   <Link to={`/product/${item.slug}`} className="block">
-                    <h3 className="font-semibold text-sm sm:text-base text-white hover:text-sharp-400 transition-colors truncate">
+                    <h3 className="font-semibold text-xs sm:text-base text-white hover:text-sharp-400 transition-colors truncate">
                       {item.title}
                     </h3>
                   </Link>
-                  <div className="mt-1 flex items-center gap-3 text-xs text-slate-400 font-mono">
-                    <span>{item.fileSize || 'Layered PSD'}</span>
-                    <span>•</span>
-                    <span className="text-emerald-400">Instant Download</span>
+                  <div className="mt-1 flex items-center gap-2 sm:gap-3 text-[11px] sm:text-xs text-slate-400 font-mono">
+                    <span className="hidden xs:inline">{item.fileSize || 'Layered PSD'}</span>
+                    <span className="hidden xs:inline">•</span>
+                    <span className="text-emerald-400">Instant Access</span>
                   </div>
                 </div>
 
                 {/* Price & Remove */}
-                <div className="flex flex-col items-end gap-2 shrink-0">
+                <div className="flex flex-col items-end gap-1.5 sm:gap-2 shrink-0">
                   <div className="text-right">
-                    <span className="font-mono font-bold text-base sm:text-lg text-white">
+                    <span className="font-mono font-bold text-sm sm:text-lg text-white">
                       ₹{price}
                     </span>
                     {hasDiscount && (
-                      <span className="block text-xs font-mono text-slate-400 line-through">
+                      <span className="block text-[10px] sm:text-xs font-mono text-slate-400 line-through">
                         ₹{item.price}
                       </span>
                     )}
@@ -135,7 +135,7 @@ export const Cart: React.FC = () => {
                     className="p-1.5 text-slate-400 hover:text-sharp-400 rounded-lg hover:bg-dark-800 transition-colors"
                     title="Remove item"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </button>
                 </div>
               </div>
@@ -155,7 +155,7 @@ export const Cart: React.FC = () => {
 
         {/* Order Summary & Coupon (4 cols) */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-dark-900 border border-dark-800 rounded-3xl p-6 sm:p-7 space-y-6 shadow-card-dark">
+          <div className="bg-dark-900 border border-dark-800 rounded-2xl sm:rounded-3xl p-5 sm:p-7 space-y-6 shadow-card-dark">
             <h3 className="font-bold text-lg text-white">Order Summary</h3>
 
             {/* Price Breakdown */}

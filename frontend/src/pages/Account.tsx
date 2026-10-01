@@ -87,17 +87,17 @@ export const Account: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
       {/* Header Profile Bar */}
-      <div className="bg-dark-900 border border-dark-800 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-card-dark">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sharp-600 to-rose-400 text-white flex items-center justify-center font-bold text-2xl font-mono shadow-sharp-glow">
+      <div className="bg-dark-900 border border-dark-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 shadow-card-dark">
+        <div className="flex items-center gap-3.5 sm:gap-4">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-sharp-600 to-rose-400 text-white flex items-center justify-center font-bold text-xl sm:text-2xl font-mono shadow-sharp-glow shrink-0">
             {user?.name.charAt(0) || 'U'}
           </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white">{user?.name}</h1>
-            <p className="text-xs sm:text-sm text-slate-400">{user?.email}</p>
-            <div className="mt-1 flex items-center gap-2">
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-2xl font-bold text-white truncate">{user?.name}</h1>
+            <p className="text-xs sm:text-sm text-slate-400 truncate">{user?.email}</p>
+            <div className="mt-1 flex flex-wrap items-center gap-1.5 sm:gap-2">
               <span className="text-[10px] bg-dark-950 text-slate-300 px-2 py-0.5 rounded font-mono border border-dark-800">
                 ROLE: {user?.role}
               </span>
@@ -110,7 +110,7 @@ export const Account: React.FC = () => {
 
         <button
           onClick={logout}
-          className="self-start sm:self-auto px-4 py-2 rounded-xl bg-dark-950 border border-dark-800 text-slate-400 hover:text-sharp-400 transition-colors text-xs font-semibold flex items-center gap-2"
+          className="self-start sm:self-auto px-3.5 sm:px-4 py-2 rounded-xl bg-dark-950 border border-dark-800 text-slate-400 hover:text-sharp-400 transition-colors text-xs font-semibold flex items-center gap-2"
         >
           <LogOut className="w-4 h-4" />
           Sign Out
@@ -118,29 +118,29 @@ export const Account: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-dark-800 overflow-x-auto pb-1">
+      <div className="flex items-center gap-1.5 sm:gap-2 border-b border-dark-800 overflow-x-auto pb-1 scroll-touch no-scrollbar">
         <button
           onClick={() => setSearchParams({ tab: 'downloads' })}
-          className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-all shrink-0 ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 ${
             activeTab === 'downloads'
               ? 'bg-sharp-600 text-white shadow-sharp-glow'
               : 'text-slate-400 hover:text-white hover:bg-dark-900'
           }`}
         >
-          <Download className="w-4 h-4" />
+          <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span>My Downloads</span>
         </button>
 
         <button
           onClick={() => setSearchParams({ tab: 'orders' })}
-          className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-all shrink-0 ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 ${
             activeTab === 'orders'
               ? 'bg-sharp-600 text-white shadow-sharp-glow'
               : 'text-slate-400 hover:text-white hover:bg-dark-900'
           }`}
         >
-          <ShoppingBag className="w-4 h-4" />
-          <span>Order History</span>
+          <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Orders</span>
         </button>
 
         <button
@@ -299,7 +299,7 @@ export const Account: React.FC = () => {
               Your wishlist is currently empty. Click the heart icon on any template card to save it here.
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
               {wishlist.map((prod) => (
                 <ProductCard key={prod.id} product={prod} />
               ))}
@@ -310,7 +310,7 @@ export const Account: React.FC = () => {
 
       {/* Tab 4: PROFILE / SETTINGS */}
       {activeTab === 'profile' && (
-        <div className="bg-dark-900 border border-dark-800 rounded-3xl p-6 sm:p-8 max-w-2xl space-y-8 shadow-card-dark">
+        <div className="bg-dark-900 border border-dark-800 rounded-2xl sm:rounded-3xl p-5 sm:p-8 max-w-2xl space-y-6 sm:space-y-8 shadow-card-dark">
           <div className="border-b border-dark-800 pb-5">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <UserIcon className="w-5 h-5 text-sharp-400" />

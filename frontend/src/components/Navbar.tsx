@@ -24,19 +24,19 @@ export const Navbar: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-40 bg-dark-950/85 backdrop-blur-md border-b border-dark-800 transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 gap-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-20 gap-2 sm:gap-4">
           
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sharp-600 via-sharp-500 to-rose-400 flex items-center justify-center shadow-sharp-glow group-hover:scale-105 transition-transform duration-300">
-              <span className="font-mono font-black text-xl text-white tracking-wider">SS</span>
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-sharp-600 via-sharp-500 to-rose-400 flex items-center justify-center shadow-sharp-glow group-hover:scale-105 transition-transform duration-300">
+              <span className="font-mono font-black text-base sm:text-xl text-white tracking-wider">SS</span>
             </div>
             <div className="flex flex-col">
-              <span className="font-black text-xl tracking-wider text-white font-sans flex items-center">
+              <span className="font-black text-base sm:text-xl tracking-wider text-white font-sans flex items-center">
                 SHARP<span className="text-sharp-500">SHADOW</span>
               </span>
-              <span className="text-[10px] tracking-widest text-slate-400 uppercase font-mono -mt-1">
+              <span className="text-[9px] sm:text-[10px] tracking-widest text-slate-400 uppercase font-mono -mt-1 hidden sm:block">
                 DIGITAL PSD ASSETS
               </span>
             </div>
@@ -68,16 +68,16 @@ export const Navbar: React.FC = () => {
           )}
 
           {/* Right Action Buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* Cart Button */}
             <Link
               to="/cart"
-              className="relative p-2.5 rounded-full bg-dark-900 border border-dark-750 text-slate-200 hover:text-white hover:border-sharp-500/50 transition-all group"
+              className="relative p-2 sm:p-2.5 rounded-full bg-dark-900 border border-dark-750 text-slate-200 hover:text-white hover:border-sharp-500/50 transition-all group"
               title="Cart"
             >
-              <ShoppingBag className="w-5 h-5 group-hover:scale-105 transition-transform" />
+              <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-105 transition-transform" />
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-sharp-500 text-white font-mono text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sharp-glow">
+                <span className="absolute -top-1 -right-1 bg-sharp-500 text-white font-mono text-[10px] sm:text-[11px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow-sharp-glow">
                   {itemCount}
                 </span>
               )}

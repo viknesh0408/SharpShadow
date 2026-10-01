@@ -126,10 +126,10 @@ export const ProductDetail: React.FC = () => {
   const allGalleryImages = [product.thumbnailUrl, ...(product.previewImages || [])].filter(Boolean);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-10 sm:space-y-16">
       
       {/* Breadcrumb Navigation */}
-      <nav className="flex items-center gap-2 text-xs font-mono text-slate-400">
+      <nav className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-mono text-slate-400">
         <Link to="/" className="hover:text-white transition-colors">HOME</Link>
         <span>/</span>
         <Link to="/categories" className="hover:text-white transition-colors">CATEGORIES</Link>
@@ -138,40 +138,40 @@ export const ProductDetail: React.FC = () => {
           {product.category.name}
         </Link>
         <span>/</span>
-        <span className="text-slate-300 truncate max-w-[200px] sm:max-w-xs">{product.title}</span>
+        <span className="text-slate-300 truncate max-w-[160px] sm:max-w-xs">{product.title}</span>
       </nav>
 
       {/* Main Top Grid: Gallery & Purchase Column */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10">
         
         {/* Left: Preview Gallery (7 cols) */}
         <div className="lg:col-span-7 space-y-4">
           {/* Main Large Image */}
-          <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-dark-900 border border-dark-800 shadow-2xl group">
+          <div className="relative aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden bg-dark-900 border border-dark-800 shadow-2xl group">
             <img
               src={activeImage}
               alt={product.title}
               className="w-full h-full object-cover object-center"
             />
             {product.featured && (
-              <span className="absolute top-4 left-4 bg-gradient-to-r from-sharp-600 to-rose-500 text-white font-mono text-xs font-bold px-3 py-1 rounded-lg shadow-sharp-glow uppercase tracking-wider">
+              <span className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-gradient-to-r from-sharp-600 to-rose-500 text-white font-mono text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg shadow-sharp-glow uppercase tracking-wider">
                 Featured Asset
               </span>
             )}
-            <span className="absolute top-4 right-4 bg-dark-950/80 backdrop-blur-md border border-dark-750 text-slate-200 font-mono text-xs font-semibold px-3 py-1 rounded-lg flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-sharp-400" />
+            <span className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-dark-950/80 backdrop-blur-md border border-dark-750 text-slate-200 font-mono text-[10px] sm:text-xs font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg flex items-center gap-1 sm:gap-1.5">
+              <Layers className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sharp-400" />
               Layered PSD
             </span>
           </div>
 
           {/* Thumbnails Row */}
           {allGalleryImages.length > 1 && (
-            <div className="flex items-center gap-3 overflow-x-auto pb-2">
+            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto pb-2 scroll-touch no-scrollbar">
               {allGalleryImages.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setActiveImage(img)}
-                  className={`relative w-20 h-20 rounded-xl overflow-hidden shrink-0 border-2 transition-all ${
+                  className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border-2 transition-all ${
                     activeImage === img ? 'border-sharp-500 shadow-sharp-glow scale-105' : 'border-dark-800 opacity-60 hover:opacity-100'
                   }`}
                 >
@@ -184,7 +184,7 @@ export const ProductDetail: React.FC = () => {
 
         {/* Right: Buy Box & Key Specs (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-dark-900 border border-dark-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-card-dark">
+          <div className="bg-dark-900 border border-dark-800 rounded-2xl sm:rounded-3xl p-5 sm:p-8 space-y-6 shadow-card-dark">
             
             {/* Title & Category */}
             <div>
@@ -194,14 +194,14 @@ export const ProductDetail: React.FC = () => {
               >
                 {product.category.name}
               </Link>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1 leading-tight">
+              <h1 className="text-xl sm:text-3xl font-extrabold text-white mt-1 leading-tight">
                 {product.title}
               </h1>
             </div>
 
             {/* Price Row */}
-            <div className="flex items-baseline gap-3 pb-6 border-b border-dark-800">
-              <span className="text-3xl sm:text-4xl font-black font-mono text-white">
+            <div className="flex items-baseline gap-2.5 sm:gap-3 pb-5 sm:pb-6 border-b border-dark-800">
+              <span className="text-2xl sm:text-4xl font-black font-mono text-white">
                 ₹{hasDiscount ? product.discountPrice : product.price}
               </span>
               {hasDiscount && (
@@ -433,7 +433,7 @@ export const ProductDetail: React.FC = () => {
               More from {product.category.name} →
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
             {relatedProducts.map((rel) => (
               <ProductCard key={rel.id} product={rel} />
             ))}

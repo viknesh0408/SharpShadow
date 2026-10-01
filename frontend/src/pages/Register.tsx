@@ -50,8 +50,8 @@ export const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-      <div className="max-w-md w-full bg-dark-900 border border-dark-800 rounded-3xl p-8 shadow-card-dark space-y-6">
+    <div className="min-h-[80vh] flex items-center justify-center px-3 sm:px-4 py-8 sm:py-12">
+      <div className="max-w-md w-full bg-dark-900 border border-dark-800 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-card-dark space-y-6">
 
         <div className="text-center space-y-2">
           <Link to="/" className="inline-flex items-center gap-2 mb-2">

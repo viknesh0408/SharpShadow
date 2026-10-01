@@ -6,41 +6,41 @@ export const Footer: React.FC = () => {
   return (
     <footer className="bg-dark-950 border-t border-dark-800 text-slate-400 text-sm mt-20">
       {/* Features Value Strip */}
-      <div className="border-b border-dark-800 py-10 bg-dark-900/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-sharp-500/10 text-sharp-400 flex items-center justify-center shrink-0">
-              <Zap className="w-6 h-6" />
+      <div className="border-b border-dark-800 py-8 sm:py-10 bg-dark-900/40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <div className="flex items-center gap-3.5 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-sharp-500/10 text-sharp-400 flex items-center justify-center shrink-0">
+              <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h4 className="text-white font-semibold">100% Layered PSD</h4>
+              <h4 className="text-white font-semibold text-sm">100% Layered PSD</h4>
               <p className="text-xs text-slate-400">Neatly grouped smart objects and organized folders.</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
-              <DownloadCloud className="w-6 h-6" />
+          <div className="flex items-center gap-3.5 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+              <DownloadCloud className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h4 className="text-white font-semibold">Instant Secure Access</h4>
+              <h4 className="text-white font-semibold text-sm">Instant Secure Access</h4>
               <p className="text-xs text-slate-400">Direct high-speed temporary signed download tokens.</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-6 h-6" />
+          <div className="flex items-center gap-3.5 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h4 className="text-white font-semibold">Verified Razorpay Payments</h4>
+              <h4 className="text-white font-semibold text-sm">Verified Razorpay Payments</h4>
               <p className="text-xs text-slate-400">Bank-grade UPI, Cards, NetBanking and QR scanning.</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center shrink-0">
-              <Sparkles className="w-6 h-6" />
+          <div className="flex items-center gap-3.5 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h4 className="text-white font-semibold">Commercial Rights</h4>
+              <h4 className="text-white font-semibold text-sm">Commercial Rights</h4>
               <p className="text-xs text-slate-400">Clear royalty-free licenses for client & personal work.</p>
             </div>
           </div>
@@ -48,10 +48,10 @@ export const Footer: React.FC = () => {
       </div>
 
       {/* Main Footer Links */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-5 gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-8 sm:gap-10">
         
         {/* Brand */}
-        <div className="md:col-span-2 space-y-4">
+        <div className="col-span-2 sm:col-span-2 md:col-span-2 space-y-4">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-sharp-600 to-sharp-500 flex items-center justify-center text-white font-mono font-bold text-sm">
               SS

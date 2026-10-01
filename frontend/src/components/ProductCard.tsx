@@ -85,35 +85,35 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </Link>
 
       {/* Card Content */}
-      <div className="p-4 flex-1 flex flex-col justify-between">
+      <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between">
         <div>
           {/* Category */}
           <Link
             to={`/category/${product.category.slug}`}
-            className="text-[11px] font-mono text-sharp-400 hover:text-sharp-300 uppercase tracking-wider font-semibold transition-colors"
+            className="text-[10px] sm:text-[11px] font-mono text-sharp-400 hover:text-sharp-300 uppercase tracking-wider font-semibold transition-colors truncate block"
           >
             {product.category.name}
           </Link>
 
           {/* Title */}
           <Link to={`/product/${product.slug}`} className="block mt-1">
-            <h3 className="font-semibold text-sm sm:text-base text-slate-100 hover:text-white line-clamp-2 transition-colors">
+            <h3 className="font-semibold text-xs sm:text-base text-slate-100 hover:text-white line-clamp-2 transition-colors leading-snug">
               {product.title}
             </h3>
           </Link>
         </div>
 
         {/* Price & Action Row */}
-        <div className="mt-4 pt-3 border-t border-dark-800/80 flex items-center justify-between gap-2">
+        <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-dark-800/80 flex items-center justify-between gap-1 sm:gap-2">
           
           {/* Price */}
-          <div className="flex flex-col">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-base sm:text-lg font-bold font-mono text-white">
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-baseline gap-1 sm:gap-1.5">
+              <span className="text-sm sm:text-lg font-bold font-mono text-white truncate">
                 ₹{hasDiscount ? product.discountPrice : product.price}
               </span>
               {hasDiscount && (
-                <span className="text-xs font-mono text-slate-400 line-through">
+                <span className="hidden xs:inline text-[10px] sm:text-xs font-mono text-slate-400 line-through">
                   ₹{product.price}
                 </span>
               )}
@@ -121,30 +121,30 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             <Link
               to={`/product/${product.slug}`}
-              className="p-2 rounded-xl bg-dark-800 hover:bg-dark-750 text-slate-300 hover:text-white transition-colors border border-dark-700/60"
+              className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-dark-800 hover:bg-dark-750 text-slate-300 hover:text-white transition-colors border border-dark-700/60"
               title="View Details"
             >
-              <Eye className="w-4 h-4" />
+              <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </Link>
 
             <button
               onClick={handleAddToCart}
-              className={`p-2 rounded-xl transition-all border flex items-center justify-center ${
+              className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition-all border flex items-center justify-center ${
                 inCart
                   ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
                   : 'bg-sharp-600/20 hover:bg-sharp-600 text-sharp-400 hover:text-white border-sharp-500/40 shadow-sm'
               }`}
               title={inCart ? 'In Cart (Click to view)' : 'Add to Cart'}
             >
-              <ShoppingBag className="w-4 h-4" />
+              <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
 
             <button
               onClick={handleQuickBuy}
-              className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-semibold text-xs shadow-sharp-glow transition-all"
+              className="px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-semibold text-[11px] sm:text-xs shadow-sharp-glow transition-all"
             >
               Buy
             </button>

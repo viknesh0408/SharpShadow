@@ -79,20 +79,20 @@ export const QRPaymentModal: React.FC<QRPaymentModalProps> = ({ orderNumber, onS
     : '';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-dark-900 border border-dark-750 rounded-3xl max-w-md w-full p-6 relative shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-dark-900 border border-dark-750 rounded-2xl sm:rounded-3xl max-w-md w-full p-4 sm:p-6 relative shadow-2xl">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-full bg-dark-800 hover:bg-dark-750 transition-colors"
+          className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 p-2 text-slate-400 hover:text-white rounded-full bg-dark-800 hover:bg-dark-750 transition-colors"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
         <div className="text-center">
-          <div className="w-12 h-12 rounded-2xl bg-sharp-500/10 text-sharp-400 flex items-center justify-center mx-auto mb-3">
-            <QrCode className="w-6 h-6" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-sharp-500/10 text-sharp-400 flex items-center justify-center mx-auto mb-2.5 sm:mb-3">
+            <QrCode className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <h3 className="text-xl font-bold text-white">Scan & Pay with UPI</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-white">Scan & Pay with UPI</h3>
           <p className="text-xs text-slate-400 mt-1">
             Scan using Google Pay, PhonePe, Paytm, or any UPI banking app
           </p>
@@ -116,13 +116,13 @@ export const QRPaymentModal: React.FC<QRPaymentModalProps> = ({ orderNumber, onS
             </p>
           </div>
         ) : (
-          <div className="mt-6 flex flex-col items-center">
+          <div className="mt-5 sm:mt-6 flex flex-col items-center">
             {/* QR Code Container */}
-            <div className="p-3 bg-white rounded-2xl shadow-lg">
+            <div className="p-2.5 sm:p-3 bg-white rounded-2xl shadow-lg">
               <img
                 src={qrImageUrl}
                 alt="Scan to pay"
-                className="w-56 h-56 rounded-lg"
+                className="w-48 h-48 sm:w-56 sm:h-56 rounded-lg"
               />
             </div>
 

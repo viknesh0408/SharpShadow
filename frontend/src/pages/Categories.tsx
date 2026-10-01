@@ -29,37 +29,37 @@ export const Categories: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
           {Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} className="h-44 bg-dark-900 border border-dark-800 rounded-2xl animate-pulse" />
+            <div key={i} className="h-40 sm:h-44 bg-dark-900 border border-dark-800 rounded-2xl animate-pulse" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
           {categories.map((cat) => (
             <Link
               key={cat.id}
               to={`/category/${cat.slug}`}
-              className="group relative bg-dark-900 border border-dark-800 hover:border-sharp-500/40 rounded-2xl overflow-hidden p-6 transition-all duration-300 hover:shadow-card-hover flex flex-col justify-between"
+              className="group relative bg-dark-900 border border-dark-800 hover:border-sharp-500/40 rounded-2xl overflow-hidden p-4 sm:p-6 transition-all duration-300 hover:shadow-card-hover flex flex-col justify-between"
             >
               <div className="flex items-center justify-between">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-dark-800 to-dark-750 text-sharp-400 group-hover:from-sharp-600 group-hover:to-sharp-500 group-hover:text-white transition-all flex items-center justify-center font-bold text-lg shadow">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-dark-800 to-dark-750 text-sharp-400 group-hover:from-sharp-600 group-hover:to-sharp-500 group-hover:text-white transition-all flex items-center justify-center font-bold text-base sm:text-lg shadow">
                   {cat.name.charAt(0)}
                 </div>
-                <span className="text-xs font-mono text-slate-500 group-hover:text-slate-400">
+                <span className="text-[10px] sm:text-xs font-mono text-slate-500 group-hover:text-slate-400">
                   {cat.productCount ? `${cat.productCount} Items` : 'Active'}
                 </span>
               </div>
 
-              <div className="mt-8">
-                <h3 className="text-lg font-bold text-white group-hover:text-sharp-400 transition-colors">
+              <div className="mt-5 sm:mt-8">
+                <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-sharp-400 transition-colors">
                   {cat.name}
                 </h3>
-                <p className="text-xs text-slate-400 line-clamp-2 mt-1">
+                <p className="text-xs text-slate-400 line-clamp-2 mt-1 hidden xs:block">
                   {cat.description || 'Editable Photoshop graphic assets and smart templates.'}
                 </p>
-                <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-sharp-400 group-hover:translate-x-1 transition-transform">
-                  <span>Browse Templates</span>
+                <div className="mt-3 sm:mt-4 flex items-center gap-1 text-xs font-semibold text-sharp-400 group-hover:translate-x-1 transition-transform">
+                  <span>Browse</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>
               </div>

@@ -258,13 +258,13 @@ export const Browse: React.FC = () => {
         {/* Product Grid (4 col desktop, 3 tablet, 2 mobile - Section 8) */}
         <main className="flex-1">
           {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
               {Array.from({ length: 8 }).map((_, i) => (
                 <SkeletonCard key={i} />
               ))}
             </div>
           ) : products.length === 0 ? (
-            <div className="bg-dark-900 border border-dark-800 rounded-2xl p-12 text-center space-y-4">
+            <div className="bg-dark-900 border border-dark-800 rounded-2xl p-6 sm:p-12 text-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-dark-800 flex items-center justify-center mx-auto text-slate-500">
                 <Search className="w-8 h-8" />
               </div>
@@ -274,14 +274,14 @@ export const Browse: React.FC = () => {
               </p>
               <button
                 onClick={clearAllFilters}
-                className="px-5 py-2 rounded-xl bg-sharp-600 text-white font-medium text-sm hover:bg-sharp-500 transition-colors"
+                className="px-5 py-2.5 rounded-xl bg-sharp-600 text-white font-medium text-sm hover:bg-sharp-500 transition-colors"
               >
                 Reset All Filters
               </button>
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
                 {products.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}

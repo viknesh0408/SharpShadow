@@ -3,15 +3,24 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    overflow-x: hidden;
+    max-width: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-dark-950 text-slate-100 font-sans selection:bg-sharp-600 selection:text-white antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    overflow-x: hidden;
+    max-width: 100%;
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* Custom scrollbar for dark theme */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
   ::-webkit-scrollbar-track {
     background: #0c0e12;
@@ -23,6 +32,19 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #e63946;
   }
+}
+
+/* Mobile smooth scrolling & scrollbar hiding */
+.scroll-touch {
+  -webkit-overflow-scrolling: touch;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .text-gradient {

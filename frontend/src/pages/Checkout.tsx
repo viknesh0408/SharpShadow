@@ -153,7 +153,7 @@ export const Checkout: React.FC = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
       {/* Checkout Title */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Secure Checkout</h1>
@@ -162,17 +162,17 @@ export const Checkout: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
         
         {/* Payment Methods (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="bg-dark-900 border border-dark-800 rounded-3xl p-6 sm:p-7 space-y-6 shadow-card-dark">
+          <div className="bg-dark-900 border border-dark-800 rounded-2xl sm:rounded-3xl p-4 sm:p-7 space-y-5 sm:space-y-6 shadow-card-dark">
             <h3 className="font-bold text-base text-white">Select Payment Method</h3>
 
             {/* Option 1: Razorpay Instant Checkout */}
             <label
               onClick={() => setPaymentMethod('razorpay')}
-              className={`flex items-start gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${
+              className={`flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl border cursor-pointer transition-all ${
                 paymentMethod === 'razorpay'
                   ? 'bg-dark-850 border-sharp-500 shadow-sharp-glow/20'
                   : 'bg-dark-950 border-dark-800 hover:border-dark-750'
@@ -261,7 +261,7 @@ export const Checkout: React.FC = () => {
 
         {/* Order Review (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-dark-900 border border-dark-800 rounded-3xl p-6 sm:p-7 space-y-4 shadow-card-dark">
+          <div className="bg-dark-900 border border-dark-800 rounded-2xl sm:rounded-3xl p-4 sm:p-7 space-y-4 shadow-card-dark">
             <h3 className="font-bold text-base text-white">Items in Order ({items.length})</h3>
 
             <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
