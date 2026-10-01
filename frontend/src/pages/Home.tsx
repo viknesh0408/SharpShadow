@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowRight, ShieldCheck, Download, Layers, Flame, Clock, Zap, Search } from 'lucide-react';
-import { Product, Category } from '../types';
+import { Sparkles, ArrowRight, Clock, Search } from 'lucide-react';
+import { Product } from '../types';
 import { productService } from '../services/productService';
-import { categoryService } from '../services/categoryService';
 import { ProductCard } from '../components/ProductCard';
 import { SkeletonCard } from '../components/SkeletonCard';
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [latestProducts, setLatestProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -25,14 +22,8 @@ export const Home: React.FC = () => {
   useEffect(() => {
     const loadHomeData = async () => {
       try {
-        const [featured, latest, cats] = await Promise.all([
-          productService.getFeatured(),
-          productService.getLatest(),
-          categoryService.getCategories(),
-        ]);
-        setFeaturedProducts(featured);
+        const latest = await productService.getLatest();
         setLatestProducts(latest);
-        setCategories(cats.slice(0, 8)); // Top 8 categories for homepage
       } catch (err) {
         console.error('Failed to load home data', err);
       } finally {
@@ -169,78 +160,7 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. CATEGORIES SHOWCASE (Section 7) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <div className="flex items-center gap-2 text-sharp-400 text-xs font-mono font-bold uppercase tracking-wider">
-              <Layers className="w-4 h-4" />
-              <span>Explore by Category</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mt-1">Browse Popular Design Niches</h2>
-          </div>
-          <Link to="/categories" className="text-sm font-medium text-slate-400 hover:text-sharp-400 transition-colors flex items-center gap-1">
-            <span>View All ({categories.length}+)</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              to={`/category/${cat.slug}`}
-              className="group relative bg-dark-900 border border-dark-800 hover:border-sharp-500/40 rounded-2xl p-5 overflow-hidden transition-all duration-300 hover:shadow-card-hover flex flex-col justify-between"
-            >
-              <div className="flex items-start justify-between">
-                <div className="w-10 h-10 rounded-xl bg-dark-800 text-sharp-400 group-hover:bg-sharp-500 group-hover:text-white transition-all flex items-center justify-center font-bold text-sm">
-                  {cat.name.charAt(0)}
-                </div>
-                <span className="text-xs font-mono text-slate-500">
-                  {cat.productCount ? `${cat.productCount} PSDs` : 'Templates'}
-                </span>
-              </div>
-              <div className="mt-6">
-                <h3 className="text-base font-semibold text-white group-hover:text-sharp-400 transition-colors">
-                  {cat.name}
-                </h3>
-                <p className="text-xs text-slate-400 line-clamp-1 mt-1">
-                  {cat.description || 'Editable Photoshop assets'}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* 3. FEATURED PRODUCTS (Section 8 Grid: 4 Desktop, 3 Tablet, 2 Mobile) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <div className="flex items-center gap-2 text-sharp-400 text-xs font-mono font-bold uppercase tracking-wider">
-              <Flame className="w-4 h-4" />
-              <span>Handpicked by Staff</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mt-1">Featured PSD Templates</h2>
-          </div>
-          <Link to="/browse?sort=popular" className="text-sm font-medium text-slate-400 hover:text-sharp-400 transition-colors flex items-center gap-1">
-            <span>Explore All</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {loading ? (
-            Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
-          ) : (
-            featuredProducts.slice(0, 8).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))
-          )}
-        </div>
-      </section>
-
-      {/* 4. LATEST RELEASES */}
+      {/* 2. LATEST RELEASES */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between mb-8">
           <div>
