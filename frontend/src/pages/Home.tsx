@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowRight, ShieldCheck, Download, Layers, Flame, Clock, Zap, Search, TrendingUp } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, Download, Layers, Flame, Clock, Zap, Search } from 'lucide-react';
 import { Product, Category } from '../types';
 import { productService } from '../services/productService';
 import { categoryService } from '../services/categoryService';
@@ -20,10 +20,6 @@ export const Home: React.FC = () => {
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     }
-  };
-
-  const handleQuickTagClick = (tag: string) => {
-    navigate(`/search?q=${encodeURIComponent(tag)}`);
   };
 
   useEffect(() => {
@@ -101,24 +97,6 @@ export const Home: React.FC = () => {
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
-
-              {/* Hot Searches Mini Pills */}
-              <div className="mt-2.5 pt-2 border-t border-white/5 flex flex-wrap items-center justify-center gap-1.5 text-[11px] text-slate-400">
-                <span className="text-slate-500 font-mono flex items-center gap-1 uppercase tracking-wider text-[10px] font-semibold mr-1">
-                  <TrendingUp className="w-3 h-3 text-sharp-400" />
-                  Hot:
-                </span>
-                {['Wedding', 'Business Card', 'Flyer', 'Menu', 'Poster', 'Instagram'].map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => handleQuickTagClick(tag)}
-                    className="px-2.5 py-0.5 rounded-full bg-dark-900/90 hover:bg-sharp-500/20 border border-dark-750 hover:border-sharp-500/40 text-slate-300 hover:text-sharp-300 font-medium transition-all cursor-pointer active:scale-95"
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
             </div>
           </div>
 
