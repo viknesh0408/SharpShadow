@@ -113,4 +113,17 @@ public class UserService {
         user.setRole(newRole);
         userRepository.save(user);
     }
+
+    @Transactional
+    public UserDto updateProfile(String email, UpdateProfileRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (request.getName() != null && !request.getName().trim().isEmpty()) {
+            user.setName(request.getName().trim());
+        }
+
+        User updatedUser = userRepository.save(user);
+        return mapper.toUserDto(updatedUser);
+    }
 }

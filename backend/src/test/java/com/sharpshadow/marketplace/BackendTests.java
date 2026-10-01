@@ -160,4 +160,19 @@ class BackendTests {
         assertTrue(signedUrl.contains("/api/downloads/file?file="));
         assertTrue(signedUrl.contains("&sig="));
     }
+
+    @Test
+    @DisplayName("Test 7: User Profile Name Update")
+    void testUpdateProfile() {
+        String email = "customer@sharpshadow.com";
+        UpdateProfileRequest request = new UpdateProfileRequest("Alex Senior Designer");
+        UserDto updated = userService.updateProfile(email, request);
+
+        assertEquals("Alex Senior Designer", updated.getName());
+        assertEquals(email, updated.getEmail());
+
+        // Verify retrieval matches
+        UserDto refetched = userService.getCurrentUserDto(email);
+        assertEquals("Alex Senior Designer", refetched.getName());
+    }
 }

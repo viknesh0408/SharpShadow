@@ -51,4 +51,16 @@ public class AuthController {
         UserDto userDto = userService.getCurrentUserDto(principal.getEmail());
         return ResponseEntity.ok(ApiResponse.success(userDto));
     }
+
+    @PutMapping("/profile")
+    public ResponseEntity<ApiResponse<UserDto>> updateProfile(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @Valid @RequestBody UpdateProfileRequest request
+    ) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(ApiResponse.error("Not authenticated", "/api/auth/profile"));
+        }
+        UserDto updatedUser = userService.updateProfile(principal.getEmail(), request);
+        return ResponseEntity.ok(ApiResponse.success(updatedUser, "Profile name updated successfully"));
+    }
 }

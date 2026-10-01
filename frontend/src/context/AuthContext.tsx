@@ -10,6 +10,7 @@ interface AuthContextType {
   login: (data: { email: string; password: string }) => Promise<void>;
   adminLogin: (data: { email: string; password: string }) => Promise<void>;
   register: (data: { name: string; email: string; password: string; confirmPassword: string }) => Promise<void>;
+  updateUser: (updatedUser: User) => void;
   logout: () => void;
   loading: boolean;
 }
@@ -65,6 +66,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     handleAuthSuccess(res);
   };
 
+  const updateUser = (updatedUser: User) => {
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  };
+
   const logout = () => {
     authService.logout();
     setUser(null);
@@ -84,6 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         adminLogin,
         register,
+        updateUser,
         logout,
         loading,
       }}
