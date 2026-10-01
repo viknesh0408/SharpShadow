@@ -56,16 +56,16 @@ export const Navbar: React.FC = () => {
             </form>
           )}
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-300">
-            <Link to="/" className="hover:text-white transition-colors">Home</Link>
-            <Link to="/browse" className="hover:text-white transition-colors">Browse</Link>
-            <Link to="/categories" className="hover:text-white transition-colors flex items-center gap-1">
-              Categories
-            </Link>
-            <Link to="/browse?sort=newest" className="hover:text-white transition-colors">Latest</Link>
-            <Link to="/browse?sort=popular" className="hover:text-white transition-colors">Popular</Link>
-          </nav>
+          {/* Desktop Navigation Links (hidden on home page) */}
+          {!isHomePage && (
+            <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-300 animate-in fade-in duration-200">
+              <Link to="/" className="hover:text-white transition-colors">Home</Link>
+              <Link to="/browse" className="hover:text-white transition-colors">Browse</Link>
+              <Link to="/categories" className="hover:text-white transition-colors flex items-center gap-1">
+                Categories
+              </Link>
+            </nav>
+          )}
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-3">
@@ -130,34 +130,36 @@ export const Navbar: React.FC = () => {
                 )}
               </div>
             ) : (
-              <div className="hidden sm:flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-slate-300 hover:text-white transition-colors"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white text-sm font-semibold shadow-sharp-glow transition-all"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white text-xs sm:text-sm font-semibold shadow-sharp-glow transition-all"
                 >
                   Register
                 </Link>
               </div>
             )}
 
-            {/* Mobile Hamburger Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-dark-900"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            {/* Mobile Hamburger Button (shown on inner pages) */}
+            {!isHomePage && (
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="lg:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-dark-900"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Mobile Search & Menu Drawer */}
-        {mobileMenuOpen && (
+        {/* Mobile Search & Menu Drawer (shown on inner pages) */}
+        {mobileMenuOpen && !isHomePage && (
           <div className="lg:hidden py-4 border-t border-dark-800 space-y-4 animate-in fade-in">
             <form onSubmit={handleSearch} className="relative">
               <input
@@ -174,8 +176,6 @@ export const Navbar: React.FC = () => {
               <Link to="/" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-dark-900">Home</Link>
               <Link to="/browse" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-dark-900">Browse All PSDs</Link>
               <Link to="/categories" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-dark-900">Categories</Link>
-              <Link to="/browse?sort=newest" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-dark-900">Latest PSDs</Link>
-              <Link to="/browse?sort=popular" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-dark-900">Popular Templates</Link>
 
               {!isAuthenticated && (
                 <div className="pt-2 border-t border-dark-800 flex gap-2">
