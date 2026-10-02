@@ -154,7 +154,7 @@ The frontend starts at `http://localhost:3000`.
 
 ## 5. Step-by-Step Production Launch & Transition Guide
 
-Follow these 6 sequential steps to take Project SharpShadow from local development/testing to a fully secured, live production environment.
+Follow these 7 sequential steps to take Project SharpShadow from local development/testing to a fully secured, live production environment.
 
 ---
 
@@ -209,7 +209,12 @@ RAZORPAY_KEY_ID=rzp_live_XXXXXXXXXXXXXXXX
 RAZORPAY_KEY_SECRET=YourLiveRazorpaySecret
 RAZORPAY_WEBHOOK_SECRET=YourLiveWebhookSecret
 
-# 6. Allowed CORS Origins (Whitelists your frontend domains)
+# 6. Transactional Email Service (Brevo HTTPS API - Works on Railway Free/Hobby tiers)
+BREVO_API_KEY=xkeysib-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-xxxxxxxx
+MAIL_USERNAME=your-brevo-email@gmail.com
+FRONTEND_URL=https://sharpshadow.up.railway.app
+
+# 7. Allowed CORS Origins (Whitelists your frontend domains)
 CORS_ALLOWED_ORIGINS=https://sharpshadow.up.railway.app,https://yourdomain.com,https://www.yourdomain.com
 ```
 
@@ -244,7 +249,36 @@ To permanently retain all uploaded files:
 
 ---
 
-### Step 4: Connect Custom Domain & Configure DNS / SSL (Optional)
+### Step 4: Configure Production Transactional Email Service (Brevo API)
+
+> [!IMPORTANT]
+> **Railway officially blocks outbound SMTP ports (25, 465, and 587)** on Free, Trial, and Hobby plans to prevent spam abuse. Attempting to use raw SMTP (e.g. `smtp.gmail.com:587`) will result in a connection timeout (`Operation timed out`). SharpShadow solves this by integrating with **Brevo's transactional HTTPS API (Port 443)**, which is completely unblocked and provides **300 free emails per day** with zero custom domain DNS verification needed.
+
+Follow these 3 quick steps to set up transactional email delivery:
+
+1. **Sign Up on Brevo (Free):**
+   - Visit **[brevo.com](https://brevo.com)** and create a free account with your email (e.g. `your-email@gmail.com`).
+   - Confirm your email address.
+
+2. **Generate an API Key:**
+   - In your Brevo dashboard, click your profile name (top-right corner) ➔ **SMTP & API** (or navigate to `https://app.brevo.com/settings/keys/api`).
+   - Click **Generate a new API key**.
+   - Enter a name (e.g., `sharpshadow-production`) and click **Generate**.
+   - Copy the generated API key (it begins with `xkeysib-...`).
+
+3. **Add Variables in Railway:**
+   - Go to **Railway Dashboard ➔ Backend service ➔ Variables** tab.
+   - Add the following environment variables:
+     - `BREVO_API_KEY`: `<paste your xkeysib-... API key>`
+     - `MAIL_USERNAME`: `your-brevo-email@gmail.com` *(must match the email you registered on Brevo)*
+     - `FRONTEND_URL`: `https://sharpshadow.up.railway.app` *(or your custom frontend domain)*
+   - Railway will automatically redeploy the backend in ~30 seconds.
+
+*Note: Whenever a customer or admin requests a password reset, the backend also logs the full single-use reset URL directly into the Railway backend logs as an immediate fail-safe.*
+
+---
+
+### Step 5: Connect Custom Domain & Configure DNS / SSL (Optional)
 
 To link your branded domain (e.g. `sharpshadow.com`):
 1. **Frontend Domain:**
@@ -260,7 +294,7 @@ To link your branded domain (e.g. `sharpshadow.com`):
 
 ---
 
-### Step 5: Admin Panel Initial Setup & Catalog Preparation
+### Step 6: Admin Panel Initial Setup & Catalog Preparation
 
 1. **Log In to Admin:**
    - Navigate to `https://<YOUR-FRONTEND-DOMAIN>/login`.
@@ -281,9 +315,17 @@ To link your branded domain (e.g. `sharpshadow.com`):
 
 ---
 
-### Step 6: End-to-End Live Transaction Smoke Test
+### Step 7: End-to-End Live Transaction & Password Reset Smoke Test
 
-Before announcing your store to public customers, conduct one real smoke test:
+Before announcing your store to public customers, conduct two quick smoke tests:
+
+#### A. Password Reset Smoke Test
+1. Go to `https://<YOUR-FRONTEND-DOMAIN>/forgot-password`.
+2. Enter your email and click **Send Reset Link**.
+3. Verify that the email is delivered to your inbox (or check Railway backend logs for the `🔑 [PASSWORD RESET LINK GENERATED]` entry).
+4. Click the link, enter a new password, and verify you can log in with the new credentials.
+
+#### B. ₹1 Live Transaction Smoke Test
 1. **Create a ₹1 Test Product:**
    - In the admin panel, create a temporary product priced at **₹1.00** and set it to **PUBLISHED**.
 2. **Perform Checkout as a Customer:**
@@ -389,6 +431,10 @@ Generates production-optimized static assets in `frontend/dist/`.
 ### 4. Uploaded Files Disappear After Redeployment
 - **Cause:** Railway container redeployments recreate the container filesystem.
 - **Resolution:** Attach a persistent volume mounted to `/app/storage` in your Railway Backend service settings.
+
+### 5. Password Reset Email Hangs or Times Out on Railway
+- **Cause:** Railway blocks outbound SMTP ports 25, 465, and 587 on Free and Hobby plans to prevent spam, causing standard SMTP/Gmail connections to time out (`Operation timed out`).
+- **Resolution:** SharpShadow includes built-in support for Brevo's transactional HTTPS API (Port 443, which is never blocked). Follow **Step 4** in the Production Launch Guide above to configure `BREVO_API_KEY` and `MAIL_USERNAME` in your Railway Backend variables. In the meantime, the single-use password reset URL is always printed directly into your Railway backend logs for immediate testing.
 
 ---
 
