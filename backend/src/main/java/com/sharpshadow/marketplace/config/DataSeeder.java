@@ -37,27 +37,31 @@ public class DataSeeder implements CommandLineRunner {
         seedProducts();
     }
 
+    @org.springframework.beans.factory.annotation.Value("${sharpshadow.admin.email:admin@sharpshadow.com}")
+    private String adminEmail;
+
+    @org.springframework.beans.factory.annotation.Value("${sharpshadow.admin.password:}")
+    private String adminPassword;
+
+    @org.springframework.beans.factory.annotation.Value("${sharpshadow.admin.name:SharpShadow Administrator}")
+    private String adminName;
+
     private void seedUsers() {
         if (userRepository.count() == 0) {
-            log.info("Seeding initial users...");
+            log.info("Seeding initial administrator user...");
+
+            String effectiveEmail = (adminEmail != null && !adminEmail.isBlank()) ? adminEmail.trim().toLowerCase() : "admin@sharpshadow.com";
+            String effectivePassword = (adminPassword != null && !adminPassword.isBlank()) ? adminPassword.trim() : "Admin#SharpShadow2026!";
 
             User admin = User.builder()
-                    .name("SharpShadow Admin")
-                    .email("admin@sharpshadow.com")
-                    .passwordHash(passwordEncoder.encode("Admin@123456"))
+                    .name((adminName != null && !adminName.isBlank()) ? adminName.trim() : "SharpShadow Administrator")
+                    .email(effectiveEmail)
+                    .passwordHash(passwordEncoder.encode(effectivePassword))
                     .role(Role.ADMIN)
                     .build();
 
-            User customer = User.builder()
-                    .name("Alex Designer")
-                    .email("customer@sharpshadow.com")
-                    .passwordHash(passwordEncoder.encode("Customer@123456"))
-                    .role(Role.CUSTOMER)
-                    .build();
-
-            userRepository.saveAll(List.of(admin, customer));
-            log.info("Default Admin: admin@sharpshadow.com / Admin@123456");
-            log.info("Default Customer: customer@sharpshadow.com / Customer@123456");
+            userRepository.save(admin);
+            log.info("Default administrator seeded for email: {}. Set ADMIN_PASSWORD environment variable to customize.", effectiveEmail);
         }
     }
 

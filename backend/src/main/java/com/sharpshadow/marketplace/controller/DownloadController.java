@@ -40,6 +40,7 @@ public class DownloadController {
     @GetMapping("/file")
     public ResponseEntity<Resource> downloadFile(
             @RequestParam("file") String file,
+            @RequestParam(value = "uid", required = false) Long userId,
             @RequestParam("expires") long expires,
             @RequestParam("filename") String filename,
             @RequestParam("sig") String signature
@@ -47,7 +48,7 @@ public class DownloadController {
         String decodedFile = URLDecoder.decode(file, StandardCharsets.UTF_8);
         String decodedFilename = URLDecoder.decode(filename, StandardCharsets.UTF_8);
 
-        Resource resource = downloadService.serveSecureFile(decodedFile, expires, signature);
+        Resource resource = downloadService.serveSecureFile(decodedFile, userId, expires, signature);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)

@@ -30,14 +30,15 @@ public class PaymentService {
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
     private final RazorpayService razorpayService;
+    private final CouponService couponService;
     private final EntityDtoMapper mapper;
 
     @Transactional
-    public PaymentResponse verifyAndCapturePayment(PaymentVerificationRequest request) {
-        log.info("Verifying Razorpay payment for Order ID: {}, Payment ID: {}",
-                request.getRazorpayOrderId(), request.getRazorpayPaymentId());
+    public PaymentResponse verifyAndCapturePayment(PaymentVerificationRequest request, Long currentUserId) {
+        log.info("Verifying Razorpay payment for Order ID: {}, Payment ID: {}, by User: {}",
+                request.getRazorpayOrderId(), request.getRazorpayPaymentId(), currentUserId);
 
-        // Signature verification (Server side)
+        // 1. Signature verification (Server side cryptographic HMAC-SHA256)
         boolean isValid = razorpayService.verifyPaymentSignature(
                 request.getRazorpayOrderId(),
                 request.getRazorpayPaymentId(),
@@ -49,11 +50,29 @@ public class PaymentService {
             throw new PaymentVerificationException("Payment signature verification failed. Untrusted payment.");
         }
 
-        // Retrieve Order
+        // 2. Retrieve Order
         Order order = orderRepository.findByRazorpayOrderId(request.getRazorpayOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("No order found for Razorpay Order ID: " + request.getRazorpayOrderId()));
 
-        // Idempotency: If already paid, return existing payment record without duplicate processing
+        // 3. Enforce Order Ownership
+        if (!order.getUserId().equals(currentUserId)) {
+            log.error("Security alert: User {} attempted to verify payment for order {} belonging to user {}",
+                    currentUserId, order.getOrderNumber(), order.getUserId());
+            throw new PaymentVerificationException("Unauthorized: You do not own this order.");
+        }
+
+        // 4. Verify payment status and amount with Razorpay Gateway directly
+        boolean gatewayVerified = razorpayService.verifyPaymentWithGateway(
+                request.getRazorpayOrderId(),
+                request.getRazorpayPaymentId(),
+                order.getTotalAmount()
+        );
+        if (!gatewayVerified) {
+            log.error("Gateway status verification failed for order: {}", request.getRazorpayOrderId());
+            throw new PaymentVerificationException("Payment verification with payment gateway failed. Transaction unconfirmed.");
+        }
+
+        // 5. Idempotency: If already paid, return existing payment record without duplicate processing
         if (order.getStatus() == OrderStatus.PAID) {
             log.info("Order {} is already marked PAID. Returning existing payment.", order.getOrderNumber());
             Payment existingPayment = paymentRepository.findByOrderId(order.getId()).orElse(null);
@@ -62,12 +81,12 @@ public class PaymentService {
             }
         }
 
-        // Mark order as PAID
+        // 6. Mark order as PAID
         order.setStatus(OrderStatus.PAID);
         order.setRazorpayPaymentId(request.getRazorpayPaymentId());
         orderRepository.save(order);
 
-        // Record Payment
+        // 7. Record Payment
         Payment payment = Payment.builder()
                 .orderId(order.getId())
                 .razorpayOrderId(request.getRazorpayOrderId())
@@ -80,6 +99,11 @@ public class PaymentService {
         Payment savedPayment = paymentRepository.save(payment);
         log.info("Payment captured successfully for order: {}", order.getOrderNumber());
 
+        // 8. Increment coupon usage if coupon was applied
+        if (order.getCouponCode() != null) {
+            couponService.incrementCouponUsage(order.getCouponCode());
+        }
+
         return mapper.toPaymentResponse(savedPayment, order.getOrderNumber());
     }
 
@@ -89,7 +113,7 @@ public class PaymentService {
 
         boolean isValid = razorpayService.verifyWebhookSignature(payload, signatureHeader);
         if (!isValid) {
-            log.error("Webhook signature mismatch! Rejecting untrusted webhook payload.");
+            log.error("Webhook signature mismatch or missing secret! Rejecting untrusted webhook payload.");
             throw new PaymentVerificationException("Invalid webhook signature");
         }
 
@@ -127,6 +151,14 @@ public class PaymentService {
                     Optional<Order> orderOpt = orderRepository.findByRazorpayOrderId(razorpayOrderId);
                     if (orderOpt.isPresent()) {
                         Order order = orderOpt.get();
+
+                        // Enforce amount validation: paid amount must match or exceed order total
+                        if (amount.compareTo(BigDecimal.ZERO) > 0 && amount.compareTo(order.getTotalAmount()) < 0) {
+                            log.error("Security alert: Webhook paid amount {} is less than order total {} for order {}",
+                                    amount, order.getTotalAmount(), order.getOrderNumber());
+                            return;
+                        }
+
                         if (order.getStatus() != OrderStatus.PAID) {
                             order.setStatus(OrderStatus.PAID);
                             if (razorpayPaymentId != null) {
@@ -145,6 +177,11 @@ public class PaymentService {
                                         .build();
                                 paymentRepository.save(payment);
                             }
+
+                            if (order.getCouponCode() != null) {
+                                couponService.incrementCouponUsage(order.getCouponCode());
+                            }
+
                             log.info("Webhook successfully marked order {} as PAID", order.getOrderNumber());
                         }
                     }
@@ -168,18 +205,20 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
-    public QRPaymentResponse getQrPaymentInfo(String orderNumber) {
+    public QRPaymentResponse getQrPaymentInfo(String orderNumber, Long currentUserId) {
         Order order = orderRepository.findByOrderNumber(orderNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with number: " + orderNumber));
 
-        String qrPayload = razorpayService.generateUpiQrPayload(order.getOrderNumber(), order.getTotalAmount());
+        if (!order.getUserId().equals(currentUserId)) {
+            throw new PaymentVerificationException("Unauthorized: You do not own this order.");
+        }
 
         return QRPaymentResponse.builder()
                 .orderNumber(order.getOrderNumber())
                 .razorpayOrderId(order.getRazorpayOrderId())
                 .amount(order.getTotalAmount())
                 .currency(order.getCurrency())
-                .qrCodePayload(qrPayload)
+                .qrCodePayload("")
                 .status(order.getStatus().name())
                 .build();
     }

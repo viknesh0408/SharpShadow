@@ -65,18 +65,21 @@ public class RazorpayService {
             com.razorpay.Order order = razorpay.orders.create(orderRequest);
             return order.get("id");
         } catch (RazorpayException e) {
-            log.warn("Razorpay API call failed or running in offline test mock: {}. Generating synthetic test order ID.", e.getMessage());
-            // Safe fallback for testing without active network / invalid test credentials
-            return "order_test_" + UUID.randomUUID().toString().replace("-", "").substring(0, 14);
+            log.error("Razorpay order creation failed for receipt {}: {}", internalOrderNumber, e.getMessage());
+            throw new BadRequestException("Payment gateway order creation failed: " + e.getMessage());
         }
     }
 
     /**
-     * Verifies Razorpay payment signature: HMAC_SHA256(order_id + "|" + payment_id, secret)
+     * Verifies Razorpay payment signature strictly using HMAC-SHA256: HMAC_SHA256(order_id + "|" + payment_id, secret)
      */
     public boolean verifyPaymentSignature(String razorpayOrderId, String razorpayPaymentId, String razorpaySignature) {
         if (razorpayOrderId == null || razorpayPaymentId == null || razorpaySignature == null) {
             throw new PaymentVerificationException("Missing signature verification parameters");
+        }
+
+        if (keySecret == null || keySecret.trim().isEmpty()) {
+            throw new PaymentVerificationException("Razorpay key secret is not configured on server");
         }
 
         try {
@@ -85,7 +88,7 @@ public class RazorpayService {
             options.put("razorpay_payment_id", razorpayPaymentId);
             options.put("razorpay_signature", razorpaySignature);
 
-            boolean isValid = Utils.verifyPaymentSignature(options, keySecret);
+            boolean isValid = Utils.verifyPaymentSignature(options, keySecret.trim());
             if (isValid) {
                 return true;
             }
@@ -93,44 +96,71 @@ public class RazorpayService {
             log.warn("Standard Razorpay signature validation check error: {}", e.getMessage());
         }
 
-        // Also check direct HMAC-SHA256 calculation
-        String generatedSignature = calculateHmacSha256(razorpayOrderId + "|" + razorpayPaymentId, keySecret);
-        if (generatedSignature.equalsIgnoreCase(razorpaySignature)) {
-            return true;
-        }
-
-        // For local mock testing mode when key is test key
-        if (keyId.startsWith("rzp_test_") && (razorpaySignature.equals("test_signature") || razorpaySignature.equals(generatedSignature))) {
-            return true;
-        }
-
-        return false;
+        // Direct HMAC-SHA256 calculation fallback
+        String generatedSignature = calculateHmacSha256(razorpayOrderId + "|" + razorpayPaymentId, keySecret.trim());
+        return generatedSignature.equalsIgnoreCase(razorpaySignature.trim());
     }
 
     /**
-     * Verifies Webhook signature against X-Razorpay-Signature header.
+     * Confirms the payment status and amount with Razorpay REST API directly.
+     */
+    public boolean verifyPaymentWithGateway(String razorpayOrderId, String razorpayPaymentId, BigDecimal expectedAmount) {
+        if (keyId == null || keyId.isBlank() || keySecret == null || keySecret.isBlank()) {
+            log.warn("Razorpay credentials not fully configured, relying only on cryptographic signature");
+            return true;
+        }
+
+        try {
+            RazorpayClient razorpay = new RazorpayClient(keyId.trim(), keySecret.trim());
+            com.razorpay.Payment payment = razorpay.payments.fetch(razorpayPaymentId);
+            if (payment == null) {
+                log.error("Payment {} could not be retrieved from Razorpay", razorpayPaymentId);
+                return false;
+            }
+
+            String fetchedOrderId = payment.get("order_id");
+            if (!razorpayOrderId.equals(fetchedOrderId)) {
+                log.error("Razorpay payment order mismatch. Expected: {}, Got: {}", razorpayOrderId, fetchedOrderId);
+                return false;
+            }
+
+            String status = payment.get("status");
+            if (!"captured".equalsIgnoreCase(status) && !"authorized".equalsIgnoreCase(status)) {
+                log.error("Razorpay payment status is invalid: {}", status);
+                return false;
+            }
+
+            long amountInPaise = ((Number) payment.get("amount")).longValue();
+            long expectedPaise = expectedAmount.multiply(BigDecimal.valueOf(100)).longValue();
+            if (amountInPaise < expectedPaise) {
+                log.error("Razorpay payment amount mismatch: expected at least {} paise, but got {} paise", expectedPaise, amountInPaise);
+                return false;
+            }
+
+            return true;
+        } catch (RazorpayException e) {
+            log.error("Failed to fetch payment details from Razorpay: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Verifies Webhook signature strictly against X-Razorpay-Signature header.
      */
     public boolean verifyWebhookSignature(String requestBody, String signatureHeader) {
-        if (signatureHeader == null || requestBody == null) {
+        if (signatureHeader == null || signatureHeader.isBlank() || requestBody == null || requestBody.isBlank()) {
+            return false;
+        }
+        if (webhookSecret == null || webhookSecret.isBlank()) {
+            log.error("RAZORPAY_WEBHOOK_SECRET is not configured on server! Rejecting webhook.");
             return false;
         }
         try {
-            return Utils.verifyWebhookSignature(requestBody, signatureHeader, webhookSecret);
+            return Utils.verifyWebhookSignature(requestBody, signatureHeader.trim(), webhookSecret.trim());
         } catch (Exception e) {
-            String calculated = calculateHmacSha256(requestBody, webhookSecret);
-            return calculated.equalsIgnoreCase(signatureHeader);
+            String calculated = calculateHmacSha256(requestBody, webhookSecret.trim());
+            return calculated.equalsIgnoreCase(signatureHeader.trim());
         }
-    }
-
-    /**
-     * Generates standard UPI payment URI string for Razorpay Scan & Pay QR UI.
-     */
-    public String generateUpiQrPayload(String orderNumber, BigDecimal amount) {
-        // e.g. upi://pay?pa=sharpshadow@icici&pn=SharpShadow%20Digital&am=499.00&cu=INR&tr=SS-12345
-        return String.format(
-                "upi://pay?pa=sharpshadow.pay@razorpay&pn=SharpShadow%%20Marketplace&am=%.2f&cu=%s&tr=%s&tn=Order%%20%s",
-                amount, currency, orderNumber, orderNumber
-        );
     }
 
     private String calculateHmacSha256(String data, String secret) {

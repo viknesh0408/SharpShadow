@@ -21,9 +21,9 @@ public interface StorageService {
     void delete(String fileUrl);
 
     /**
-     * Generates a temporary signed download URL for an authorized purchase.
+     * Generates a temporary signed download URL for an authorized purchase tied to a user.
      */
-    String generateDownloadUrl(String fileUrl, String originalFileName, long expiryMinutes);
+    String generateDownloadUrl(String fileUrl, String originalFileName, Long userId, long expiryMinutes);
 
     /**
      * Validates a signed download token and loads the underlying resource.

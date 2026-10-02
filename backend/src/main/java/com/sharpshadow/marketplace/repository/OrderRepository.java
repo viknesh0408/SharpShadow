@@ -41,5 +41,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.status = 'PAID' AND o.createdAt >= :since")
     BigDecimal sumPaidRevenueSince(@Param("since") LocalDateTime since);
 
+    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.status = 'PAID' AND o.createdAt >= :start AND o.createdAt < :end")
+    BigDecimal sumPaidRevenueBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
     long countByCreatedAtAfter(LocalDateTime since);
 }

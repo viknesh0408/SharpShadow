@@ -16,15 +16,20 @@ spring:
 
 sharpshadow:
   jwt:
-    secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
-    expiration-ms: 86400000 # 24 hours
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 hours
   razorpay:
-    key-id: ${RAZORPAY_KEY_ID:rzp_test_sharpshadow_key}
-    key-secret: ${RAZORPAY_KEY_SECRET:rzp_test_sharpshadow_secret}
-    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:whsec_sharpshadow_secret}
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
     currency: INR
+  admin:
+    email: ${ADMIN_EMAIL:admin@sharpshadow.com}
+    password: ${ADMIN_PASSWORD:}
+    name: ${ADMIN_NAME:SharpShadow Administrator}
   storage:
     type: ${STORAGE_TYPE:local} # local or s3
+    signing-secret: ${DOWNLOAD_SIGNING_SECRET:${JWT_SECRET}}
     local:
       upload-dir: ${STORAGE_LOCAL_DIR:./storage/uploads}
       private-dir: ${STORAGE_PRIVATE_DIR:./storage/private}
@@ -45,7 +50,7 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:h2:file:./storage/data/sharpshadowdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;AUTO_SERVER=TRUE
+    url: jdbc:h2:file:./storage/data/sharpshadowdb;DB_CLOSE_DELAY=-1;MODE=MySQL;AUTO_SERVER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password: 
@@ -61,6 +66,14 @@ spring:
     console:
       enabled: true
       path: /h2-console
+
+sharpshadow:
+  jwt:
+    secret: ${JWT_SECRET:c816d4715b28e5bd9d9fd711911574b08d5da0eb4ffa5059be3fd6fc4109b87b}
+  storage:
+    signing-secret: ${DOWNLOAD_SIGNING_SECRET:ec8d6de3ef72a993b8f4731e1802be6f7903e93806d292e00982a08b452669e3}
+  admin:
+    password: ${ADMIN_PASSWORD:DevAdmin#2026!Secured}
 
 ---
 # MySQL / Production Profile

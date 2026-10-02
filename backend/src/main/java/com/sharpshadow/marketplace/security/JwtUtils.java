@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
+import jakarta.annotation.PostConstruct;
+import java.nio.charset.StandardCharsets;
+
 @Component
 public class JwtUtils {
 
@@ -19,8 +22,28 @@ public class JwtUtils {
     @Value("${sharpshadow.jwt.expiration-ms}")
     private long jwtExpirationMs;
 
+    private static final String LEAKED_PUBLIC_SECRET = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+
+    @PostConstruct
+    public void validateSecret() {
+        if (jwtSecret == null || jwtSecret.trim().isEmpty()) {
+            throw new IllegalStateException("CRITICAL SECURITY ERROR: 'sharpshadow.jwt.secret' (JWT_SECRET) is not configured! A 256-bit secret is required.");
+        }
+        if (LEAKED_PUBLIC_SECRET.equalsIgnoreCase(jwtSecret.trim())) {
+            throw new IllegalStateException("CRITICAL SECURITY ERROR: The old public leaked JWT secret was detected. You MUST generate a new secure JWT_SECRET in your environment!");
+        }
+    }
+
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+        byte[] keyBytes;
+        try {
+            keyBytes = Decoders.BASE64.decode(jwtSecret.trim());
+        } catch (Exception e) {
+            keyBytes = jwtSecret.trim().getBytes(StandardCharsets.UTF_8);
+        }
+        if (keyBytes.length < 32) {
+            throw new IllegalStateException("JWT secret must be at least 256 bits (32 bytes)");
+        }
         return Keys.hmacShaKeyFor(keyBytes);
     }
 

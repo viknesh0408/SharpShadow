@@ -72,8 +72,8 @@ public class DownloadService {
         product.setDownloadCount(product.getDownloadCount() + 1);
         productRepository.save(product);
 
-        // Generate temporary HMAC-signed download URL
-        String signedUrl = storageService.generateDownloadUrl(product.getFileUrl(), product.getFileName(), expiryMinutes);
+        // Generate temporary HMAC-signed download URL tied to user
+        String signedUrl = storageService.generateDownloadUrl(product.getFileUrl(), product.getFileName(), userId, expiryMinutes);
 
         return DownloadResponse.builder()
                 .productId(product.getId())
@@ -86,8 +86,8 @@ public class DownloadService {
                 .build();
     }
 
-    public Resource serveSecureFile(String fileRelativePath, long expiresAtEpoch, String signature) {
-        boolean valid = storageService.verifySignature(fileRelativePath, expiresAtEpoch, signature);
+    public Resource serveSecureFile(String fileRelativePath, Long userId, long expiresAtEpoch, String signature) {
+        boolean valid = storageService.verifySignature(fileRelativePath, userId, expiresAtEpoch, signature);
         if (!valid) {
             throw new ForbiddenException("Download link has expired or has an invalid signature. Please generate a new download link.");
         }

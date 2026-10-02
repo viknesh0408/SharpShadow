@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { ShieldCheck, CreditCard, QrCode, Lock, CheckCircle2, Loader2, AlertCircle, Ticket } from 'lucide-react';
+import { ShieldCheck, CreditCard, Lock, CheckCircle2, Loader2, Ticket } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -8,7 +8,6 @@ import { useToast } from '../context/ToastContext';
 import { orderService } from '../services/orderService';
 import { paymentService } from '../services/paymentService';
 import { couponService } from '../services/couponService';
-import { QRPaymentModal } from '../components/QRPaymentModal';
 
 declare global {
   interface Window {
@@ -34,9 +33,7 @@ export const Checkout: React.FC = () => {
 
   const stateCouponCode = (location.state as any)?.couponCode;
 
-  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'qr'>('razorpay');
   const [processing, setProcessing] = useState(false);
-  const [qrModalOrder, setQrModalOrder] = useState<string | null>(null);
   const [inputCoupon, setInputCoupon] = useState('');
   const [applyingCoupon, setApplyingCoupon] = useState(false);
 
@@ -120,13 +117,6 @@ export const Checkout: React.FC = () => {
         appliedCoupon?.code || stateCouponCode
       );
 
-      // If user selected QR payment mode, open QR modal
-      if (paymentMethod === 'qr') {
-        setQrModalOrder(order.orderNumber);
-        setProcessing(false);
-        return;
-      }
-
       // 2. Open standard Razorpay Checkout Modal
       if (!window.Razorpay) {
         throw new Error('Razorpay SDK failed to load. Please check your internet connection.');
@@ -188,20 +178,13 @@ export const Checkout: React.FC = () => {
     }
   };
 
-  const handleQrPaymentSuccess = () => {
-    setQrModalOrder(null);
-    clearCart();
-    success('Payment confirmed via QR! Unlocking your downloads...');
-    navigate('/account?tab=downloads');
-  };
-
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
       {/* Checkout Title */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Secure Checkout</h1>
         <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          Review your items and choose your preferred payment option
+          Review your items and complete payment securely via Razorpay
         </p>
       </div>
 
@@ -210,64 +193,23 @@ export const Checkout: React.FC = () => {
         {/* Payment Methods (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
           <div className="bg-dark-900 border border-dark-800 rounded-2xl sm:rounded-3xl p-4 sm:p-7 space-y-5 sm:space-y-6 shadow-card-dark">
-            <h3 className="font-bold text-base text-white">Select Payment Method</h3>
+            <h3 className="font-bold text-base text-white">Payment Method</h3>
 
-            {/* Option 1: Razorpay Instant Checkout */}
-            <label
-              onClick={() => setPaymentMethod('razorpay')}
-              className={`flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl border cursor-pointer transition-all ${
-                paymentMethod === 'razorpay'
-                  ? 'bg-dark-850 border-sharp-500 shadow-sharp-glow/20'
-                  : 'bg-dark-950 border-dark-800 hover:border-dark-750'
-              }`}
-            >
-              <input
-                type="radio"
-                name="payment"
-                checked={paymentMethod === 'razorpay'}
-                onChange={() => setPaymentMethod('razorpay')}
-                className="mt-1 text-sharp-600 focus:ring-sharp-500"
-              />
-              <div className="flex-1">
+            {/* Razorpay Instant Checkout */}
+            <div className="p-4 rounded-2xl border bg-dark-850 border-sharp-500 shadow-sharp-glow/20">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-sharp-400" />
-                  <span className="font-semibold text-sm text-white">Razorpay Standard Checkout</span>
-                  <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded font-mono">
-                    RECOMMENDED
-                  </span>
+                  <CreditCard className="w-5 h-5 text-sharp-400" />
+                  <span className="font-semibold text-sm text-white">Razorpay Secure Checkout</span>
                 </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  Instant checkout supporting UPI (GPay, PhonePe, Paytm), Debit/Credit Cards, and NetBanking.
-                </p>
+                <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2.5 py-0.5 rounded font-mono font-medium">
+                  VERIFIED GATEWAY
+                </span>
               </div>
-            </label>
-
-            {/* Option 2: Scan & Pay QR (Section 14) */}
-            <label
-              onClick={() => setPaymentMethod('qr')}
-              className={`flex items-start gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${
-                paymentMethod === 'qr'
-                  ? 'bg-dark-850 border-sharp-500 shadow-sharp-glow/20'
-                  : 'bg-dark-950 border-dark-800 hover:border-dark-750'
-              }`}
-            >
-              <input
-                type="radio"
-                name="payment"
-                checked={paymentMethod === 'qr'}
-                onChange={() => setPaymentMethod('qr')}
-                className="mt-1 text-sharp-600 focus:ring-sharp-500"
-              />
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <QrCode className="w-4 h-4 text-cyan-400" />
-                  <span className="font-semibold text-sm text-white">Scan & Pay (Dynamic UPI QR)</span>
-                </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  Displays an authentic Razorpay-compatible dynamic QR code to scan from your phone. Verified automatically.
-                </p>
-              </div>
-            </label>
+              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                Supports UPI (Google Pay, PhonePe, Paytm, QR Scan), Debit &amp; Credit Cards, and NetBanking via Razorpay's PCI-DSS compliant secure checkout.
+              </p>
+            </div>
 
             {/* Customer Details Snapshot */}
             <div className="pt-4 border-t border-dark-800 space-y-2">
@@ -385,15 +327,6 @@ export const Checkout: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* QR Modal when selected */}
-      {qrModalOrder && (
-        <QRPaymentModal
-          orderNumber={qrModalOrder}
-          onSuccess={handleQrPaymentSuccess}
-          onClose={() => setQrModalOrder(null)}
-        />
-      )}
     </div>
   );
 };

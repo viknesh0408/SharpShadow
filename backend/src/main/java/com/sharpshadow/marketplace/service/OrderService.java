@@ -41,35 +41,46 @@ public class OrderService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        List<Product> products = productRepository.findAllById(request.getProductIds());
-        if (products.isEmpty()) {
-            throw new BadRequestException("No valid products found for order");
+        if (request.getProductIds() == null || request.getProductIds().isEmpty()) {
+            throw new BadRequestException("Order must contain at least one product");
         }
 
-        // Check if any product is already purchased by this user
+        List<Product> products = productRepository.findAllById(request.getProductIds());
+        if (products.size() != request.getProductIds().size()) {
+            throw new BadRequestException("One or more selected products are invalid or no longer exist");
+        }
+
+        // Check product publication status and prior purchases
         for (Product product : products) {
+            if (!"PUBLISHED".equalsIgnoreCase(product.getStatus())) {
+                throw new BadRequestException("Product '" + product.getTitle() + "' is currently not available for purchase");
+            }
             if (orderRepository.existsByUserIdAndProductIdAndStatus(userId, product.getId(), OrderStatus.PAID)) {
                 throw new BadRequestException("You have already purchased: " + product.getTitle());
             }
         }
 
         // Compute total from DATABASE prices
-        BigDecimal totalAmount = BigDecimal.ZERO;
-        List<OrderItem> items = new ArrayList<>();
-
+        BigDecimal originalSubtotal = BigDecimal.ZERO;
         for (Product product : products) {
             BigDecimal price = product.getDiscountPrice() != null ? product.getDiscountPrice() : product.getPrice();
-            totalAmount = totalAmount.add(price);
+            originalSubtotal = originalSubtotal.add(price);
         }
+
+        BigDecimal totalAmount = originalSubtotal;
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        String appliedCouponCode = null;
 
         // Apply coupon if provided
         if (request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
-            ApplyCouponResponse couponResult = couponService.validateAndApplyCoupon(request.getCouponCode(), request.getProductIds());
+            ApplyCouponResponse couponResult = couponService.validateAndApplyCoupon(request.getCouponCode().trim(), request.getProductIds());
             totalAmount = couponResult.getFinalTotal();
+            discountAmount = couponResult.getDiscountAmount();
+            appliedCouponCode = request.getCouponCode().trim().toUpperCase();
         }
 
         if (totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            totalAmount = BigDecimal.valueOf(1.00); // Minimum nominal Razorpay charge
+            totalAmount = BigDecimal.valueOf(1.00); // Minimum nominal charge
         }
 
         String orderNumber = "SS-" + DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now()) + "-" +
@@ -82,6 +93,8 @@ public class OrderService {
                 .orderNumber(orderNumber)
                 .userId(userId)
                 .totalAmount(totalAmount)
+                .discountAmount(discountAmount)
+                .couponCode(appliedCouponCode)
                 .currency("INR")
                 .status(OrderStatus.CREATED)
                 .razorpayOrderId(razorpayOrderId)
@@ -89,6 +102,7 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
+        List<OrderItem> items = new ArrayList<>();
         for (Product product : products) {
             BigDecimal price = product.getDiscountPrice() != null ? product.getDiscountPrice() : product.getPrice();
             OrderItem item = OrderItem.builder()
@@ -140,7 +154,7 @@ public class OrderService {
     @Transactional(readOnly = true)
     public AdminDashboardStats getDashboardStats() {
         long totalProducts = productRepository.count();
-        long totalOrders = orderRepository.count();
+        long totalOrders = orderRepository.countByStatus(OrderStatus.PAID);
         long totalCustomers = userRepository.countByRole(Role.CUSTOMER);
         BigDecimal totalRevenue = orderRepository.sumTotalPaidRevenue();
         BigDecimal todaySales = orderRepository.sumPaidRevenueSince(LocalDate.now().atStartOfDay());
@@ -153,21 +167,24 @@ public class OrderService {
             LocalDate date = LocalDate.now().minusDays(i);
             LocalDateTime start = date.atStartOfDay();
             LocalDateTime end = date.plusDays(1).atStartOfDay();
-            BigDecimal dayRevenue = orderRepository.sumPaidRevenueSince(start);
+            BigDecimal dayRevenue = orderRepository.sumPaidRevenueBetween(start, end);
             Map<String, Object> dayMap = new HashMap<>();
             dayMap.put("day", date.format(dayFormatter));
             dayMap.put("sales", dayRevenue != null ? dayRevenue : BigDecimal.ZERO);
             salesByDay.add(dayMap);
         }
 
-        // Monthly revenue chart
+        // Monthly revenue chart (real aggregate from database)
         List<Map<String, Object>> revenueByMonth = new ArrayList<>();
         DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMM yyyy");
         for (int i = 5; i >= 0; i--) {
-            LocalDate monthDate = LocalDate.now().minusMonths(i);
+            java.time.YearMonth ym = java.time.YearMonth.now().minusMonths(i);
+            LocalDateTime start = ym.atDay(1).atStartOfDay();
+            LocalDateTime end = ym.plusMonths(1).atDay(1).atStartOfDay();
+            BigDecimal monthRevenue = orderRepository.sumPaidRevenueBetween(start, end);
             Map<String, Object> monthMap = new HashMap<>();
-            monthMap.put("month", monthDate.format(monthFormatter));
-            monthMap.put("revenue", BigDecimal.valueOf(Math.max(1200, 3500 * (i + 1)))); // Sample trend
+            monthMap.put("month", ym.format(monthFormatter));
+            monthMap.put("revenue", monthRevenue != null ? monthRevenue : BigDecimal.ZERO);
             revenueByMonth.add(monthMap);
         }
 

@@ -47,6 +47,12 @@ public class Order {
     @Column(length = 100)
     private String razorpayPaymentId;
 
+    @Column(length = 50)
+    private String couponCode;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal discountAmount;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     private List<OrderItem> items = new ArrayList<>();

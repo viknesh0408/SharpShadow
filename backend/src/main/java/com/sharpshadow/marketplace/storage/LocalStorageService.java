@@ -32,14 +32,22 @@ public class LocalStorageService implements StorageService {
     @Value("${sharpshadow.storage.local.private-dir:./storage/private}")
     private String privateUploadDir;
 
-    @Value("${sharpshadow.jwt.secret}")
+    @Value("${sharpshadow.storage.signing-secret:${sharpshadow.jwt.secret}}")
     private String signingSecret;
+
+    private static final String LEAKED_PUBLIC_SECRET = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
 
     private Path publicRoot;
     private Path privateRoot;
 
     @PostConstruct
     public void init() {
+        if (signingSecret == null || signingSecret.trim().isEmpty()) {
+            throw new IllegalStateException("CRITICAL SECURITY ERROR: Storage signing secret is not configured!");
+        }
+        if (LEAKED_PUBLIC_SECRET.equalsIgnoreCase(signingSecret.trim())) {
+            throw new IllegalStateException("CRITICAL SECURITY ERROR: The old public leaked secret was detected for storage signing! Set a new secret.");
+        }
         try {
             this.publicRoot = Paths.get(publicUploadDir).toAbsolutePath().normalize();
             this.privateRoot = Paths.get(privateUploadDir).toAbsolutePath().normalize();
@@ -53,7 +61,7 @@ public class LocalStorageService implements StorageService {
 
     @Override
     public FileMetadata uploadPrivate(MultipartFile file) {
-        validateFile(file);
+        validatePrivateFile(file);
         try {
             String originalFilename = StringUtils.cleanPath(file.getOriginalFilename() != null ? file.getOriginalFilename() : "asset.psd");
             String extension = getFileExtension(originalFilename);
@@ -83,7 +91,7 @@ public class LocalStorageService implements StorageService {
 
     @Override
     public FileMetadata uploadPublic(MultipartFile file) {
-        validateFile(file);
+        validatePublicFile(file);
         try {
             String originalFilename = StringUtils.cleanPath(file.getOriginalFilename() != null ? file.getOriginalFilename() : "preview.jpg");
             String extension = getFileExtension(originalFilename);
@@ -125,26 +133,36 @@ public class LocalStorageService implements StorageService {
         } catch (IOException ignored) {}
     }
 
-    @Override
     public String generateDownloadUrl(String relativePath, String originalFileName, long expiryMinutes) {
+        return generateDownloadUrl(relativePath, originalFileName, 0L, expiryMinutes);
+    }
+
+    @Override
+    public String generateDownloadUrl(String relativePath, String originalFileName, Long userId, long expiryMinutes) {
         long expiresAtEpoch = Instant.now().plusSeconds(expiryMinutes * 60).getEpochSecond();
-        String payload = relativePath + ":" + expiresAtEpoch;
+        String uidStr = userId != null ? String.valueOf(userId) : "0";
+        String payload = relativePath + ":" + uidStr + ":" + expiresAtEpoch;
         String signature = computeSignature(payload);
 
         String encodedFile = URLEncoder.encode(relativePath, StandardCharsets.UTF_8);
         String encodedName = URLEncoder.encode(originalFileName != null ? originalFileName : "sharpshadow-download.psd", StandardCharsets.UTF_8);
         String encodedSig = URLEncoder.encode(signature, StandardCharsets.UTF_8);
 
-        return "/api/downloads/file?file=" + encodedFile + "&expires=" + expiresAtEpoch + "&filename=" + encodedName + "&sig=" + encodedSig;
+        return "/api/downloads/file?file=" + encodedFile + "&uid=" + uidStr + "&expires=" + expiresAtEpoch + "&filename=" + encodedName + "&sig=" + encodedSig;
     }
 
-    public boolean verifySignature(String relativePath, long expiresAtEpoch, String signature) {
+    public boolean verifySignature(String relativePath, Long userId, long expiresAtEpoch, String signature) {
         if (Instant.now().getEpochSecond() > expiresAtEpoch) {
             return false;
         }
-        String payload = relativePath + ":" + expiresAtEpoch;
+        String uidStr = userId != null ? String.valueOf(userId) : "0";
+        String payload = relativePath + ":" + uidStr + ":" + expiresAtEpoch;
         String expectedSignature = computeSignature(payload);
         return expectedSignature.equals(signature);
+    }
+
+    public boolean verifySignature(String relativePath, long expiresAtEpoch, String signature) {
+        return verifySignature(relativePath, 0L, expiresAtEpoch, signature);
     }
 
     @Override
@@ -186,7 +204,48 @@ public class LocalStorageService implements StorageService {
         }
     }
 
-    private void validateFile(MultipartFile file) {
+    private void validatePublicFile(MultipartFile file) {
+        validateBasic(file);
+        String ext = getFileExtension(file.getOriginalFilename()).toLowerCase();
+        java.util.Set<String> allowedExts = java.util.Set.of("jpg", "jpeg", "png", "webp", "gif", "svg");
+        if (!allowedExts.contains(ext)) {
+            throw new BadRequestException("Only image uploads (JPEG, PNG, WEBP, GIF, SVG) are allowed for public files.");
+        }
+
+        // Magic byte verification for binary images
+        try {
+            byte[] header = new byte[12];
+            int read = file.getInputStream().read(header);
+            if (read >= 3 && ("jpg".equals(ext) || "jpeg".equals(ext))) {
+                if ((header[0] & 0xFF) != 0xFF || (header[1] & 0xFF) != 0xD8 || (header[2] & 0xFF) != 0xFF) {
+                    throw new BadRequestException("Corrupted or invalid JPEG file signature.");
+                }
+            } else if (read >= 8 && "png".equals(ext)) {
+                if ((header[0] & 0xFF) != 0x89 || header[1] != 'P' || header[2] != 'N' || header[3] != 'G') {
+                    throw new BadRequestException("Corrupted or invalid PNG file signature.");
+                }
+            } else if (read >= 3 && "gif".equals(ext)) {
+                if (header[0] != 'G' || header[1] != 'I' || header[2] != 'F') {
+                    throw new BadRequestException("Corrupted or invalid GIF file signature.");
+                }
+            }
+        } catch (IOException e) {
+            throw new BadRequestException("Could not read file contents for validation.");
+        }
+    }
+
+    private void validatePrivateFile(MultipartFile file) {
+        validateBasic(file);
+        String ext = getFileExtension(file.getOriginalFilename()).toLowerCase();
+        java.util.Set<String> blockedExts = java.util.Set.of(
+                "exe", "bat", "cmd", "sh", "php", "phtml", "jsp", "asp", "aspx", "html", "htm", "js", "jar", "war", "py"
+        );
+        if (blockedExts.contains(ext)) {
+            throw new BadRequestException("Executable or script file type is not permitted.");
+        }
+    }
+
+    private void validateBasic(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new BadRequestException("Uploaded file cannot be empty");
         }
@@ -197,6 +256,7 @@ public class LocalStorageService implements StorageService {
     }
 
     private String getFileExtension(String filename) {
+        if (filename == null) return "";
         int dotIndex = filename.lastIndexOf('.');
         return (dotIndex == -1) ? "" : filename.substring(dotIndex + 1);
     }

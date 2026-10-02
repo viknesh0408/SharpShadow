@@ -154,4 +154,14 @@ public class CouponService {
                 .orElseThrow(() -> new ResourceNotFoundException("Coupon not found with id: " + id));
         couponRepository.delete(coupon);
     }
+
+    @Transactional
+    public void incrementCouponUsage(String couponCode) {
+        if (couponCode != null && !couponCode.trim().isEmpty()) {
+            couponRepository.findByCodeIgnoreCase(couponCode.trim()).ifPresent(coupon -> {
+                coupon.setTimesUsed(coupon.getTimesUsed() + 1);
+                couponRepository.save(coupon);
+            });
+        }
+    }
 }

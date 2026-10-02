@@ -20,13 +20,13 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "order_id", nullable = false)
+    @Column(name = "order_id", nullable = false, unique = true)
     private Long orderId;
 
     @Column(nullable = false, length = 100)
     private String razorpayOrderId;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, unique = true, length = 100)
     private String razorpayPaymentId;
 
     @Column(nullable = false, precision = 10, scale = 2)
