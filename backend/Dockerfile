@@ -10,9 +10,6 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-RUN addgroup -S sharpshadow && adduser -S sharpshadow -G sharpshadow
-USER sharpshadow
-
 COPY --from=build /app/target/marketplace-backend-*.jar app.jar
 
 ENV PORT=8080
