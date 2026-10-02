@@ -34,6 +34,7 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final EntityDtoMapper mapper;
+    private final EmailService emailService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -132,23 +133,23 @@ public class UserService {
     }
 
     @Transactional
-    public ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request) {
+    public void forgotPassword(ForgotPasswordRequest request) {
         String email = request.getEmail().toLowerCase().trim();
         Optional<User> userOpt = userRepository.findByEmail(email);
 
-        String resetToken = null;
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            resetToken = UUID.randomUUID().toString().replace("-", "");
+            String resetToken = UUID.randomUUID().toString().replace("-", "");
             user.setResetPasswordToken(resetToken);
             user.setResetPasswordExpiry(LocalDateTime.now().plusMinutes(30));
             userRepository.save(user);
-        }
 
-        return ForgotPasswordResponse.builder()
-                .message("If an account with this email exists, a password reset link has been dispatched.")
-                .resetToken(resetToken)
-                .build();
+            // Send reset link only to the account owner's email inbox.
+            // The token is NEVER returned in the API response.
+            emailService.sendPasswordResetEmail(user.getEmail(), user.getName(), resetToken);
+        }
+        // Always return the same generic response to avoid leaking
+        // whether a given email address exists in the database.
     }
 
     @Transactional
