@@ -135,7 +135,8 @@ export const AdminProductForm: React.FC = () => {
       setFileSize(res.formattedSize); // Automatically calculated file size (Section 16)
       success(`Private asset uploaded: ${res.originalFileName} (${res.formattedSize})`);
     } catch (err: any) {
-      error(err.response?.data?.message || 'Failed to upload asset');
+      const msg = err.response?.data?.message || (err.response?.status === 413 ? 'File too large (exceeds server limit)' : null) || err.message || 'Failed to upload asset';
+      error(msg);
     } finally {
       setUploadingAsset(false);
     }
@@ -152,7 +153,8 @@ export const AdminProductForm: React.FC = () => {
       setThumbnailUrl(res.fileUrl);
       success('Thumbnail image uploaded successfully');
     } catch (err: any) {
-      error(err.response?.data?.message || 'Failed to upload thumbnail');
+      const msg = err.response?.data?.message || (err.response?.status === 413 ? 'Image too large (exceeds server limit)' : null) || err.message || 'Failed to upload thumbnail';
+      error(msg);
     } finally {
       setUploadingThumbnail(false);
     }
@@ -169,7 +171,8 @@ export const AdminProductForm: React.FC = () => {
       setPreviewImages((prev) => [...prev, res.fileUrl]);
       success('Preview gallery image added');
     } catch (err: any) {
-      error(err.response?.data?.message || 'Failed to upload preview');
+      const msg = err.response?.data?.message || (err.response?.status === 413 ? 'Image too large (exceeds server limit)' : null) || err.message || 'Failed to upload preview';
+      error(msg);
     } finally {
       setUploadingPreview(false);
     }

@@ -2,6 +2,9 @@ server:
   port: ${PORT:8085}
   servlet:
     context-path: /
+  tomcat:
+    max-swallow-size: 500MB
+    max-http-form-post-size: 500MB
 
 spring:
   application:

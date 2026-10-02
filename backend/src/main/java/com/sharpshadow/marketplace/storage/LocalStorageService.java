@@ -72,7 +72,7 @@ public class LocalStorageService implements StorageService {
             Files.createDirectories(targetFolder);
 
             Path targetLocation = targetFolder.resolve(storedFileName);
-            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            file.transferTo(targetLocation.toFile());
 
             String relativePath = uuid + "/" + storedFileName;
 
@@ -98,7 +98,7 @@ public class LocalStorageService implements StorageService {
             String storedFileName = UUID.randomUUID() + (extension.isEmpty() ? "" : "." + extension);
 
             Path targetLocation = this.publicRoot.resolve(storedFileName);
-            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            file.transferTo(targetLocation.toFile());
 
             String publicUrl = "/uploads/" + storedFileName;
 
@@ -213,9 +213,9 @@ public class LocalStorageService implements StorageService {
         }
 
         // Magic byte verification for binary images
-        try {
+        try (java.io.InputStream is = file.getInputStream()) {
             byte[] header = new byte[12];
-            int read = file.getInputStream().read(header);
+            int read = is.read(header);
             if (read >= 3 && ("jpg".equals(ext) || "jpeg".equals(ext))) {
                 if ((header[0] & 0xFF) != 0xFF || (header[1] & 0xFF) != 0xD8 || (header[2] & 0xFF) != 0xFF) {
                     throw new BadRequestException("Corrupted or invalid JPEG file signature.");

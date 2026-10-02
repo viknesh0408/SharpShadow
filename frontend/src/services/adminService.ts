@@ -39,18 +39,14 @@ export const adminService = {
   async uploadAsset(file: File): Promise<UploadMetadata> {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await api.post<ApiResponse<UploadMetadata>>('/admin/upload/asset', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const res = await api.post<ApiResponse<UploadMetadata>>('/admin/upload/asset', formData);
     return res.data.data!;
   },
 
   async uploadImage(file: File): Promise<UploadMetadata> {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await api.post<ApiResponse<UploadMetadata>>('/admin/upload/image', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const res = await api.post<ApiResponse<UploadMetadata>>('/admin/upload/image', formData);
     return res.data.data!;
   },
 
