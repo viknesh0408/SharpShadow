@@ -10,13 +10,13 @@
 2. [Technology Stack](#2-technology-stack)
 3. [Project Structure](#3-project-structure)
 4. [Local Development Setup](#4-local-development-setup)
-5. [Production Deployment Guide (Railway / Cloud)](#5-production-deployment-guide-railway--cloud)
-6. [Razorpay Payment Gateway Setup](#6-razorpay-payment-gateway-setup)
-7. [Digital Asset Storage & Download Security](#7-digital-asset-storage--download-security)
-8. [Admin Panel Guide](#8-admin-panel-guide)
-9. [Verification, Testing & Build](#9-verification-testing--build)
-10. [Troubleshooting & Common Issues](#10-troubleshooting--common-issues)
-11. [Security & Compliance](#11-security--compliance)
+5. [Step-by-Step Production Launch & Transition Guide](#5-step-by-step-production-launch--transition-guide)
+6. [Digital Asset Storage & Download Security](#6-digital-asset-storage--download-security)
+7. [Admin Panel Guide](#7-admin-panel-guide)
+8. [Verification, Testing & Build](#8-verification-testing--build)
+9. [Troubleshooting & Common Issues](#9-troubleshooting--common-issues)
+10. [Security & Compliance](#10-security--compliance)
+11. [License & Rights](#11-license--rights)
 
 ---
 
@@ -152,78 +152,156 @@ npm run dev
 ```
 The frontend starts at `http://localhost:3000`.
 
----
+## 5. Step-by-Step Production Launch & Transition Guide
 
-## 5. Production Deployment Guide (Railway / Cloud)
-
-### Deployment Architecture
-- **Backend Service:** Spring Boot application running on Railway / Docker.
-- **Frontend Service:** Nginx reverse proxy serving the built Vite React SPA.
-- **Database:** Railway MySQL 8.0 instance.
-
-### Step 1: Configure Backend Environment Variables
-In your Railway Backend service, set the following environment variables:
-
-| Variable | Description | Example / Recommended Value |
-|---|---|---|
-| `SPRING_PROFILES_ACTIVE` | Active Spring profile | `mysql` |
-| `PORT` | Container internal port | `8085` |
-| `DB_URL` | MySQL JDBC connection string | `jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC` |
-| `DB_USERNAME` | MySQL username | `${MYSQLUSER}` |
-| `DB_PASSWORD` | MySQL password | `${MYSQLPASSWORD}` |
-| `JWT_SECRET` | 256-bit secure secret key | `64-character-random-hex-string` |
-| `DOWNLOAD_SIGNING_SECRET` | Secret for signed asset download links | `64-character-random-hex-string` |
-| `ADMIN_EMAIL` | Admin login account email | `admin@yourdomain.com` |
-| `ADMIN_PASSWORD` | Admin initial secure password | `YourSecurePassword#2026` |
-| `ADMIN_NAME` | Display name for administrator | `SharpShadow Administrator` |
-| `RAZORPAY_KEY_ID` | Razorpay Live API Key ID | `rzp_live_...` |
-| `RAZORPAY_KEY_SECRET` | Razorpay Live API Secret Key | *(From Razorpay Dashboard)* |
-| `RAZORPAY_WEBHOOK_SECRET` | Razorpay Webhook Secret | *(From Razorpay Dashboard)* |
-| `CORS_ALLOWED_ORIGINS` | Comma-separated allowed origins | `https://sharpshadow.up.railway.app,https://yourdomain.com` |
-
-### Step 2: Attach Persistent Storage Volume (Crucial)
-Containers on Railway reset their local filesystem on each new deployment. To ensure your uploaded PSD assets and thumbnails are **permanently saved**:
-1. In your **Railway Dashboard**, click your **Backend** service.
-2. Go to **Settings** -> Scroll to **Volumes** -> Click **+ Add Volume**.
-3. Set the **Mount Path** to:
-   ```text
-   /app/storage
-   ```
-4. Click **Save**.
-
-### Step 3: Configure Frontend Environment Variables
-In your Railway Frontend service, set:
-
-| Variable | Description | Example |
-|---|---|---|
-| `VITE_API_URL` | URL to backend API | `https://backend-production-3d6a.up.railway.app/api` |
-| `VITE_RAZORPAY_KEY_ID` | Public Razorpay Key ID | `rzp_live_...` |
+Follow these 6 sequential steps to take Project SharpShadow from local development/testing to a fully secured, live production environment.
 
 ---
 
-## 6. Razorpay Payment Gateway Setup
+### Step 1: Switch Razorpay from Test to Live Mode
 
-### Test Mode vs. Live Mode
-SharpShadow uses the official Razorpay Checkout SDK. It natively supports **UPI (Google Pay, PhonePe, Paytm, QR Scan)**, **Credit/Debit Cards**, and **NetBanking**.
-
-### Setting Up Live Payments
-1. Log in to your [Razorpay Dashboard](https://dashboard.razorpay.com/).
-2. Toggle the switch at the top from **Test Mode** to **Live Mode**.
-3. Navigate to **Account & Settings ➔ API Keys** -> Click **Generate Key**.
-   - Copy the **Key ID** (`rzp_live_...`) to `RAZORPAY_KEY_ID`.
-   - Copy the **Key Secret** to `RAZORPAY_KEY_SECRET`.
-4. Navigate to **Account & Settings ➔ Webhooks** -> Click **Add New Webhook**:
-   - **Webhook URL:** `https://your-backend-domain.com/api/payments/webhook`
-   - **Secret:** Enter a strong random secret and save it as `RAZORPAY_WEBHOOK_SECRET`.
-   - **Active Events:**
-     - `order.paid`
+In your [Razorpay Dashboard](https://dashboard.razorpay.com/):
+1. **Toggle Live Mode:** In the top bar of the dashboard, switch from **Test Mode** to **Live Mode** (ensure your business KYC is verified).
+2. **Generate Live API Keys:**
+   - Navigate to **Account & Settings ➔ API Keys**.
+   - Click **Generate Live Key**.
+   - Securely store your **Key ID** (`rzp_live_...`) and **Key Secret**.
+3. **Configure Live Webhook Endpoint:**
+   - Navigate to **Account & Settings ➔ Webhooks**.
+   - Click **Add New Webhook**.
+   - **Webhook URL:** `https://<YOUR-BACKEND-DOMAIN>/api/payments/webhook`  
+     *(Example: `https://backend-production-3d6a.up.railway.app/api/payments/webhook` or your custom domain)*
+   - **Secret:** Enter a strong, random string (e.g. 32-character secret). You will set this as `RAZORPAY_WEBHOOK_SECRET` on your backend.
+   - **Active Events:** Check the following events:
+     - `order.paid` (verifies payment and unlocks customer downloads)
      - `payment.captured`
      - `payment.failed`
    - Click **Create Webhook**.
 
 ---
 
-## 7. Digital Asset Storage & Download Security
+### Step 2: Configure Production Environment Variables in Railway
+
+#### A. Backend Service Variables
+Go to **Railway Dashboard ➔ Backend service ➔ Variables** tab, and configure:
+
+```env
+# 1. Environment & Server Profile
+SPRING_PROFILES_ACTIVE=mysql
+PORT=8085
+
+# 2. Production Database (Railway MySQL automatically provisions these)
+DB_URL=jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+DB_USERNAME=${MYSQLUSER}
+DB_PASSWORD=${MYSQLPASSWORD}
+
+# 3. Security Secrets (Generate two separate unique 64-character random hex strings)
+JWT_SECRET=b7e1f4a9c8d3e2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7
+DOWNLOAD_SIGNING_SECRET=c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b7e1f4a9c8d3e2a1b0c9d8e7f6a5b4
+
+# 4. Administrator Account (Initialized automatically on empty database)
+ADMIN_EMAIL=admin@yourdomain.com
+ADMIN_PASSWORD=CreateAStrongComplexPassword2026!
+ADMIN_NAME=SharpShadow Administrator
+
+# 5. Live Razorpay Credentials
+RAZORPAY_KEY_ID=rzp_live_XXXXXXXXXXXXXXXX
+RAZORPAY_KEY_SECRET=YourLiveRazorpaySecret
+RAZORPAY_WEBHOOK_SECRET=YourLiveWebhookSecret
+
+# 6. Allowed CORS Origins (Whitelists your frontend domains)
+CORS_ALLOWED_ORIGINS=https://sharpshadow.up.railway.app,https://yourdomain.com,https://www.yourdomain.com
+```
+
+#### B. Frontend Service Variables
+Go to **Railway Dashboard ➔ Frontend service ➔ Variables** tab, and configure:
+
+```env
+# URL to your production backend API
+VITE_API_URL=https://backend-production-3d6a.up.railway.app/api
+
+# Public Razorpay Live Key ID
+VITE_RAZORPAY_KEY_ID=rzp_live_XXXXXXXXXXXXXXXX
+```
+
+---
+
+### Step 3: Attach Persistent Storage Volume in Railway (Crucial)
+
+> [!IMPORTANT]
+> Docker container filesystems in cloud environments like Railway reset on each redeployment. Without a volume, uploaded PSD files and thumbnails will be lost when new code is pushed.
+
+To permanently retain all uploaded files:
+1. In your **Railway Dashboard**, click on the **Backend** service.
+2. Go to **Settings** (or **Data**) ➔ Scroll down to the **Volumes** section.
+3. Click **+ Add Volume**.
+4. Set the **Mount Path** to:
+   ```text
+   /app/storage
+   ```
+5. Click **Add Volume**.
+6. Railway will attach a persistent disk at `/app/storage`. Thumbnails (`/app/storage/uploads`) and private PSDs (`/app/storage/private`) will now persist indefinitely across all future redeploys.
+
+---
+
+### Step 4: Connect Custom Domain & Configure DNS / SSL (Optional)
+
+To link your branded domain (e.g. `sharpshadow.com`):
+1. **Frontend Domain:**
+   - In Railway, click **Frontend ➔ Settings ➔ Networking ➔ Custom Domain**.
+   - Enter your domain (e.g. `yourdomain.com` or `www.yourdomain.com`).
+   - Copy the provided DNS CNAME target (e.g. `yourdomain.com.cname.railway.app`).
+   - In your domain DNS manager (GoDaddy, Namecheap, Cloudflare), add a CNAME record pointing to that target.
+   - Railway will automatically provision and renew a free Let's Encrypt SSL certificate.
+2. **Backend Domain (Optional):**
+   - Click **Backend ➔ Settings ➔ Networking ➔ Custom Domain** (e.g. `api.yourdomain.com`).
+   - Add the CNAME record in your DNS manager.
+   - Update `VITE_API_URL` on the frontend and `CORS_ALLOWED_ORIGINS` on the backend accordingly.
+
+---
+
+### Step 5: Admin Panel Initial Setup & Catalog Preparation
+
+1. **Log In to Admin:**
+   - Navigate to `https://<YOUR-FRONTEND-DOMAIN>/login`.
+   - Log in using your production `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
+2. **Clean Up Test Items:**
+   - Go to **Admin ➔ Products** (`/admin/products`).
+   - Delete any test products created during development (e.g. `ftghfghfghfghfgh`).
+3. **Upload Real Digital Assets:**
+   - Click **Add Product**.
+   - Fill in asset details: Title, Category, Description, Dimensions, DPI, Color Mode.
+   - Set standard Price and optional Discount Price.
+   - Upload the private digital asset (Layered PSD or ZIP file, up to 500MB).
+   - Upload primary thumbnail and preview gallery images.
+   - Set status to **PUBLISHED**.
+4. **Create Promotional Coupons (Optional):**
+   - Go to **Admin ➔ Coupons** (`/admin/coupons`).
+   - Create launch promo codes (e.g. `LAUNCH20` for 20% off with usage limits).
+
+---
+
+### Step 6: End-to-End Live Transaction Smoke Test
+
+Before announcing your store to public customers, conduct one real smoke test:
+1. **Create a ₹1 Test Product:**
+   - In the admin panel, create a temporary product priced at **₹1.00** and set it to **PUBLISHED**.
+2. **Perform Checkout as a Customer:**
+   - Open a fresh browser session (or Incognito window).
+   - Register a real customer account at `/register`.
+   - Add the ₹1 product to the cart and proceed to checkout.
+   - Select **Razorpay Secure Checkout** and pay ₹1 via real UPI (Google Pay / PhonePe) or card.
+3. **Verify the Purchase Flow:**
+   - [x] Confetti animation fires and redirects to **My Downloads** (`/account?tab=downloads`).
+   - [x] The order appears in the user's order history with status `PAID`.
+   - [x] Clicking **Download File** immediately streams the complete PSD/ZIP file with zero 401/403 errors.
+   - [x] The admin dashboard (`/admin`) updates total revenue, paid order count, and download audit logs.
+4. **Delete the Test Product:**
+   - Archive or delete the ₹1 product in the admin catalog.
+
+---
+
+## 6. Digital Asset Storage & Download Security
 
 ### How File Storage Works
 - **Public Previews (`/storage/uploads/`):** Thumbnails and gallery images uploaded in the admin panel are saved with UUID filenames and served through the `/uploads/` route.
@@ -248,7 +326,7 @@ SharpShadow uses the official Razorpay Checkout SDK. It natively supports **UPI 
 
 ---
 
-## 8. Admin Panel Guide
+## 7. Admin Panel Guide
 
 Access the admin dashboard at `/admin` (or `/login` with an administrator account).
 
@@ -270,7 +348,7 @@ Access the admin dashboard at `/admin` (or `/login` with an administrator accoun
 
 ---
 
-## 9. Verification, Testing & Build
+## 8. Verification, Testing & Build
 
 ### Running Backend Tests
 ```bash
@@ -294,7 +372,7 @@ Generates production-optimized static assets in `frontend/dist/`.
 
 ---
 
-## 10. Troubleshooting & Common Issues
+## 9. Troubleshooting & Common Issues
 
 ### 1. Upload Fails with "File too large" or Error 413
 - **Cause:** Nginx or Tomcat rejected a file exceeding the upload limit.
@@ -314,7 +392,7 @@ Generates production-optimized static assets in `frontend/dist/`.
 
 ---
 
-## 11. Security & Compliance
+## 10. Security & Compliance
 
 - **Password Hashing:** Passwords encrypted using industry-standard BCrypt (work factor 10).
 - **RBAC:** Endpoints strictly segregated with `@PreAuthorize("hasRole('ADMIN')")` and Spring Security filters.
@@ -325,6 +403,6 @@ Generates production-optimized static assets in `frontend/dist/`.
 
 ---
 
-## 12. License & Rights
+## 11. License & Rights
 
 Commercial rights allow buyers to use downloaded PSD templates for personal and commercial client deliverables. Direct redistribution, resale, or sublicensing of original layered source PSD files is strictly prohibited.
