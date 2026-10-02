@@ -13,9 +13,9 @@ backend/target/
 *.jar
 *.war
 
-# Storage & Local runtime data
-backend/storage/
-storage/
+# Storage & Local runtime data (anchored so the Java storage package is not ignored)
+/backend/storage/
+/storage/
 *.log
 
 # IDE & OS

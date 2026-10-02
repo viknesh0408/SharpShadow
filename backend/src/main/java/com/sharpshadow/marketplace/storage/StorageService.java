@@ -1,0 +1,37 @@
+package com.sharpshadow.marketplace.storage;
+
+import org.springframework.core.io.Resource;
+import org.springframework.web.multipart.MultipartFile;
+
+public interface StorageService {
+
+    /**
+     * Uploads a private asset (PSD, ZIP) using UUID-based secure path.
+     */
+    FileMetadata uploadPrivate(MultipartFile file);
+
+    /**
+     * Uploads a public preview/thumbnail asset.
+     */
+    FileMetadata uploadPublic(MultipartFile file);
+
+    /**
+     * Deletes a stored file by its key/URL.
+     */
+    void delete(String fileUrl);
+
+    /**
+     * Generates a temporary signed download URL for an authorized purchase.
+     */
+    String generateDownloadUrl(String fileUrl, String originalFileName, long expiryMinutes);
+
+    /**
+     * Validates a signed download token and loads the underlying resource.
+     */
+    Resource loadAsResource(String relativePath);
+
+    /**
+     * Formats bytes into human-readable representation (e.g. 45.2 MB)
+     */
+    String formatFileSize(long bytes);
+}
