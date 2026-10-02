@@ -8,7 +8,6 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
 @Service
@@ -45,10 +44,16 @@ public class EmailService {
         }
 
         try {
+            log.info("Attempting to send password reset email to {} via SMTP user {}", toEmail, mailUsername);
+
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom(fromAddress, "SharpShadow Marketplace");
+            // Gmail requires the From address to match the authenticated account.
+            // Use MAIL_USERNAME as the actual sending address.
+            // MAIL_FROM only sets the display name in that case.
+            String displayName = "SharpShadow Marketplace";
+            helper.setFrom(mailUsername, displayName);
             helper.setTo(toEmail);
             helper.setSubject("Reset Your SharpShadow Password");
 
@@ -58,10 +63,9 @@ public class EmailService {
             mailSender.send(message);
             log.info("Password reset email sent successfully to {}", toEmail);
 
-        } catch (MessagingException | java.io.UnsupportedEncodingException e) {
-            // Log the error but do NOT propagate - the API should still return success
-            // to prevent exposing whether an email exists in the system.
-            log.error("Failed to send password reset email to {}: {}", toEmail, e.getMessage());
+        } catch (Exception e) {
+            // Log the full exception so it appears in Railway deploy logs.
+            log.error("Failed to send password reset email to {} — SMTP error: {}", toEmail, e.getMessage(), e);
         }
     }
 
