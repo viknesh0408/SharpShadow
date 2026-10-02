@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/api/:match*",
+      "destination": "https://backend-production-3d6a.up.railway.app/api/:match*"
+    },
+    {
+      "source": "/uploads/:match*",
+      "destination": "https://backend-production-3d6a.up.railway.app/uploads/:match*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
