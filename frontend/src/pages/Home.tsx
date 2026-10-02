@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowRight, Clock, Search } from 'lucide-react';
+import { Sparkles, ArrowRight, Clock, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Product } from '../types';
 import { productService } from '../services/productService';
 import { ProductCard } from '../components/ProductCard';
@@ -9,8 +9,12 @@ import { SkeletonCard } from '../components/SkeletonCard';
 export const Home: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [latestProducts, setLatestProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(true);
+  const latestSectionRef = useRef<HTMLElement>(null);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,19 +23,35 @@ export const Home: React.FC = () => {
     }
   };
 
+  const loadProducts = async (page: number) => {
+    setLoading(true);
+    try {
+      const pageData = await productService.getProducts({
+        page,
+        size: 8,
+        sort: 'newest',
+      });
+      setProducts(pageData.content || []);
+      setTotalPages(pageData.totalPages || 1);
+      setTotalElements(pageData.totalElements || 0);
+    } catch (err) {
+      console.error('Failed to load home products', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadHomeData = async () => {
-      try {
-        const latest = await productService.getLatest();
-        setLatestProducts(latest);
-      } catch (err) {
-        console.error('Failed to load home data', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadHomeData();
-  }, []);
+    loadProducts(currentPage);
+  }, [currentPage]);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage === currentPage || newPage < 0 || newPage >= totalPages) return;
+    setCurrentPage(newPage);
+    if (latestSectionRef.current) {
+      latestSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
     <div className="space-y-16 sm:space-y-24">
@@ -112,7 +132,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* 2. LATEST RELEASES */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section ref={latestSectionRef} id="latest-uploads" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
         <div className="flex items-end justify-between mb-8">
           <div>
             <div className="flex items-center gap-2 text-cyan-400 text-xs font-mono font-bold uppercase tracking-wider">
@@ -122,20 +142,94 @@ export const Home: React.FC = () => {
             <h2 className="text-2xl sm:text-3xl font-bold text-white mt-1">Latest Uploads</h2>
           </div>
           <Link to="/browse?sort=newest" className="text-sm font-medium text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-1">
-            <span>New Releases</span>
+            <span>View All</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 min-h-[300px]">
           {loading ? (
-            Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
-          ) : (
-            latestProducts.slice(0, 8).map((product) => (
+            Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
+          ) : products.length > 0 ? (
+            products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))
+          ) : (
+            <div className="col-span-full py-12 text-center text-slate-400 text-sm">
+              No PSD templates available yet.
+            </div>
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-dark-800">
+            <div className="text-xs font-mono text-slate-400">
+              Showing <span className="text-white font-semibold">{currentPage * 8 + 1}</span>-
+              <span className="text-white font-semibold">{Math.min((currentPage + 1) * 8, totalElements)}</span> of{' '}
+              <span className="text-white font-semibold">{totalElements}</span> PSD templates
+            </div>
+
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 0 || loading}
+                className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-dark-900 hover:bg-dark-850 border border-dark-750 text-slate-300 hover:text-white text-xs font-medium disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                title="Previous Page"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Previous</span>
+              </button>
+
+              {/* Numbered Page Buttons */}
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }).map((_, idx) => {
+                  if (
+                    totalPages <= 7 ||
+                    idx === 0 ||
+                    idx === totalPages - 1 ||
+                    Math.abs(idx - currentPage) <= 1
+                  ) {
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => handlePageChange(idx)}
+                        disabled={loading}
+                        className={`w-8 h-8 rounded-xl font-mono text-xs font-semibold transition-all ${
+                          currentPage === idx
+                            ? 'bg-gradient-to-r from-sharp-600 to-sharp-500 text-white shadow-sharp-glow'
+                            : 'bg-dark-900 hover:bg-dark-850 text-slate-300 hover:text-white border border-dark-750'
+                        }`}
+                      >
+                        {idx + 1}
+                      </button>
+                    );
+                  } else if (
+                    (idx === 1 && currentPage > 2) ||
+                    (idx === totalPages - 2 && currentPage < totalPages - 3)
+                  ) {
+                    return (
+                      <span key={idx} className="px-1 text-slate-600 text-xs font-mono">
+                        ...
+                      </span>
+                    );
+                  }
+                  return null;
+                })}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages - 1 || loading}
+                className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-dark-900 hover:bg-dark-850 border border-dark-750 text-slate-300 hover:text-white text-xs font-medium disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                title="Next Page"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* 5. CTA BANNER */}
