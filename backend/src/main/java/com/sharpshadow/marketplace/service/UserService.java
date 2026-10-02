@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,6 +36,12 @@ public class UserService {
     private final JwtUtils jwtUtils;
     private final EntityDtoMapper mapper;
     private final EmailService emailService;
+    private final SecureRandom secureRandom = new SecureRandom();
+
+    private String generateOtp() {
+        int code = 100000 + secureRandom.nextInt(900000);
+        return String.valueOf(code);
+    }
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -42,17 +49,73 @@ public class UserService {
             throw new BadRequestException("Passwords do not match");
         }
 
-        if (userRepository.existsByEmail(request.getEmail().toLowerCase().trim())) {
-            throw new ConflictException("An account with this email already exists");
+        String email = request.getEmail().toLowerCase().trim();
+        Optional<User> existingUserOpt = userRepository.findByEmail(email);
+
+        User user;
+        if (existingUserOpt.isPresent()) {
+            user = existingUserOpt.get();
+            if (user.isEmailVerified()) {
+                throw new ConflictException("An account with this email already exists");
+            }
+            // Account previously attempted but not verified: update credentials and allow re-verification
+            user.setName(request.getName().trim());
+            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        } else {
+            user = User.builder()
+                    .name(request.getName().trim())
+                    .email(email)
+                    .passwordHash(passwordEncoder.encode(request.getPassword()))
+                    .role(Role.CUSTOMER)
+                    .emailVerified(false)
+                    .build();
         }
 
-        User user = User.builder()
-                .name(request.getName().trim())
-                .email(request.getEmail().toLowerCase().trim())
-                .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .role(Role.CUSTOMER)
-                .build();
+        String otp = generateOtp();
+        user.setVerificationOtp(otp);
+        user.setVerificationOtpExpiry(LocalDateTime.now().plusMinutes(15));
 
+        User savedUser = userRepository.save(user);
+
+        // Send OTP verification email
+        emailService.sendEmailVerificationOtp(savedUser.getEmail(), savedUser.getName(), otp);
+
+        return AuthResponse.builder()
+                .emailVerified(false)
+                .email(savedUser.getEmail())
+                .message("A 6-digit verification code has been sent to your email. Please enter it to complete registration.")
+                .build();
+    }
+
+    @Transactional
+    public AuthResponse verifyEmail(VerifyEmailRequest request) {
+        String email = request.getEmail().toLowerCase().trim();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("No account found for " + email));
+
+        if (user.isEmailVerified()) {
+            String token = jwtUtils.generateTokenFromEmail(user.getEmail(), user.getId(), user.getRole().name());
+            return AuthResponse.builder()
+                    .token(token)
+                    .type("Bearer")
+                    .expiresIn(jwtUtils.getExpirationMs() / 1000)
+                    .user(mapper.toUserDto(user))
+                    .emailVerified(true)
+                    .message("Account is already verified.")
+                    .build();
+        }
+
+        if (user.getVerificationOtp() == null || !user.getVerificationOtp().trim().equals(request.getOtp().trim())) {
+            throw new BadRequestException("Invalid verification code. Please check the 6-digit code sent to your email.");
+        }
+
+        if (user.getVerificationOtpExpiry() == null || user.getVerificationOtpExpiry().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Verification code has expired. Please request a new code.");
+        }
+
+        user.setEmailVerified(true);
+        user.setVerificationOtp(null);
+        user.setVerificationOtpExpiry(null);
         User savedUser = userRepository.save(user);
 
         String token = jwtUtils.generateTokenFromEmail(savedUser.getEmail(), savedUser.getId(), savedUser.getRole().name());
@@ -62,7 +125,33 @@ public class UserService {
                 .type("Bearer")
                 .expiresIn(jwtUtils.getExpirationMs() / 1000)
                 .user(mapper.toUserDto(savedUser))
+                .emailVerified(true)
+                .message("Email verified successfully! Welcome to SharpShadow.")
                 .build();
+    }
+
+    @Transactional
+    public void resendVerificationOtp(ResendOtpRequest request) {
+        String email = request.getEmail().toLowerCase().trim();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("No account found with this email."));
+
+        if (user.isEmailVerified()) {
+            throw new BadRequestException("This account is already verified. Please sign in.");
+        }
+
+        // 60-second cooldown protection
+        if (user.getVerificationOtpExpiry() != null &&
+                user.getVerificationOtpExpiry().isAfter(LocalDateTime.now().plusMinutes(14))) {
+            throw new BadRequestException("Please wait 60 seconds before requesting another code.");
+        }
+
+        String otp = generateOtp();
+        user.setVerificationOtp(otp);
+        user.setVerificationOtpExpiry(LocalDateTime.now().plusMinutes(15));
+        userRepository.save(user);
+
+        emailService.sendEmailVerificationOtp(user.getEmail(), user.getName(), otp);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -76,6 +165,16 @@ public class UserService {
         User user = userRepository.findByEmail(request.getEmail().toLowerCase().trim())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+        if (!user.isEmailVerified()) {
+            String otp = generateOtp();
+            user.setVerificationOtp(otp);
+            user.setVerificationOtpExpiry(LocalDateTime.now().plusMinutes(15));
+            userRepository.save(user);
+            emailService.sendEmailVerificationOtp(user.getEmail(), user.getName(), otp);
+
+            throw new BadRequestException("EMAIL_NOT_VERIFIED: Your email is not verified yet. We have sent a verification code to " + user.getEmail() + ". Please verify to continue.");
+        }
+
         String token = jwtUtils.generateToken(authentication);
 
         return AuthResponse.builder()
@@ -83,6 +182,7 @@ public class UserService {
                 .type("Bearer")
                 .expiresIn(jwtUtils.getExpirationMs() / 1000)
                 .user(mapper.toUserDto(user))
+                .emailVerified(true)
                 .build();
     }
 

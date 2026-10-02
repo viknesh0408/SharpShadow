@@ -274,4 +274,199 @@ public class EmailService {
                 </html>
                 """.formatted(safeName, resetUrl, resetUrl);
     }
+
+    /**
+     * Sends an email verification OTP to the user's inbox to verify account ownership.
+     */
+    @Async
+    public void sendEmailVerificationOtp(String toEmail, String userName, String otp) {
+        log.info("================================================================================");
+        log.info("🔐 [EMAIL VERIFICATION OTP GENERATED]");
+        log.info("   Recipient: {}", toEmail);
+        log.info("   OTP Code:  {}", otp);
+        log.info("   Expires:   15 minutes");
+        log.info("================================================================================");
+
+        if (brevoApiKey != null && !brevoApiKey.isBlank()) {
+            sendOtpViaBrevo(toEmail, userName, otp);
+        } else if (resendApiKey != null && !resendApiKey.isBlank()) {
+            sendOtpViaResend(toEmail, userName, otp);
+        } else if (mailSender != null && mailUsername != null && !mailUsername.isBlank()) {
+            sendOtpViaSmtp(toEmail, userName, otp);
+        } else {
+            log.warn("⚠️ No active email delivery service configured! Brevo API key is not set. " +
+                     "The verification code has been logged to the console above for testing.");
+        }
+    }
+
+    private void sendOtpViaBrevo(String toEmail, String userName, String otp) {
+        try {
+            log.info("Sending email verification OTP to {} via Brevo HTTPS API...", toEmail);
+            String senderEmail = (mailUsername != null && !mailUsername.isBlank()) ? mailUsername : fromAddress;
+
+            String html = buildOtpEmailHtml(userName, otp);
+            Map<String, Object> payload = Map.of(
+                    "sender", Map.of("name", "SharpShadow Marketplace", "email", senderEmail),
+                    "to", List.of(Map.of("email", toEmail, "name", userName != null && !userName.isBlank() ? userName : "Customer")),
+                    "subject", otp + " is your SharpShadow verification code",
+                    "htmlContent", html
+            );
+
+            String jsonBody = getObjectMapper().writeValueAsString(payload);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                    .header("accept", "application/json")
+                    .header("api-key", brevoApiKey.trim())
+                    .header("content-type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
+                    .timeout(Duration.ofSeconds(15))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                log.info("✅ Verification OTP email successfully sent via Brevo to {}. Response: {}", toEmail, response.body());
+            } else {
+                log.error("❌ Failed to send OTP email via Brevo. HTTP Status: {}, Response: {}", response.statusCode(), response.body());
+            }
+        } catch (Exception e) {
+            log.error("❌ Exception while sending OTP email via Brevo: {}", e.getMessage(), e);
+        }
+    }
+
+    private void sendOtpViaResend(String toEmail, String userName, String otp) {
+        try {
+            log.info("Sending email verification OTP to {} via Resend HTTPS API...", toEmail);
+            String html = buildOtpEmailHtml(userName, otp);
+            String from = "SharpShadow <onboarding@resend.dev>";
+
+            Map<String, Object> payload = Map.of(
+                    "from", from,
+                    "to", List.of(toEmail),
+                    "subject", otp + " is your SharpShadow verification code",
+                    "html", html
+            );
+
+            String jsonBody = getObjectMapper().writeValueAsString(payload);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.resend.com/emails"))
+                    .header("Authorization", "Bearer " + resendApiKey.trim())
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
+                    .timeout(Duration.ofSeconds(15))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                log.info("✅ Verification OTP email successfully sent via Resend to {}. Response: {}", toEmail, response.body());
+            } else {
+                log.error("❌ Failed to send OTP email via Resend. HTTP Status: {}, Response: {}", response.statusCode(), response.body());
+            }
+        } catch (Exception e) {
+            log.error("❌ Exception while sending OTP email via Resend: {}", e.getMessage(), e);
+        }
+    }
+
+    private void sendOtpViaSmtp(String toEmail, String userName, String otp) {
+        try {
+            log.info("Attempting to send verification OTP to {} via SMTP user {}", toEmail, mailUsername);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            String displayName = "SharpShadow Marketplace";
+            helper.setFrom(mailUsername, displayName);
+            helper.setTo(toEmail);
+            helper.setSubject(otp + " is your SharpShadow verification code");
+            helper.setText(buildOtpEmailHtml(userName, otp), true);
+
+            mailSender.send(message);
+            log.info("✅ Verification OTP email sent successfully via SMTP to {}", toEmail);
+
+        } catch (Exception e) {
+            log.error("❌ Failed to send verification OTP email to {} via SMTP: {}", toEmail, e.getMessage());
+        }
+    }
+
+    private String buildOtpEmailHtml(String userName, String otp) {
+        String safeName = (userName != null && !userName.isBlank()) ? userName : "there";
+        return """
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Verify Your Email</title>
+                </head>
+                <body style="margin:0;padding:0;background:#09090b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+                  <table width="100%%" cellpadding="0" cellspacing="0" style="background:#09090b;padding:40px 20px;">
+                    <tr>
+                      <td align="center">
+                        <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%%;">
+
+                          <!-- Header -->
+                          <tr>
+                            <td align="center" style="padding-bottom:32px;">
+                              <span style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px;">
+                                Sharp<span style="color:#ef4444;">Shadow</span>
+                              </span>
+                            </td>
+                          </tr>
+
+                          <!-- Card -->
+                          <tr>
+                            <td style="background:#18181b;border:1px solid #27272a;border-radius:20px;padding:40px 36px;">
+
+                              <p style="margin:0 0 8px;font-size:12px;font-weight:600;color:#ef4444;letter-spacing:2px;text-transform:uppercase;font-family:monospace;">
+                                Account Security
+                              </p>
+                              <h1 style="margin:0 0 16px;font-size:24px;font-weight:800;color:#fff;">
+                                Verify Your Email Address
+                              </h1>
+                              <p style="margin:0 0 24px;font-size:14px;color:#a1a1aa;line-height:1.6;">
+                                Hi %s,<br><br>
+                                Welcome to SharpShadow! To complete your account registration and ensure the security of your account, please enter the following 6-digit verification code:
+                              </p>
+
+                              <!-- OTP Code Display -->
+                              <div style="background:#09090b;border:2px dashed #ef4444;border-radius:16px;padding:28px 20px;text-align:center;margin:0 0 28px;">
+                                <div style="font-size:38px;font-weight:900;letter-spacing:12px;color:#ffffff;font-family:Consolas, Monaco, 'Courier New', monospace;padding-left:12px;">
+                                  %s
+                                </div>
+                                <p style="margin:12px 0 0;font-size:12px;color:#ef4444;font-weight:600;">
+                                  ⏱️ Code expires in 15 minutes
+                                </p>
+                              </div>
+
+                              <!-- Security Note -->
+                              <div style="background:#09090b;border:1px solid #27272a;border-radius:12px;padding:16px 20px;">
+                                <p style="margin:0;font-size:12px;color:#71717a;line-height:1.6;">
+                                  🔒 <strong style="color:#a1a1aa;">Didn't create this account?</strong>
+                                  If you did not register on SharpShadow, please ignore this email. No account will be activated without this verification code.
+                                </p>
+                              </div>
+                            </td>
+                          </tr>
+
+                          <!-- Footer -->
+                          <tr>
+                            <td align="center" style="padding-top:28px;">
+                              <p style="margin:0;font-size:11px;color:#52525b;">
+                                © 2025 SharpShadow Marketplace. All rights reserved.<br>
+                                This is an automated security email — please do not reply.
+                              </p>
+                            </td>
+                          </tr>
+
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </body>
+                </html>
+                """.formatted(safeName, otp);
+    }
 }

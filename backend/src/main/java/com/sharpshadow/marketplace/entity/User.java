@@ -33,6 +33,16 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    @Builder.Default
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
+    @Column(name = "verification_otp", length = 10)
+    private String verificationOtp;
+
+    @Column(name = "verification_otp_expiry")
+    private LocalDateTime verificationOtpExpiry;
+
     @Column(name = "reset_password_token", length = 100)
     private String resetPasswordToken;
 

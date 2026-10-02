@@ -58,10 +58,19 @@ public class DataSeeder implements CommandLineRunner {
                     .email(effectiveEmail)
                     .passwordHash(passwordEncoder.encode(effectivePassword))
                     .role(Role.ADMIN)
+                    .emailVerified(true)
                     .build();
 
             userRepository.save(admin);
             log.info("Default administrator seeded for email: {}. Set ADMIN_PASSWORD environment variable to customize.", effectiveEmail);
+        } else {
+            // Ensure existing admin users have emailVerified = true
+            userRepository.findAll().forEach(u -> {
+                if (u.getRole() == Role.ADMIN && !u.isEmailVerified()) {
+                    u.setEmailVerified(true);
+                    userRepository.save(u);
+                }
+            });
         }
     }
 

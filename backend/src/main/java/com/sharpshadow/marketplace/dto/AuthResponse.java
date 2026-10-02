@@ -12,4 +12,7 @@ public class AuthResponse {
     private String type; // Bearer
     private Long expiresIn;
     private UserDto user;
+    private boolean emailVerified;
+    private String email;
+    private String message;
 }

@@ -15,6 +15,7 @@ public class UserDto {
     private String name;
     private String email;
     private Role role;
+    private boolean emailVerified;
     private LocalDateTime createdAt;
     private Long orderCount;
     private java.math.BigDecimal totalSpent;

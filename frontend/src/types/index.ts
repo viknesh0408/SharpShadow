@@ -5,6 +5,7 @@ export interface User {
   name: string;
   email: string;
   role: Role;
+  emailVerified?: boolean;
   createdAt?: string;
   orderCount?: number;
   totalSpent?: number;

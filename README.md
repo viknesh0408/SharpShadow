@@ -276,6 +276,13 @@ Follow these 3 quick steps to set up transactional email delivery:
 
 *Note: Whenever a customer or admin requests a password reset, the backend also logs the full single-use reset URL directly into the Railway backend logs as an immediate fail-safe.*
 
+#### Email Verification & OTP Security Architecture
+- **Registration Protection:** When any new user signs up, the backend generates a cryptographically secure 6-digit OTP code and dispatches it via Brevo to the owner's inbox.
+- **Account Lockout Prevention:** An account is only activated once the 6-digit OTP is verified. If an attacker attempts to register someone else's email address, the account cannot be logged into or activated.
+- **Re-attempt Tolerance:** If an unverified signup exists and the real owner attempts to sign up, the backend automatically refreshes credentials and sends a new OTP code to the actual inbox rather than permanently blocking the email.
+- **15-Minute Expiry & 60-Second Cooldown:** Each verification code expires in 15 minutes, with a 60-second cooldown between resend requests to prevent spam.
+- **Fail-Safe Server Logs:** Both registration OTP codes and password reset links are printed directly to the backend stdout logs (`🔐 [EMAIL VERIFICATION OTP GENERATED]`) for zero-friction local development and server troubleshooting.
+
 ---
 
 ### Step 5: Connect Custom Domain & Configure DNS / SSL (Optional)

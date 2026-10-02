@@ -19,7 +19,22 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse response = userService.register(request);
-        return ResponseEntity.ok(ApiResponse.success(response, "Account created successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, response.getMessage() != null ? response.getMessage() : "Verification code sent to your email"));
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<ApiResponse<AuthResponse>> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        AuthResponse response = userService.verifyEmail(request);
+        return ResponseEntity.ok(ApiResponse.success(response, response.getMessage() != null ? response.getMessage() : "Email verified successfully"));
+    }
+
+    @PostMapping("/resend-otp")
+    public ResponseEntity<ApiResponse<String>> resendOtp(@Valid @RequestBody ResendOtpRequest request) {
+        userService.resendVerificationOtp(request);
+        return ResponseEntity.ok(ApiResponse.success(
+                "A fresh verification code has been sent to your email.",
+                "Verification code sent"
+        ));
     }
 
     @PostMapping("/login")

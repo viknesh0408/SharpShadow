@@ -9,7 +9,8 @@ interface AuthContextType {
   isAdmin: boolean;
   login: (data: { email: string; password: string }) => Promise<void>;
   adminLogin: (data: { email: string; password: string }) => Promise<void>;
-  register: (data: { name: string; email: string; password: string; confirmPassword: string }) => Promise<void>;
+  register: (data: { name: string; email: string; password: string; confirmPassword: string }) => Promise<AuthResponse>;
+  verifyEmail: (data: { email: string; otp: string }) => Promise<void>;
   updateUser: (updatedUser: User) => void;
   logout: () => void;
   loading: boolean;
@@ -45,10 +46,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const handleAuthSuccess = (res: AuthResponse) => {
-    localStorage.setItem('token', res.token);
-    localStorage.setItem('user', JSON.stringify(res.user));
-    setToken(res.token);
-    setUser(res.user);
+    if (res.token && res.user) {
+      localStorage.setItem('token', res.token);
+      localStorage.setItem('user', JSON.stringify(res.user));
+      setToken(res.token);
+      setUser(res.user);
+    }
   };
 
   const login = async (data: { email: string; password: string }) => {
@@ -61,8 +64,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     handleAuthSuccess(res);
   };
 
-  const register = async (data: { name: string; email: string; password: string; confirmPassword: string }) => {
+  const register = async (data: { name: string; email: string; password: string; confirmPassword: string }): Promise<AuthResponse> => {
     const res = await authService.register(data);
+    if (res.token && res.user) {
+      handleAuthSuccess(res);
+    }
+    return res;
+  };
+
+  const verifyEmail = async (data: { email: string; otp: string }) => {
+    const res = await authService.verifyEmail(data);
     handleAuthSuccess(res);
   };
 
@@ -90,6 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         adminLogin,
         register,
+        verifyEmail,
         updateUser,
         logout,
         loading,

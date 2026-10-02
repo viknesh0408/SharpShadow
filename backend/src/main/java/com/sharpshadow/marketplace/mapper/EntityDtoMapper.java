@@ -17,6 +17,7 @@ public class EntityDtoMapper {
                 .name(user.getName())
                 .email(user.getEmail())
                 .role(user.getRole())
+                .emailVerified(user.isEmailVerified())
                 .createdAt(user.getCreatedAt())
                 .build();
     }
