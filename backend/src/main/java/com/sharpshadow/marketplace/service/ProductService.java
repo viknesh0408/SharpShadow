@@ -193,16 +193,17 @@ public class ProductService {
         Product saved = productRepository.save(product);
 
         if (request.getPreviewImages() != null && !request.getPreviewImages().isEmpty()) {
-            List<ProductImage> images = new ArrayList<>();
+            if (saved.getPreviewImages() == null) {
+                saved.setPreviewImages(new ArrayList<>());
+            }
             for (int i = 0; i < request.getPreviewImages().size(); i++) {
-                images.add(ProductImage.builder()
+                saved.getPreviewImages().add(ProductImage.builder()
                         .product(saved)
                         .imageUrl(request.getPreviewImages().get(i))
                         .sortOrder(i)
                         .build());
             }
-            productImageRepository.saveAll(images);
-            saved.setPreviewImages(images);
+            saved = productRepository.save(saved);
         }
 
         return mapper.toProductResponse(saved, false, true);
@@ -243,18 +244,18 @@ public class ProductService {
         if (request.getStatus() != null) product.setStatus(request.getStatus().toUpperCase());
 
         if (request.getPreviewImages() != null) {
-            product.getPreviewImages().clear();
-            productImageRepository.deleteByProductId(id);
-            List<ProductImage> newImages = new ArrayList<>();
+            if (product.getPreviewImages() == null) {
+                product.setPreviewImages(new ArrayList<>());
+            } else {
+                product.getPreviewImages().clear();
+            }
             for (int i = 0; i < request.getPreviewImages().size(); i++) {
-                newImages.add(ProductImage.builder()
+                product.getPreviewImages().add(ProductImage.builder()
                         .product(product)
                         .imageUrl(request.getPreviewImages().get(i))
                         .sortOrder(i)
                         .build());
             }
-            productImageRepository.saveAll(newImages);
-            product.setPreviewImages(newImages);
         }
 
         Product updated = productRepository.save(product);

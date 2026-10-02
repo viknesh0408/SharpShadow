@@ -14,6 +14,7 @@ import {
   X,
   PlusCircle,
   Github,
+  Settings,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -36,6 +37,7 @@ export const AdminLayout: React.FC = () => {
     { label: 'Users', path: '/admin/users', icon: Users },
     { label: 'Coupons', path: '/admin/coupons', icon: Ticket },
     { label: 'Download Audit', path: '/admin/downloads', icon: Download },
+    { label: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 
   return (

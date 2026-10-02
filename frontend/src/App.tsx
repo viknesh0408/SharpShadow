@@ -36,6 +36,7 @@ import { AdminOrders } from './pages/admin/AdminOrders';
 import { AdminUsers } from './pages/admin/AdminUsers';
 import { AdminCoupons } from './pages/admin/AdminCoupons';
 import { AdminDownloads } from './pages/admin/AdminDownloads';
+import { AdminSettings } from './pages/admin/AdminSettings';
 
 const CustomerRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -127,6 +128,7 @@ export const App: React.FC = () => {
             <Route path="users" element={<AdminUsers />} />
             <Route path="coupons" element={<AdminCoupons />} />
             <Route path="downloads" element={<AdminDownloads />} />
+            <Route path="settings" element={<AdminSettings />} />
           </Route>
 
           {/* Fallback */}

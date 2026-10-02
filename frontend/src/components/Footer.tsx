@@ -1,11 +1,97 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Zap, DownloadCloud, Sparkles, Github } from 'lucide-react';
+import {
+  ShieldCheck,
+  Zap,
+  DownloadCloud,
+  Sparkles,
+  Github,
+  Twitter,
+  Instagram,
+  Youtube,
+  Linkedin,
+  MessageSquare,
+  Facebook,
+} from 'lucide-react';
+import { settingService } from '../services/settingService';
 
 export const Footer: React.FC = () => {
+  const [socialLinks, setSocialLinks] = useState<Record<string, string>>({
+    social_github: 'https://github.com/viknesh0408',
+    social_instagram: 'https://instagram.com',
+    social_twitter: 'https://x.com',
+    social_linkedin: 'https://linkedin.com',
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    settingService
+      .getPublicSettings()
+      .then((settings) => {
+        if (isMounted && settings && Object.keys(settings).length > 0) {
+          setSocialLinks(settings);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const socialConfig = [
+    {
+      key: 'social_github',
+      icon: Github,
+      label: 'GitHub',
+      hover: 'hover:text-white hover:border-slate-500',
+    },
+    {
+      key: 'social_twitter',
+      icon: Twitter,
+      label: 'Twitter / X',
+      hover: 'hover:text-sky-400 hover:border-sky-500/50',
+    },
+    {
+      key: 'social_instagram',
+      icon: Instagram,
+      label: 'Instagram',
+      hover: 'hover:text-pink-400 hover:border-pink-500/50',
+    },
+    {
+      key: 'social_youtube',
+      icon: Youtube,
+      label: 'YouTube',
+      hover: 'hover:text-red-400 hover:border-red-500/50',
+    },
+    {
+      key: 'social_linkedin',
+      icon: Linkedin,
+      label: 'LinkedIn',
+      hover: 'hover:text-blue-400 hover:border-blue-500/50',
+    },
+    {
+      key: 'social_discord',
+      icon: MessageSquare,
+      label: 'Discord',
+      hover: 'hover:text-indigo-400 hover:border-indigo-500/50',
+    },
+    {
+      key: 'social_facebook',
+      icon: Facebook,
+      label: 'Facebook',
+      hover: 'hover:text-blue-500 hover:border-blue-500/50',
+    },
+  ];
+
+  const activeSocials = socialConfig.filter((s) => {
+    const url = socialLinks[s.key];
+    return url && url.trim().length > 0;
+  });
+
   return (
     <footer className="bg-dark-950 border-t border-dark-800 text-slate-400 text-sm mt-20">
-      {/* Features Value Strip */}
+      {/* 1. Features Value Strip */}
       <div className="border-b border-dark-800 py-8 sm:py-10 bg-dark-900/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           <div className="flex items-center gap-3.5 sm:gap-4">
@@ -47,67 +133,82 @@ export const Footer: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Footer Links */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-8 sm:gap-10">
-        
+      {/* 2. Middle Row: Brand & Social Media Channels */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8">
         {/* Brand */}
-        <div className="col-span-2 sm:col-span-2 md:col-span-2 space-y-4">
+        <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-sharp-600 to-sharp-500 flex items-center justify-center text-white font-mono font-bold text-sm">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sharp-600 to-sharp-500 flex items-center justify-center text-white font-mono font-bold text-sm shadow-sharp-glow">
               SS
             </div>
-            <span className="font-black text-lg tracking-wider text-white">
+            <span className="font-black text-xl tracking-wider text-white">
               SHARP<span className="text-sharp-500">SHADOW</span>
             </span>
           </Link>
-          <p className="text-sm text-slate-400 leading-relaxed pr-6">
-            SharpShadow is an independent digital asset marketplace dedicated to high-end Photoshop templates, mockups, social graphics, and creative assets built to save time and elevate professional design work.
+          <span className="hidden sm:inline text-dark-750">|</span>
+          <p className="text-xs text-slate-400 max-w-md">
+            Premium curated PSD marketplace for creative professionals, studios, and freelance designers.
           </p>
-          <div className="pt-2 text-xs text-slate-400 flex items-center gap-2">
-            <span>Secured with 256-Bit SSL Encryption</span>
+        </div>
+
+        {/* Social Media Links Section (Dynamic & Managed in Admin Panel) */}
+        {activeSocials.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <span className="text-xs font-mono text-slate-400 uppercase tracking-wider font-semibold">
+              Follow Us:
+            </span>
+            <div className="flex items-center gap-2">
+              {activeSocials.map((s) => {
+                const Icon = s.icon;
+                const href = socialLinks[s.key];
+                return (
+                  <a
+                    key={s.key}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={s.label}
+                    title={s.label}
+                    className={`w-9 h-9 rounded-xl bg-dark-900 border border-dark-750 text-slate-400 ${s.hover} flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-sm`}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </a>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
+      </div>
 
-        {/* Categories */}
-        <div>
-          <h4 className="text-white font-semibold mb-4 text-xs uppercase tracking-wider font-mono">Popular PSDs</h4>
-          <ul className="space-y-2.5 text-sm">
-            <li><Link to="/category/wedding" className="hover:text-white transition-colors">Wedding Suites</Link></li>
-            <li><Link to="/category/business" className="hover:text-white transition-colors">Business Cards</Link></li>
-            <li><Link to="/category/social-media" className="hover:text-white transition-colors">Social Media Packs</Link></li>
-            <li><Link to="/category/flyers" className="hover:text-white transition-colors">Flyer Templates</Link></li>
-            <li><Link to="/category/posters" className="hover:text-white transition-colors">Poster Mockups</Link></li>
-            <li><Link to="/categories" className="hover:text-sharp-400 transition-colors font-medium">All Categories →</Link></li>
-          </ul>
-        </div>
-
-        {/* Quick Links */}
-        <div>
-          <h4 className="text-white font-semibold mb-4 text-xs uppercase tracking-wider font-mono">Explore</h4>
-          <ul className="space-y-2.5 text-sm">
-            <li><Link to="/browse" className="hover:text-white transition-colors">All PSD Templates</Link></li>
-            <li><Link to="/browse?sort=newest" className="hover:text-white transition-colors">Latest Releases</Link></li>
-            <li><Link to="/browse?sort=popular" className="hover:text-white transition-colors">Bestsellers</Link></li>
-            <li><Link to="/account" className="hover:text-white transition-colors">Customer Portal</Link></li>
-            <li><Link to="/admin/login" className="hover:text-white transition-colors">Admin Portal</Link></li>
-          </ul>
-        </div>
-
-        {/* Legal & Policy (Section 25) */}
-        <div>
-          <h4 className="text-white font-semibold mb-4 text-xs uppercase tracking-wider font-mono">Legal & Policy</h4>
-          <ul className="space-y-2.5 text-sm">
-            <li><Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-            <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
-            <li><Link to="/refund-policy" className="hover:text-white transition-colors">Refund Policy</Link></li>
-            <li><Link to="/license" className="hover:text-white transition-colors">Licensing Terms</Link></li>
-            <li><Link to="/contact" className="hover:text-white transition-colors">Contact Support</Link></li>
-          </ul>
+      {/* 3. Simple Horizontal Legal & Policy Style */}
+      <div className="border-t border-dark-800/80 py-5 bg-dark-900/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav className="flex flex-wrap items-center justify-center gap-x-5 sm:gap-x-7 gap-y-2 text-xs sm:text-sm text-slate-400 font-medium">
+            <Link to="/privacy-policy" className="hover:text-white hover:text-sharp-400 transition-colors">
+              Privacy Policy
+            </Link>
+            <span className="text-dark-750 hidden sm:inline">•</span>
+            <Link to="/terms" className="hover:text-white hover:text-sharp-400 transition-colors">
+              Terms of Service
+            </Link>
+            <span className="text-dark-750 hidden sm:inline">•</span>
+            <Link to="/refund-policy" className="hover:text-white hover:text-sharp-400 transition-colors">
+              Refund Policy
+            </Link>
+            <span className="text-dark-750 hidden sm:inline">•</span>
+            <Link to="/license" className="hover:text-white hover:text-sharp-400 transition-colors">
+              Licensing Terms
+            </Link>
+            <span className="text-dark-750 hidden sm:inline">•</span>
+            <Link to="/contact" className="hover:text-white hover:text-sharp-400 transition-colors">
+              Contact Support
+            </Link>
+          </nav>
         </div>
       </div>
 
-      {/* Copyright */}
-      <div className="border-t border-dark-800/80 py-6 text-xs text-slate-400">
+      {/* 4. Copyright & Developer Attribution */}
+      <div className="border-t border-dark-800/80 py-6 text-xs text-slate-400 bg-dark-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-2">
             <p>© {new Date().getFullYear()} SharpShadow Digital Marketplace. All rights reserved.</p>
@@ -115,7 +216,7 @@ export const Footer: React.FC = () => {
             <p className="flex items-center gap-1.5 text-slate-300">
               <span>Developed by</span>
               <a
-                href="https://github.com/viknesh0408"
+                href={socialLinks.social_github || 'https://github.com/viknesh0408'}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sharp-400 hover:text-sharp-300 font-semibold inline-flex items-center gap-1.5 transition-colors hover:underline"
@@ -125,10 +226,12 @@ export const Footer: React.FC = () => {
               </a>
             </p>
           </div>
-          <p className="flex items-center gap-3">
+          <p className="flex items-center gap-3 text-slate-500">
             <span>Photoshop® and PSD are trademarks of Adobe Inc.</span>
             <span>•</span>
-            <Link to="/license" className="hover:text-slate-300">Commercial License</Link>
+            <Link to="/license" className="hover:text-slate-300 transition-colors">
+              Commercial License
+            </Link>
           </p>
         </div>
       </div>

@@ -6,12 +6,21 @@ import { couponService, ApplyCouponResult } from '../services/couponService';
 import { useToast } from '../context/ToastContext';
 
 export const Cart: React.FC = () => {
-  const { items, removeFromCart, clearCart, totalAmount } = useCart();
+  const {
+    items,
+    removeFromCart,
+    clearCart,
+    totalAmount,
+    appliedCoupon,
+    applyCoupon,
+    removeCoupon,
+    discountAmount,
+    finalTotal,
+  } = useCart();
   const { success, error } = useToast();
   const navigate = useNavigate();
 
   const [couponCode, setCouponCode] = useState('');
-  const [couponResult, setCouponResult] = useState<ApplyCouponResult | null>(null);
   const [applying, setApplying] = useState(false);
 
   const handleApplyCoupon = async (e: React.FormEvent) => {
@@ -24,17 +33,15 @@ export const Cart: React.FC = () => {
         couponCode.trim(),
         items.map((i) => i.id)
       );
-      setCouponResult(res);
+      applyCoupon(res);
+      setCouponCode('');
       success(res.message || 'Coupon applied successfully!');
     } catch (err: any) {
-      setCouponResult(null);
       error(err.response?.data?.message || 'Invalid or expired coupon code');
     } finally {
       setApplying(false);
     }
   };
-
-  const finalTotal = couponResult ? couponResult.finalTotal : totalAmount;
 
   if (items.length === 0) {
     return (
@@ -120,14 +127,19 @@ export const Cart: React.FC = () => {
 
                 {/* Price & Remove */}
                 <div className="flex flex-col items-end gap-1.5 sm:gap-2 shrink-0">
-                  <div className="text-right">
-                    <span className="font-mono font-bold text-sm sm:text-lg text-white">
+                  <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                    <span className={`font-mono font-bold text-sm sm:text-lg ${hasDiscount ? 'text-blue-400' : 'text-white'}`}>
                       ₹{price}
                     </span>
                     {hasDiscount && (
-                      <span className="block text-[10px] sm:text-xs font-mono text-slate-400 line-through">
-                        ₹{item.price}
-                      </span>
+                      <>
+                        <span className="text-[10px] sm:text-xs font-mono text-slate-400 line-through">
+                          ₹{item.price}
+                        </span>
+                        <span className="text-[9px] sm:text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded leading-none shrink-0 shadow-sm">
+                          {Math.round(((item.price - item.discountPrice!) / item.price) * 100)}% off
+                        </span>
+                      </>
                     )}
                   </div>
                   <button
@@ -165,13 +177,21 @@ export const Cart: React.FC = () => {
                 <span className="font-mono text-white font-semibold">₹{totalAmount.toFixed(2)}</span>
               </div>
 
-              {couponResult && (
-                <div className="flex justify-between text-emerald-400 pt-2">
-                  <span className="flex items-center gap-1">
+              {appliedCoupon && (
+                <div className="flex justify-between text-emerald-400 pt-2 items-center">
+                  <span className="flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    Coupon ({couponResult.code})
+                    <span>Coupon ({appliedCoupon.code})</span>
+                    <button
+                      type="button"
+                      onClick={removeCoupon}
+                      className="text-[10px] text-slate-400 hover:text-sharp-400 underline ml-1 cursor-pointer"
+                      title="Remove coupon"
+                    >
+                      Remove
+                    </button>
                   </span>
-                  <span className="font-mono font-semibold">-₹{couponResult.discountAmount.toFixed(2)}</span>
+                  <span className="font-mono font-semibold">-₹{discountAmount.toFixed(2)}</span>
                 </div>
               )}
 
@@ -184,33 +204,52 @@ export const Cart: React.FC = () => {
             </div>
 
             {/* Coupon Code Input */}
-            <form onSubmit={handleApplyCoupon} className="space-y-2">
-              <label className="text-xs font-mono text-slate-400 uppercase flex items-center gap-1.5">
-                <Ticket className="w-3.5 h-3.5 text-sharp-400" />
-                Have a Promo Code?
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="e.g. SHARP20"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                  className="flex-1 bg-dark-950 border border-dark-750 focus:border-sharp-500 rounded-xl px-3 py-2 text-xs font-mono uppercase text-white outline-none"
-                />
+            {appliedCoupon ? (
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Ticket className="w-4 h-4 text-emerald-400" />
+                  <div>
+                    <span className="text-xs font-mono font-bold text-emerald-400 block">{appliedCoupon.code}</span>
+                    <span className="text-[10px] text-slate-400">Coupon applied</span>
+                  </div>
+                </div>
                 <button
-                  type="submit"
-                  disabled={applying || !couponCode.trim()}
-                  className="px-4 py-2 rounded-xl bg-dark-800 hover:bg-dark-750 text-white font-medium text-xs border border-dark-700 disabled:opacity-40 transition-colors"
+                  type="button"
+                  onClick={removeCoupon}
+                  className="text-xs text-slate-400 hover:text-sharp-400 font-semibold transition-colors"
                 >
-                  {applying ? 'Checking...' : 'Apply'}
+                  Remove
                 </button>
               </div>
-              <p className="text-[10px] text-slate-500">Try code <span className="font-mono text-slate-300">SHARP20</span> for 20% off orders over ₹299</p>
-            </form>
+            ) : (
+              <form onSubmit={handleApplyCoupon} className="space-y-2">
+                <label className="text-xs font-mono text-slate-400 uppercase flex items-center gap-1.5">
+                  <Ticket className="w-3.5 h-3.5 text-sharp-400" />
+                  Have a Promo Code?
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="e.g. SHARP20"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    className="flex-1 bg-dark-950 border border-dark-750 focus:border-sharp-500 rounded-xl px-3 py-2 text-xs font-mono uppercase text-white outline-none"
+                  />
+                  <button
+                    type="submit"
+                    disabled={applying || !couponCode.trim()}
+                    className="px-4 py-2 rounded-xl bg-dark-800 hover:bg-dark-750 text-white font-medium text-xs border border-dark-700 disabled:opacity-40 transition-colors"
+                  >
+                    {applying ? 'Checking...' : 'Apply'}
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-500">Try code <span className="font-mono text-slate-300">SHARP20</span> for 20% off orders over ₹299</p>
+              </form>
+            )}
 
             {/* Checkout Button */}
             <button
-              onClick={() => navigate('/checkout', { state: { couponCode: couponResult?.code } })}
+              onClick={() => navigate('/checkout', { state: { couponCode: appliedCoupon?.code } })}
               className="w-full py-4 rounded-2xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-bold text-sm shadow-sharp-glow transition-all flex items-center justify-center gap-2"
             >
               <span>Proceed to Checkout</span>

@@ -60,6 +60,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/payments/webhook").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/coupons/validate").permitAll()
+                        .requestMatchers("/api/settings/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         

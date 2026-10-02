@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { ShieldCheck, CreditCard, QrCode, Lock, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { ShieldCheck, CreditCard, QrCode, Lock, CheckCircle2, Loader2, AlertCircle, Ticket } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { orderService } from '../services/orderService';
 import { paymentService } from '../services/paymentService';
+import { couponService } from '../services/couponService';
 import { QRPaymentModal } from '../components/QRPaymentModal';
 
 declare global {
@@ -16,17 +17,59 @@ declare global {
 }
 
 export const Checkout: React.FC = () => {
-  const { items, clearCart, totalAmount } = useCart();
+  const {
+    items,
+    clearCart,
+    totalAmount,
+    appliedCoupon,
+    applyCoupon,
+    removeCoupon,
+    discountAmount,
+    finalTotal,
+  } = useCart();
   const { user, isAuthenticated } = useAuth();
   const { success, error } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const couponCode = (location.state as any)?.couponCode;
+  const stateCouponCode = (location.state as any)?.couponCode;
 
   const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'qr'>('razorpay');
   const [processing, setProcessing] = useState(false);
   const [qrModalOrder, setQrModalOrder] = useState<string | null>(null);
+  const [inputCoupon, setInputCoupon] = useState('');
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+
+  // If a coupon code came via route state but context hasn't loaded it, validate & apply
+  useEffect(() => {
+    if (stateCouponCode && !appliedCoupon && items.length > 0) {
+      couponService
+        .validateCoupon(stateCouponCode, items.map((i) => i.id))
+        .then((res) => {
+          applyCoupon(res);
+        })
+        .catch(() => {});
+    }
+  }, [stateCouponCode, appliedCoupon, items]);
+
+  const handleApplyCheckoutCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputCoupon.trim()) return;
+    setApplyingCoupon(true);
+    try {
+      const res = await couponService.validateCoupon(
+        inputCoupon.trim(),
+        items.map((i) => i.id)
+      );
+      applyCoupon(res);
+      setInputCoupon('');
+      success(res.message || 'Coupon applied successfully!');
+    } catch (err: any) {
+      error(err.response?.data?.message || 'Invalid or expired coupon code');
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
 
   if (items.length === 0) {
     return (
@@ -71,10 +114,10 @@ export const Checkout: React.FC = () => {
   const handlePayWithRazorpay = async () => {
     setProcessing(true);
     try {
-      // 1. Create order on backend (computes price from DB)
+      // 1. Create order on backend with applied coupon (computes price from DB)
       const order = await orderService.createOrder(
         items.map((i) => i.id),
-        couponCode
+        appliedCoupon?.code || stateCouponCode
       );
 
       // If user selected QR payment mode, open QR modal
@@ -252,7 +295,7 @@ export const Checkout: React.FC = () => {
               ) : (
                 <>
                   <ShieldCheck className="w-5 h-5" />
-                  <span>Pay Securely & Get Instant Access</span>
+                  <span>Pay ₹{finalTotal.toFixed(2)} & Get Instant Access</span>
                 </>
               )}
             </button>
@@ -272,27 +315,71 @@ export const Checkout: React.FC = () => {
                     <h4 className="text-xs font-semibold text-white truncate">{item.title}</h4>
                     <span className="text-[10px] text-slate-400 font-mono">Layered PSD</span>
                   </div>
-                  <span className="font-mono text-xs font-bold text-white shrink-0">
-                    ₹{item.discountPrice != null ? item.discountPrice : item.price}
-                  </span>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className={`font-mono text-xs font-bold ${item.discountPrice != null && item.discountPrice < item.price ? 'text-blue-400' : 'text-white'}`}>
+                      ₹{item.discountPrice != null && item.discountPrice < item.price ? item.discountPrice : item.price}
+                    </span>
+                    {item.discountPrice != null && item.discountPrice < item.price && (
+                      <span className="font-mono text-[10px] text-slate-400 line-through">
+                        ₹{item.price}
+                      </span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
 
-            <div className="pt-4 border-t border-dark-800 space-y-2 text-xs">
+            {/* Inline Coupon Input for Checkout */}
+            {!appliedCoupon && (
+              <form onSubmit={handleApplyCheckoutCoupon} className="pt-2 border-t border-dark-800">
+                <label className="text-[11px] font-mono text-slate-400 uppercase flex items-center gap-1.5 mb-1.5">
+                  <Ticket className="w-3 h-3 text-sharp-400" />
+                  Have a Promo Code?
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="e.g. SHARP20"
+                    value={inputCoupon}
+                    onChange={(e) => setInputCoupon(e.target.value.toUpperCase())}
+                    className="flex-1 bg-dark-950 border border-dark-750 focus:border-sharp-500 rounded-xl px-3 py-1.5 text-xs font-mono uppercase text-white outline-none"
+                  />
+                  <button
+                    type="submit"
+                    disabled={applyingCoupon || !inputCoupon.trim()}
+                    className="px-3 py-1.5 rounded-xl bg-dark-800 hover:bg-dark-750 text-white font-medium text-xs border border-dark-700 disabled:opacity-40 transition-colors"
+                  >
+                    {applyingCoupon ? '...' : 'Apply'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            <div className="pt-3 border-t border-dark-800 space-y-2 text-xs">
               <div className="flex justify-between text-slate-400">
-                <span>Subtotal:</span>
+                <span>Subtotal ({items.length} items):</span>
                 <span className="font-mono text-white">₹{totalAmount.toFixed(2)}</span>
               </div>
-              {couponCode && (
-                <div className="flex justify-between text-emerald-400">
-                  <span>Applied Promo:</span>
-                  <span className="font-mono">{couponCode}</span>
+              {appliedCoupon && (
+                <div className="flex justify-between text-emerald-400 items-center">
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Coupon ({appliedCoupon.code})</span>
+                    <button
+                      type="button"
+                      onClick={removeCoupon}
+                      className="text-[10px] text-slate-400 hover:text-sharp-400 underline ml-1 cursor-pointer"
+                      title="Remove coupon"
+                    >
+                      Remove
+                    </button>
+                  </span>
+                  <span className="font-mono font-semibold">-₹{discountAmount.toFixed(2)}</span>
                 </div>
               )}
               <div className="flex justify-between items-baseline pt-2 border-t border-dark-800 text-sm font-bold text-white">
                 <span>Total Charge:</span>
-                <span className="font-mono text-xl text-sharp-400">₹{totalAmount.toFixed(2)}</span>
+                <span className="font-mono text-xl text-sharp-400">₹{finalTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>

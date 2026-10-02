@@ -108,55 +108,6 @@ export const Home: React.FC = () => {
               Browse Categories
             </Link>
           </div>
-
-          {/* Attractive Visual Presentation of PSD Previews */}
-          <div className="mt-16 relative max-w-5xl mx-auto">
-            <div className="relative rounded-3xl p-3 bg-gradient-to-b from-dark-800/80 via-dark-900/60 to-dark-950 border border-dark-750 shadow-2xl backdrop-blur-xl">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="relative rounded-2xl overflow-hidden aspect-[4/3] group bg-dark-950">
-                  <img
-                    src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80"
-                    alt="Wedding Suite"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-dark-950 via-dark-950/20 to-transparent opacity-80" />
-                  <div className="absolute bottom-3 left-3 text-left">
-                    <span className="text-[10px] font-mono font-bold text-sharp-400 uppercase tracking-widest">Wedding Suite</span>
-                    <h4 className="text-white text-sm font-semibold">Botanical Floral Invitation</h4>
-                  </div>
-                </div>
-
-                <div className="relative rounded-2xl overflow-hidden aspect-[4/3] group bg-dark-950 md:-translate-y-4 shadow-sharp-glow border border-sharp-500/30">
-                  <img
-                    src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80"
-                    alt="Cyberpunk Pack"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-dark-950 via-dark-950/20 to-transparent opacity-80" />
-                  <div className="absolute top-3 right-3 bg-sharp-500 text-white font-mono text-[10px] font-black px-2 py-0.5 rounded shadow">
-                    BESTSELLER
-                  </div>
-                  <div className="absolute bottom-3 left-3 text-left">
-                    <span className="text-[10px] font-mono font-bold text-sharp-400 uppercase tracking-widest">Social Media</span>
-                    <h4 className="text-white text-sm font-semibold">Cyberpunk Neon Pack (12 PSDs)</h4>
-                  </div>
-                </div>
-
-                <div className="relative rounded-2xl overflow-hidden aspect-[4/3] group bg-dark-950">
-                  <img
-                    src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80"
-                    alt="Business Card"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-dark-950 via-dark-950/20 to-transparent opacity-80" />
-                  <div className="absolute bottom-3 left-3 text-left">
-                    <span className="text-[10px] font-mono font-bold text-sharp-400 uppercase tracking-widest">Corporate</span>
-                    <h4 className="text-white text-sm font-semibold">Holo Foil Card Mockup</h4>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 

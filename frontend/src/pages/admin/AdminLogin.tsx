@@ -63,7 +63,7 @@ export const AdminLogin: React.FC = () => {
             <div className="relative">
               <input
                 type="email"
-                placeholder="admin@sharpshadow.com"
+                placeholder="admin"
                 {...register('email')}
                 className="w-full bg-dark-950 border border-dark-750 focus:border-sharp-500 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 outline-none"
               />
@@ -94,12 +94,6 @@ export const AdminLogin: React.FC = () => {
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Authenticate as Administrator</span>}
           </button>
         </form>
-
-        <div className="bg-dark-950 p-3 rounded-xl border border-dark-800 text-[11px] font-mono text-slate-400 space-y-1">
-          <p className="text-slate-300 font-semibold">Default Seed Admin Credentials:</p>
-          <p>Email: admin@sharpshadow.com</p>
-          <p>Password: Admin@123456</p>
-        </div>
       </div>
     </div>
   );

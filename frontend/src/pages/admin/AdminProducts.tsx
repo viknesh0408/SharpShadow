@@ -104,17 +104,31 @@ export const AdminProducts: React.FC = () => {
                     </td>
                     <td className="py-3 px-4 font-semibold text-white max-w-xs truncate">
                       {p.title}
-                      {p.featured && (
-                        <span className="ml-2 text-[9px] bg-sharp-500/20 text-sharp-400 border border-sharp-500/40 px-1.5 py-0.5 rounded font-mono">
-                          FEATURED
-                        </span>
-                      )}
+                      <span className="inline-flex items-center gap-1.5 ml-2">
+                        {p.featured && (
+                          <span className="text-[9px] bg-sharp-500/20 text-sharp-400 border border-sharp-500/40 px-1.5 py-0.5 rounded font-mono">
+                            FEATURED
+                          </span>
+                        )}
+                        {p.discountPrice != null && p.discountPrice < p.price && (
+                          <span className="text-[9px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-mono font-bold">
+                            {Math.round(((p.price - p.discountPrice) / p.price) * 100)}% OFF
+                          </span>
+                        )}
+                      </span>
                     </td>
                     <td className="py-3 px-4 font-mono text-slate-400">{p.category?.name}</td>
                     <td className="py-3 px-4 font-mono">
-                      <span className="font-bold text-white">₹{p.price}</span>
-                      {p.discountPrice && (
-                        <span className="block text-[10px] text-emerald-400">Sale: ₹{p.discountPrice}</span>
+                      {p.discountPrice != null && p.discountPrice < p.price ? (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-blue-400 text-sm">₹{p.discountPrice}</span>
+                          <span className="text-[11px] text-slate-400 line-through">₹{p.price}</span>
+                          <span className="text-[9px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded leading-none">
+                            {Math.round(((p.price - p.discountPrice) / p.price) * 100)}% off
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="font-bold text-white">₹{p.price}</span>
                       )}
                     </td>
                     <td className="py-3 px-4 font-mono text-[11px] text-slate-400">

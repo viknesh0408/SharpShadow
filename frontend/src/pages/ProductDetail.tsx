@@ -153,11 +153,19 @@ export const ProductDetail: React.FC = () => {
               alt={product.title}
               className="w-full h-full object-cover object-center"
             />
-            {product.featured && (
-              <span className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-gradient-to-r from-sharp-600 to-rose-500 text-white font-mono text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg shadow-sharp-glow uppercase tracking-wider">
-                Featured Asset
-              </span>
-            )}
+            {/* Top Badges (Featured & Offer Percentage) */}
+            <div className="absolute top-3 left-3 sm:top-4 sm:left-4 flex items-center gap-2 flex-wrap z-10">
+              {product.featured && (
+                <span className="bg-gradient-to-r from-sharp-600 to-rose-500 text-white font-mono text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg shadow-sharp-glow uppercase tracking-wider">
+                  Featured Asset
+                </span>
+              )}
+              {hasDiscount && (
+                <span className="bg-emerald-600 text-white font-mono text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg shadow-md uppercase tracking-wider">
+                  {Math.round(((product.price - product.discountPrice!) / product.price) * 100)}% off
+                </span>
+              )}
+            </div>
             <span className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-dark-950/80 backdrop-blur-md border border-dark-750 text-slate-200 font-mono text-[10px] sm:text-xs font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg flex items-center gap-1 sm:gap-1.5">
               <Layers className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sharp-400" />
               Layered PSD
@@ -200,17 +208,17 @@ export const ProductDetail: React.FC = () => {
             </div>
 
             {/* Price Row */}
-            <div className="flex items-baseline gap-2.5 sm:gap-3 pb-5 sm:pb-6 border-b border-dark-800">
-              <span className="text-2xl sm:text-4xl font-black font-mono text-white">
+            <div className="flex items-center gap-2.5 sm:gap-3.5 pb-5 sm:pb-6 border-b border-dark-800 flex-wrap">
+              <span className={`text-2xl sm:text-4xl font-black font-mono ${hasDiscount ? 'text-blue-400' : 'text-white'}`}>
                 ₹{hasDiscount ? product.discountPrice : product.price}
               </span>
               {hasDiscount && (
                 <>
-                  <span className="text-lg font-mono text-slate-400 line-through">
+                  <span className="text-base sm:text-xl font-mono text-slate-400 line-through">
                     ₹{product.price}
                   </span>
-                  <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
-                    Save {Math.round(((product.price - (product.discountPrice || 0)) / product.price) * 100)}%
+                  <span className="text-xs sm:text-sm font-bold bg-emerald-600 text-white px-2.5 py-0.5 rounded shadow-sm">
+                    {Math.round(((product.price - product.discountPrice!) / product.price) * 100)}% off
                   </span>
                 </>
               )}

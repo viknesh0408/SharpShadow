@@ -57,12 +57,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Subtle dark gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-dark-950/80 via-transparent to-black/20 opacity-60 group-hover:opacity-40 transition-opacity" />
 
-        {/* Featured Badge */}
-        {product.featured && (
-          <span className="absolute top-2.5 left-2.5 bg-gradient-to-r from-sharp-600 to-rose-500 text-white font-mono text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sharp-glow uppercase tracking-wider">
-            Featured
-          </span>
-        )}
+        {/* Badges: Featured & Offer Percentage */}
+        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap z-10">
+          {product.featured && (
+            <span className="bg-gradient-to-r from-sharp-600 to-rose-500 text-white font-mono text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sharp-glow uppercase tracking-wider">
+              Featured
+            </span>
+          )}
+          {hasDiscount && (
+            <span className="bg-emerald-600 text-white font-mono text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm uppercase tracking-wider">
+              {Math.round(((product.price - product.discountPrice!) / product.price) * 100)}% off
+            </span>
+          )}
+        </div>
 
         {/* File Type Pill */}
         <span className="absolute top-2.5 right-2.5 bg-dark-950/80 backdrop-blur-md border border-dark-750 text-slate-200 font-mono text-[10px] font-semibold px-2 py-0.5 rounded-md flex items-center gap-1">
@@ -108,12 +115,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           
           {/* Price */}
           <div className="flex flex-col min-w-0">
-            <div className="flex items-baseline gap-1 sm:gap-1.5">
-              <span className="text-sm sm:text-lg font-bold font-mono text-white truncate">
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <span className={`text-sm sm:text-lg font-bold font-mono ${hasDiscount ? 'text-blue-400' : 'text-white'} truncate`}>
                 ₹{hasDiscount ? product.discountPrice : product.price}
               </span>
               {hasDiscount && (
-                <span className="hidden xs:inline text-[10px] sm:text-xs font-mono text-slate-400 line-through">
+                <span className="text-[10px] sm:text-xs font-mono text-slate-400 line-through">
                   ₹{product.price}
                 </span>
               )}

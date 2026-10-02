@@ -78,6 +78,15 @@ export const AdminProductForm: React.FC = () => {
   });
 
   const titleValue = watch('title');
+  const watchPrice = watch('price');
+  const watchDiscountPrice = watch('discountPrice');
+
+  const regularPriceNum = Number(watchPrice) || 0;
+  const discountPriceNum = Number(watchDiscountPrice) || 0;
+  const hasLiveDiscount = regularPriceNum > 0 && discountPriceNum > 0 && discountPriceNum < regularPriceNum;
+  const liveDiscountPercent = hasLiveDiscount
+    ? Math.round(((regularPriceNum - discountPriceNum) / regularPriceNum) * 100)
+    : 0;
 
   // Load initial data
   useEffect(() => {
@@ -309,7 +318,7 @@ export const AdminProductForm: React.FC = () => {
                 step="0.01"
                 placeholder="499.00"
                 {...register('price')}
-                className="w-full bg-dark-950 border border-dark-750 focus:border-sharp-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none"
+                className="w-full bg-dark-950 border border-dark-750 focus:border-sharp-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none font-mono"
               />
               {errors.price && <p className="text-xs text-sharp-400 mt-1">{errors.price.message}</p>}
             </div>
@@ -321,10 +330,39 @@ export const AdminProductForm: React.FC = () => {
                 step="0.01"
                 placeholder="349.00 (Optional)"
                 {...register('discountPrice')}
-                className="w-full bg-dark-950 border border-dark-750 focus:border-sharp-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none"
+                className="w-full bg-dark-950 border border-dark-750 focus:border-sharp-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none font-mono"
               />
             </div>
           </div>
+
+          {/* Live Discount UI Preview (As Requested) */}
+          {hasLiveDiscount && (
+            <div className="p-3.5 bg-dark-950 border border-dark-750 rounded-2xl flex items-center justify-between flex-wrap gap-3 animate-in fade-in">
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-mono text-slate-400">Storefront Display Preview:</span>
+                <div className="flex items-center gap-2.5 bg-dark-900 border border-dark-800 px-3 py-1.5 rounded-xl">
+                  <span className="text-lg font-bold font-mono text-blue-400">
+                    ₹{discountPriceNum}
+                  </span>
+                  <span className="text-xs font-mono text-slate-400 line-through">
+                    ₹{regularPriceNum}
+                  </span>
+                  <span className="text-[11px] font-bold bg-emerald-600 text-white px-2 py-0.5 rounded shadow-sm">
+                    {liveDiscountPercent}% off
+                  </span>
+                </div>
+              </div>
+              <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+                Customer saves ₹{(regularPriceNum - discountPriceNum).toFixed(2)} ({liveDiscountPercent}%)
+              </span>
+            </div>
+          )}
+
+          {discountPriceNum > 0 && regularPriceNum > 0 && discountPriceNum >= regularPriceNum && (
+            <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-400 flex items-center gap-2">
+              <span>⚠️ Discount price (₹{discountPriceNum}) should be lower than regular price (₹{regularPriceNum}) to show a sale discount.</span>
+            </div>
+          )}
         </div>
 
         {/* File & Private Asset Uploads (Section 16 & 17) */}
