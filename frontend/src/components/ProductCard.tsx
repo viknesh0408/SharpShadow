@@ -52,6 +52,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           alt={product.title}
           loading="lazy"
           className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            if (!target.src.includes('unsplash.com')) {
+              target.src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80';
+            }
+          }}
         />
         
         {/* Subtle dark gradient overlay */}

@@ -152,6 +152,12 @@ export const ProductDetail: React.FC = () => {
               src={activeImage}
               alt={product.title}
               className="w-full h-full object-cover object-center"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (!target.src.includes('unsplash.com')) {
+                  target.src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80';
+                }
+              }}
             />
             {/* Top Badges (Featured & Offer Percentage) */}
             <div className="absolute top-3 left-3 sm:top-4 sm:left-4 flex items-center gap-2 flex-wrap z-10">
@@ -183,7 +189,17 @@ export const ProductDetail: React.FC = () => {
                     activeImage === img ? 'border-sharp-500 shadow-sharp-glow scale-105' : 'border-dark-800 opacity-60 hover:opacity-100'
                   }`}
                 >
-                  <img src={img} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                  <img
+                    src={img}
+                    alt={`Preview ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      if (!target.src.includes('unsplash.com')) {
+                        target.src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80';
+                      }
+                    }}
+                  />
                 </button>
               ))}
             </div>

@@ -189,7 +189,17 @@ export const AdminDashboard: React.FC = () => {
               {stats.popularProducts?.map((p) => (
                 <tr key={p.id} className="hover:bg-dark-850/50">
                   <td className="py-2.5 px-4">
-                    <img src={p.thumbnailUrl} alt={p.title} className="w-10 h-10 rounded-lg object-cover bg-dark-950" />
+                    <img
+                      src={p.thumbnailUrl}
+                      alt={p.title}
+                      className="w-10 h-10 rounded-lg object-cover bg-dark-950"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        if (!target.src.includes('unsplash.com')) {
+                          target.src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80';
+                        }
+                      }}
+                    />
                   </td>
                   <td className="py-2.5 px-4 font-semibold text-white max-w-xs truncate">{p.title}</td>
                   <td className="py-2.5 px-4 font-mono text-slate-400">{p.category?.name}</td>

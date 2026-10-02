@@ -100,7 +100,17 @@ export const AdminProducts: React.FC = () => {
                 {filtered.map((p) => (
                   <tr key={p.id} className="hover:bg-dark-850/50">
                     <td className="py-3 px-4">
-                      <img src={p.thumbnailUrl} alt={p.title} className="w-12 h-12 rounded-xl object-cover bg-dark-950 shrink-0" />
+                      <img
+                        src={p.thumbnailUrl}
+                        alt={p.title}
+                        className="w-12 h-12 rounded-xl object-cover bg-dark-950 shrink-0"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          if (!target.src.includes('unsplash.com')) {
+                            target.src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80';
+                          }
+                        }}
+                      />
                     </td>
                     <td className="py-3 px-4 font-semibold text-white max-w-xs truncate">
                       {p.title}
