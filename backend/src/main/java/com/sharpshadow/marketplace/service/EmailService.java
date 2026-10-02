@@ -1,7 +1,7 @@
 package com.sharpshadow.marketplace.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -12,14 +12,20 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    // Optional — app starts fine even if MAIL_USERNAME/PASSWORD are not set.
+    // Spring Boot Mail auto-configuration is still active but the sender may
+    // fail if credentials are blank; we guard every send attempt below.
+    @Autowired(required = false)
+    private JavaMailSender mailSender;
 
     @Value("${sharpshadow.mail.from:noreply@sharpshadow.com}")
     private String fromAddress;
+
+    @Value("${spring.mail.username:}")
+    private String mailUsername;
 
     @Value("${sharpshadow.app.frontend-url:http://localhost:5173}")
     private String frontendUrl;
@@ -27,9 +33,17 @@ public class EmailService {
     /**
      * Sends a password reset email containing a single-use token link.
      * Fires asynchronously so the HTTP response is returned immediately.
+     * Silently skips sending if SMTP credentials are not configured.
      */
     @Async
     public void sendPasswordResetEmail(String toEmail, String userName, String resetToken) {
+        if (mailSender == null || mailUsername == null || mailUsername.isBlank()) {
+            log.warn("SMTP not configured (MAIL_USERNAME is not set). " +
+                     "Password reset email for {} was NOT sent. " +
+                     "Set MAIL_USERNAME and MAIL_PASSWORD in Railway to enable emails.", toEmail);
+            return;
+        }
+
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -39,12 +53,10 @@ public class EmailService {
             helper.setSubject("Reset Your SharpShadow Password");
 
             String resetUrl = frontendUrl + "/reset-password?token=" + resetToken;
-
-            String html = buildResetEmailHtml(userName, resetUrl);
-            helper.setText(html, true);
+            helper.setText(buildResetEmailHtml(userName, resetUrl), true);
 
             mailSender.send(message);
-            log.info("Password reset email sent to {}", toEmail);
+            log.info("Password reset email sent successfully to {}", toEmail);
 
         } catch (MessagingException | java.io.UnsupportedEncodingException e) {
             // Log the error but do NOT propagate - the API should still return success
