@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.mail.internet.MimeMessage;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -280,31 +281,35 @@ public class EmailService {
      */
     @Async
     public void sendEmailVerificationOtp(String toEmail, String userName, String otp) {
+        String encodedEmail = URLEncoder.encode(toEmail, StandardCharsets.UTF_8);
+        String verifyUrl = frontendUrl + "/verify-email?email=" + encodedEmail + "&otp=" + otp;
+
         log.info("================================================================================");
         log.info("🔐 [EMAIL VERIFICATION OTP GENERATED]");
-        log.info("   Recipient: {}", toEmail);
-        log.info("   OTP Code:  {}", otp);
-        log.info("   Expires:   15 minutes");
+        log.info("   Recipient:   {}", toEmail);
+        log.info("   OTP Code:    {}", otp);
+        log.info("   Verify URL:  {}", verifyUrl);
+        log.info("   Expires:     15 minutes");
         log.info("================================================================================");
 
         if (brevoApiKey != null && !brevoApiKey.isBlank()) {
-            sendOtpViaBrevo(toEmail, userName, otp);
+            sendOtpViaBrevo(toEmail, userName, otp, verifyUrl);
         } else if (resendApiKey != null && !resendApiKey.isBlank()) {
-            sendOtpViaResend(toEmail, userName, otp);
+            sendOtpViaResend(toEmail, userName, otp, verifyUrl);
         } else if (mailSender != null && mailUsername != null && !mailUsername.isBlank()) {
-            sendOtpViaSmtp(toEmail, userName, otp);
+            sendOtpViaSmtp(toEmail, userName, otp, verifyUrl);
         } else {
             log.warn("⚠️ No active email delivery service configured! Brevo API key is not set. " +
                      "The verification code has been logged to the console above for testing.");
         }
     }
 
-    private void sendOtpViaBrevo(String toEmail, String userName, String otp) {
+    private void sendOtpViaBrevo(String toEmail, String userName, String otp, String verifyUrl) {
         try {
             log.info("Sending email verification OTP to {} via Brevo HTTPS API...", toEmail);
             String senderEmail = (mailUsername != null && !mailUsername.isBlank()) ? mailUsername : fromAddress;
 
-            String html = buildOtpEmailHtml(userName, otp);
+            String html = buildOtpEmailHtml(userName, toEmail, otp, verifyUrl);
             Map<String, Object> payload = Map.of(
                     "sender", Map.of("name", "SharpShadow Marketplace", "email", senderEmail),
                     "to", List.of(Map.of("email", toEmail, "name", userName != null && !userName.isBlank() ? userName : "Customer")),
@@ -335,10 +340,10 @@ public class EmailService {
         }
     }
 
-    private void sendOtpViaResend(String toEmail, String userName, String otp) {
+    private void sendOtpViaResend(String toEmail, String userName, String otp, String verifyUrl) {
         try {
             log.info("Sending email verification OTP to {} via Resend HTTPS API...", toEmail);
-            String html = buildOtpEmailHtml(userName, otp);
+            String html = buildOtpEmailHtml(userName, toEmail, otp, verifyUrl);
             String from = "SharpShadow <onboarding@resend.dev>";
 
             Map<String, Object> payload = Map.of(
@@ -370,7 +375,7 @@ public class EmailService {
         }
     }
 
-    private void sendOtpViaSmtp(String toEmail, String userName, String otp) {
+    private void sendOtpViaSmtp(String toEmail, String userName, String otp, String verifyUrl) {
         try {
             log.info("Attempting to send verification OTP to {} via SMTP user {}", toEmail, mailUsername);
 
@@ -381,7 +386,7 @@ public class EmailService {
             helper.setFrom(mailUsername, displayName);
             helper.setTo(toEmail);
             helper.setSubject(otp + " is your SharpShadow verification code");
-            helper.setText(buildOtpEmailHtml(userName, otp), true);
+            helper.setText(buildOtpEmailHtml(userName, toEmail, otp, verifyUrl), true);
 
             mailSender.send(message);
             log.info("✅ Verification OTP email sent successfully via SMTP to {}", toEmail);
@@ -391,8 +396,9 @@ public class EmailService {
         }
     }
 
-    private String buildOtpEmailHtml(String userName, String otp) {
+    private String buildOtpEmailHtml(String userName, String toEmail, String otp, String verifyUrl) {
         String safeName = (userName != null && !userName.isBlank()) ? userName : "there";
+        String manualUrl = frontendUrl + "/verify-email";
         return """
                 <!DOCTYPE html>
                 <html lang="en">
@@ -428,11 +434,14 @@ public class EmailService {
                               </h1>
                               <p style="margin:0 0 24px;font-size:14px;color:#a1a1aa;line-height:1.6;">
                                 Hi %s,<br><br>
-                                Welcome to SharpShadow! To complete your account registration and ensure the security of your account, please enter the following 6-digit verification code:
+                                Welcome to SharpShadow! To activate your account and complete your signup, click the button below or enter the 6-digit code:
                               </p>
 
                               <!-- OTP Code Display -->
-                              <div style="background:#09090b;border:2px dashed #ef4444;border-radius:16px;padding:28px 20px;text-align:center;margin:0 0 28px;">
+                              <div style="background:#09090b;border:2px dashed #ef4444;border-radius:16px;padding:24px 20px;text-align:center;margin:0 0 24px;">
+                                <p style="margin:0 0 8px;font-size:12px;font-weight:600;color:#71717a;text-transform:uppercase;letter-spacing:1px;">
+                                  Your 6-Digit Code
+                                </p>
                                 <div style="font-size:38px;font-weight:900;letter-spacing:12px;color:#ffffff;font-family:Consolas, Monaco, 'Courier New', monospace;padding-left:12px;">
                                   %s
                                 </div>
@@ -441,11 +450,38 @@ public class EmailService {
                                 </p>
                               </div>
 
+                              <!-- 1-Click Verification Button -->
+                              <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;width:100%%;">
+                                <tr>
+                                  <td align="center">
+                                    <table cellpadding="0" cellspacing="0">
+                                      <tr>
+                                        <td style="background:linear-gradient(135deg,#dc2626,#ef4444);border-radius:12px;">
+                                          <a href="%s"
+                                             style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;
+                                                    color:#fff;text-decoration:none;letter-spacing:0.3px;border-radius:12px;">
+                                            Verify Email Automatically →
+                                          </a>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+
+                              <!-- Manual URL instructions -->
+                              <p style="margin:0 0 6px;font-size:12px;color:#71717a;text-align:center;">
+                                Or enter your code manually at:
+                              </p>
+                              <p style="margin:0 0 24px;font-size:12px;color:#a1a1aa;text-align:center;">
+                                <a href="%s" style="color:#ef4444;text-decoration:underline;">%s</a>
+                              </p>
+
                               <!-- Security Note -->
                               <div style="background:#09090b;border:1px solid #27272a;border-radius:12px;padding:16px 20px;">
                                 <p style="margin:0;font-size:12px;color:#71717a;line-height:1.6;">
                                   🔒 <strong style="color:#a1a1aa;">Didn't create this account?</strong>
-                                  If you did not register on SharpShadow, please ignore this email. No account will be activated without this verification code.
+                                  If you did not register on SharpShadow, please ignore this email. No account will be activated without this verification.
                                 </p>
                               </div>
                             </td>
@@ -467,6 +503,6 @@ public class EmailService {
                   </table>
                 </body>
                 </html>
-                """.formatted(safeName, otp);
+                """.formatted(safeName, otp, verifyUrl, manualUrl, manualUrl);
     }
 }

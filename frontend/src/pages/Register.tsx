@@ -133,6 +133,16 @@ export const Register: React.FC = () => {
 
         {step === 'form' ? (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="bg-dark-950 border border-dark-750/70 rounded-xl p-3.5 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2 text-slate-300">
+                <KeyRound className="w-4 h-4 text-sharp-400 shrink-0" />
+                <span>Already received an OTP code?</span>
+              </div>
+              <Link to="/verify-email" className="text-sharp-400 hover:text-sharp-300 font-semibold inline-flex items-center gap-1">
+                Enter Code →
+              </Link>
+            </div>
+
             <div>
               <label className="text-xs font-mono text-slate-400 uppercase block mb-1.5">Full Name</label>
               <div className="relative">
