@@ -35,12 +35,33 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<ApiResponse<String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        // Return clear, secure response without exposing user existence
+    public ResponseEntity<ApiResponse<ForgotPasswordResponse>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        ForgotPasswordResponse response = userService.forgotPassword(request);
         return ResponseEntity.ok(ApiResponse.success(
-                "If an account with this email exists, a password reset link has been dispatched.",
+                response,
                 "Password reset request processed"
         ));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        userService.resetPassword(request);
+        return ResponseEntity.ok(ApiResponse.success(
+                "Password has been reset successfully. You can now log in with your new password.",
+                "Password reset successful"
+        ));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<String>> changePassword(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @Valid @RequestBody ChangePasswordRequest request
+    ) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(ApiResponse.error("Not authenticated", "/api/auth/change-password"));
+        }
+        userService.changePassword(principal.getEmail(), request);
+        return ResponseEntity.ok(ApiResponse.success("Your password has been changed successfully."));
     }
 
     @GetMapping("/me")

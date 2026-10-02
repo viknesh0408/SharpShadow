@@ -18,6 +18,7 @@ import { Account } from './pages/Account';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { ForgotPassword } from './pages/ForgotPassword';
+import { ResetPassword } from './pages/ResetPassword';
 import {
   PrivacyPolicy,
   Terms,
@@ -89,6 +90,7 @@ export const App: React.FC = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Legal & Policy Pages (Section 25) */}
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />

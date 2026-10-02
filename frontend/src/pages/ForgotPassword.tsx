@@ -8,6 +8,7 @@ export const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [resetToken, setResetToken] = useState<string | null>(null);
   const { error } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -16,7 +17,10 @@ export const ForgotPassword: React.FC = () => {
 
     setLoading(true);
     try {
-      await authService.forgotPassword(email.trim());
+      const res = await authService.forgotPassword(email.trim());
+      if (res.resetToken) {
+        setResetToken(res.resetToken);
+      }
       setSubmitted(true);
     } catch (err: any) {
       error(err.response?.data?.message || 'Could not process password reset request');
@@ -31,23 +35,38 @@ export const ForgotPassword: React.FC = () => {
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold text-white">Reset Password</h1>
           <p className="text-xs text-slate-400">
-            Enter the email address associated with your account and we will send instructions.
+            Enter the email address associated with your account to reset your credentials.
           </p>
         </div>
 
         {submitted ? (
-          <div className="bg-dark-950 border border-dark-800 rounded-2xl p-6 text-center space-y-3">
+          <div className="bg-dark-950 border border-dark-800 rounded-2xl p-6 text-center space-y-4">
             <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
-            <h3 className="font-semibold text-white text-sm">Request Processed</h3>
+            <h3 className="font-semibold text-white text-sm">Reset Request Processed</h3>
             <p className="text-xs text-slate-400 leading-relaxed">
-              If an account matching <span className="text-slate-200 font-mono">{email}</span> exists, you will receive password reset instructions.
+              If an account matching <span className="text-slate-200 font-mono">{email}</span> exists, you can proceed to choose a new password.
             </p>
-            <Link
-              to="/login"
-              className="inline-block mt-2 text-xs font-semibold text-sharp-400 hover:text-sharp-300"
-            >
-              Return to Login
-            </Link>
+
+            {resetToken ? (
+              <div className="pt-2 space-y-3">
+                <Link
+                  to={`/reset-password?token=${encodeURIComponent(resetToken)}`}
+                  className="w-full inline-flex items-center justify-center py-2.5 px-4 rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 text-white font-semibold text-xs shadow-sharp-glow transition-all"
+                >
+                  Click Here to Reset Password Now →
+                </Link>
+                <p className="text-[10px] text-slate-500 font-mono">
+                  Token: {resetToken.slice(0, 8)}... (Valid for 30 minutes)
+                </p>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="inline-block mt-2 text-xs font-semibold text-sharp-400 hover:text-sharp-300"
+              >
+                Return to Login
+              </Link>
+            )}
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">

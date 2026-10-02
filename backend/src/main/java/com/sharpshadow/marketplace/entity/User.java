@@ -33,6 +33,12 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    @Column(name = "reset_password_token", length = 100)
+    private String resetPasswordToken;
+
+    @Column(name = "reset_password_expiry")
+    private LocalDateTime resetPasswordExpiry;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
