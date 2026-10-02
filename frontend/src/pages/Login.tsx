@@ -55,8 +55,8 @@ export const Login: React.FC = () => {
       success('Logged in successfully!');
       navigate(redirect);
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Invalid email or password';
-      if (msg.includes('EMAIL_NOT_VERIFIED')) {
+      const msg = err.response?.data?.message || err.message || 'Invalid email or password';
+      if (msg.includes('EMAIL_NOT_VERIFIED') || msg.toLowerCase().includes('not verified')) {
         setUnverifiedEmail(data.email.trim().toLowerCase());
         setStep('otp');
         setCountdown(60);
@@ -126,16 +126,6 @@ export const Login: React.FC = () => {
 
         {step === 'login' ? (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="bg-dark-950 border border-dark-750/70 rounded-xl p-3.5 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 text-slate-300">
-                <KeyRound className="w-4 h-4 text-sharp-400 shrink-0" />
-                <span>Received an email OTP code?</span>
-              </div>
-              <Link to="/verify-email" className="text-sharp-400 hover:text-sharp-300 font-semibold inline-flex items-center gap-1">
-                Verify Email →
-              </Link>
-            </div>
-
             <div>
               <label className="text-xs font-mono text-slate-400 uppercase block mb-1.5">Email Address</label>
               <div className="relative">
