@@ -1,5 +1,6 @@
 package com.sharpshadow.marketplace.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,16 +10,24 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import jakarta.mail.internet.MimeMessage;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
 public class EmailService {
 
-    // Optional — app starts fine even if MAIL_USERNAME/PASSWORD are not set.
-    // Spring Boot Mail auto-configuration is still active but the sender may
-    // fail if credentials are blank; we guard every send attempt below.
     @Autowired(required = false)
     private JavaMailSender mailSender;
+
+    @Autowired(required = false)
+    private ObjectMapper objectMapper;
 
     @Value("${sharpshadow.mail.from:noreply@sharpshadow.com}")
     private String fromAddress;
@@ -26,50 +35,153 @@ public class EmailService {
     @Value("${spring.mail.username:}")
     private String mailUsername;
 
+    @Value("${sharpshadow.mail.brevo-api-key:}")
+    private String brevoApiKey;
+
+    @Value("${sharpshadow.mail.resend-api-key:}")
+    private String resendApiKey;
+
     @Value("${sharpshadow.app.frontend-url:http://localhost:5173}")
     private String frontendUrl;
+
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
+
+    private ObjectMapper getObjectMapper() {
+        return objectMapper != null ? objectMapper : new ObjectMapper();
+    }
 
     /**
      * Sends a password reset email containing a single-use token link.
      * Fires asynchronously so the HTTP response is returned immediately.
-     * Silently skips sending if SMTP credentials are not configured.
+     * Supports:
+     * 1. Brevo HTTP API (recommended on Railway — port 443 is never blocked)
+     * 2. Resend HTTP API
+     * 3. Standard SMTP (fails on Railway Free/Hobby plans due to port 587 block)
+     * Always logs the reset link to stdout as a fallback.
      */
     @Async
     public void sendPasswordResetEmail(String toEmail, String userName, String resetToken) {
-        if (mailSender == null || mailUsername == null || mailUsername.isBlank()) {
-            log.warn("SMTP not configured (MAIL_USERNAME is not set). " +
-                     "Password reset email for {} was NOT sent. " +
-                     "Set MAIL_USERNAME and MAIL_PASSWORD in Railway to enable emails.", toEmail);
-            return;
-        }
+        String resetUrl = frontendUrl + "/reset-password?token=" + resetToken;
 
+        // Fail-safe log: Always print the reset link in the server logs so the admin can test immediately!
+        log.info("================================================================================");
+        log.info("🔑 [PASSWORD RESET LINK GENERATED]");
+        log.info("   Recipient: {}", toEmail);
+        log.info("   Reset URL: {}", resetUrl);
+        log.info("================================================================================");
+
+        if (brevoApiKey != null && !brevoApiKey.isBlank()) {
+            sendViaBrevo(toEmail, userName, resetUrl);
+        } else if (resendApiKey != null && !resendApiKey.isBlank()) {
+            sendViaResend(toEmail, userName, resetUrl);
+        } else if (mailSender != null && mailUsername != null && !mailUsername.isBlank()) {
+            sendViaSmtp(toEmail, userName, resetUrl);
+        } else {
+            log.warn("⚠️ No active email delivery service configured! " +
+                     "Railway blocks outbound SMTP ports 25, 465, and 587 on Free/Hobby plans. " +
+                     "To send real emails, add BREVO_API_KEY to your Railway backend variables. " +
+                     "Meanwhile, copy the reset URL from the log above.");
+        }
+    }
+
+    private void sendViaBrevo(String toEmail, String userName, String resetUrl) {
+        try {
+            log.info("Sending password reset email to {} via Brevo HTTPS API...", toEmail);
+            String senderEmail = (mailUsername != null && !mailUsername.isBlank()) ? mailUsername : fromAddress;
+
+            String html = buildResetEmailHtml(userName, resetUrl);
+            Map<String, Object> payload = Map.of(
+                    "sender", Map.of("name", "SharpShadow Marketplace", "email", senderEmail),
+                    "to", List.of(Map.of("email", toEmail, "name", userName != null && !userName.isBlank() ? userName : "Valued Customer")),
+                    "subject", "Reset Your SharpShadow Password",
+                    "htmlContent", html
+            );
+
+            String jsonBody = getObjectMapper().writeValueAsString(payload);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                    .header("accept", "application/json")
+                    .header("api-key", brevoApiKey.trim())
+                    .header("content-type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
+                    .timeout(Duration.ofSeconds(15))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                log.info("✅ Password reset email successfully sent via Brevo to {}. Response: {}", toEmail, response.body());
+            } else {
+                log.error("❌ Failed to send email via Brevo. HTTP Status: {}, Response: {}", response.statusCode(), response.body());
+            }
+        } catch (Exception e) {
+            log.error("❌ Exception while sending email via Brevo: {}", e.getMessage(), e);
+        }
+    }
+
+    private void sendViaResend(String toEmail, String userName, String resetUrl) {
+        try {
+            log.info("Sending password reset email to {} via Resend HTTPS API...", toEmail);
+            String html = buildResetEmailHtml(userName, resetUrl);
+            String from = "SharpShadow <onboarding@resend.dev>";
+
+            Map<String, Object> payload = Map.of(
+                    "from", from,
+                    "to", List.of(toEmail),
+                    "subject", "Reset Your SharpShadow Password",
+                    "html", html
+            );
+
+            String jsonBody = getObjectMapper().writeValueAsString(payload);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.resend.com/emails"))
+                    .header("Authorization", "Bearer " + resendApiKey.trim())
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
+                    .timeout(Duration.ofSeconds(15))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                log.info("✅ Password reset email successfully sent via Resend to {}. Response: {}", toEmail, response.body());
+            } else {
+                log.error("❌ Failed to send email via Resend. HTTP Status: {}, Response: {}", response.statusCode(), response.body());
+            }
+        } catch (Exception e) {
+            log.error("❌ Exception while sending email via Resend: {}", e.getMessage(), e);
+        }
+    }
+
+    private void sendViaSmtp(String toEmail, String userName, String resetUrl) {
         try {
             log.info("Attempting to send password reset email to {} via SMTP user {}", toEmail, mailUsername);
 
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            // Gmail requires the From address to match the authenticated account.
-            // Use MAIL_USERNAME as the actual sending address.
-            // MAIL_FROM only sets the display name in that case.
             String displayName = "SharpShadow Marketplace";
             helper.setFrom(mailUsername, displayName);
             helper.setTo(toEmail);
             helper.setSubject("Reset Your SharpShadow Password");
-
-            String resetUrl = frontendUrl + "/reset-password?token=" + resetToken;
             helper.setText(buildResetEmailHtml(userName, resetUrl), true);
 
             mailSender.send(message);
-            log.info("Password reset email sent successfully to {}", toEmail);
+            log.info("✅ Password reset email sent successfully via SMTP to {}", toEmail);
 
         } catch (Exception e) {
-            // Log the full exception so it appears in Railway deploy logs.
-            log.error("Failed to send password reset email to {} — SMTP error: {}", toEmail, e.getMessage(), e);
+            log.error("❌ Failed to send password reset email to {} via SMTP: {}. " +
+                      "(Note: Railway blocks outbound SMTP ports 25, 465, and 587 on Free/Hobby plans. " +
+                      "Please use BREVO_API_KEY to send emails reliably over HTTPS.)", toEmail, e.getMessage());
         }
     }
 
     private String buildResetEmailHtml(String userName, String resetUrl) {
+        String safeName = (userName != null && !userName.isBlank()) ? userName : "there";
         return """
                 <!DOCTYPE html>
                 <html lang="en">
@@ -160,6 +272,6 @@ public class EmailService {
                   </table>
                 </body>
                 </html>
-                """.formatted(userName, resetUrl, resetUrl);
+                """.formatted(safeName, resetUrl, resetUrl);
     }
 }

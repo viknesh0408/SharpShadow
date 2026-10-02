@@ -30,9 +30,9 @@ spring:
           starttls:
             enable: true
             required: true
-        connectiontimeout: 5000
-        timeout: 5000
-        writetimeout: 5000
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 sharpshadow:
   jwt:
@@ -64,6 +64,8 @@ sharpshadow:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173,https://*.up.railway.app,https://*.vercel.app}
   mail:
     from: ${MAIL_FROM:noreply@sharpshadow.com}
+    brevo-api-key: ${BREVO_API_KEY:}
+    resend-api-key: ${RESEND_API_KEY:}
   app:
     frontend-url: ${FRONTEND_URL:http://localhost:5173}
 
