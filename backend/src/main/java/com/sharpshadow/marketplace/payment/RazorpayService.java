@@ -49,8 +49,12 @@ public class RazorpayService {
             throw new BadRequestException("Order amount must be greater than zero");
         }
 
+        if (keyId == null || keyId.trim().isEmpty() || keySecret == null || keySecret.trim().isEmpty()) {
+            throw new BadRequestException("Razorpay API Keys are not configured. Please add valid RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to your environment variables.");
+        }
+
         try {
-            RazorpayClient razorpay = new RazorpayClient(keyId, keySecret);
+            RazorpayClient razorpay = new RazorpayClient(keyId.trim(), keySecret.trim());
 
             JSONObject orderRequest = new JSONObject();
             orderRequest.put("amount", amountInPaise);
@@ -66,7 +70,11 @@ public class RazorpayService {
             return order.get("id");
         } catch (RazorpayException e) {
             log.error("Razorpay order creation failed for receipt {}: {}", internalOrderNumber, e.getMessage());
-            throw new BadRequestException("Payment gateway order creation failed: " + e.getMessage());
+            String msg = e.getMessage() != null ? e.getMessage() : "";
+            if (msg.toLowerCase().contains("authentication failed") || msg.toLowerCase().contains("unauthorized")) {
+                throw new BadRequestException("Razorpay authentication failed: Your RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is invalid or expired. Check your Razorpay Dashboard API Keys.");
+            }
+            throw new BadRequestException("Payment gateway order creation failed: " + msg);
         }
     }
 
