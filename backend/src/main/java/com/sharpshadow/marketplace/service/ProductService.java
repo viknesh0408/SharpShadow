@@ -14,6 +14,7 @@ import com.sharpshadow.marketplace.repository.CategoryRepository;
 import com.sharpshadow.marketplace.repository.OrderRepository;
 import com.sharpshadow.marketplace.repository.ProductImageRepository;
 import com.sharpshadow.marketplace.repository.ProductRepository;
+import com.sharpshadow.marketplace.repository.ProductSpecifications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -62,13 +63,17 @@ public class ProductService {
         }
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Product> productPage = productRepository.filterProducts(
-                StringUtils.hasText(categorySlug) ? categorySlug : null,
-                minPrice,
-                maxPrice,
-                StringUtils.hasText(query) ? query.trim() : null,
-                pageable
-        );
+        Page<Product> productPage;
+
+        boolean hasFilters = StringUtils.hasText(categorySlug) || minPrice != null || maxPrice != null || StringUtils.hasText(query);
+        if (!hasFilters) {
+            productPage = productRepository.findByStatus("PUBLISHED", pageable);
+        } else {
+            productPage = productRepository.findAll(
+                    ProductSpecifications.filter(categorySlug, minPrice, maxPrice, query),
+                    pageable
+            );
+        }
 
         return PageResponse.of(productPage.map(p -> {
             boolean purchased = currentUserId != null &&
