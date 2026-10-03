@@ -186,14 +186,21 @@ In your [Razorpay Dashboard](https://dashboard.razorpay.com/):
 Go to **Railway Dashboard ➔ Backend service ➔ Variables** tab, and configure:
 
 ```env
-# 1. Environment & Server Profile
-SPRING_PROFILES_ACTIVE=mysql
+# 1. Environment & Server Profile (use "postgres" or "mysql")
+SPRING_PROFILES_ACTIVE=postgres
 PORT=8085
 
-# 2. Production Database (Railway MySQL automatically provisions these)
-DB_URL=jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-DB_USERNAME=${MYSQLUSER}
-DB_PASSWORD=${MYSQLPASSWORD}
+# 2. Production Database (Option A: If using Railway PostgreSQL)
+# Railway PostgreSQL automatically provides PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD
+DB_URL=jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}
+DB_USERNAME=${PGUSER}
+DB_PASSWORD=${PGPASSWORD}
+
+# (Option B: If using Railway MySQL instead)
+# SPRING_PROFILES_ACTIVE=mysql
+# DB_URL=jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+# DB_USERNAME=${MYSQLUSER}
+# DB_PASSWORD=${MYSQLPASSWORD}
 
 # 3. Security Secrets (Generate two separate unique 64-character random hex strings)
 JWT_SECRET=b7e1f4a9c8d3e2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7

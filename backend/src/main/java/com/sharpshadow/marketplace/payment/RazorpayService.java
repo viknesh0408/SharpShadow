@@ -41,7 +41,8 @@ public class RazorpayService {
 
     /**
      * Creates an official Razorpay Order.
-     * Amount is passed in normal currency (e.g. 499.00) and converted to paise (49900).
+     * Amount is passed in normal currency (e.g. 499.00) and converted to paise
+     * (49900).
      */
     public String createRazorpayOrder(String internalOrderNumber, BigDecimal amount) {
         long amountInPaise = amount.multiply(BigDecimal.valueOf(100)).longValue();
@@ -50,7 +51,8 @@ public class RazorpayService {
         }
 
         if (keyId == null || keyId.trim().isEmpty() || keySecret == null || keySecret.trim().isEmpty()) {
-            throw new BadRequestException("Razorpay API Keys are not configured. Please add valid RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to your environment variables.");
+            throw new BadRequestException(
+                    "Razorpay API Keys are not configured. Please add valid RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to your environment variables.");
         }
 
         try {
@@ -72,14 +74,16 @@ public class RazorpayService {
             log.error("Razorpay order creation failed for receipt {}: {}", internalOrderNumber, e.getMessage());
             String msg = e.getMessage() != null ? e.getMessage() : "";
             if (msg.toLowerCase().contains("authentication failed") || msg.toLowerCase().contains("unauthorized")) {
-                throw new BadRequestException("Razorpay authentication failed: Your RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is invalid or expired. Check your Razorpay Dashboard API Keys.");
+                throw new BadRequestException(
+                        "Razorpay authentication failed: Your RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is invalid or expired. Check your Razorpay Dashboard API Keys.");
             }
             throw new BadRequestException("Payment gateway order creation failed: " + msg);
         }
     }
 
     /**
-     * Verifies Razorpay payment signature strictly using HMAC-SHA256: HMAC_SHA256(order_id + "|" + payment_id, secret)
+     * Verifies Razorpay payment signature strictly using HMAC-SHA256:
+     * HMAC_SHA256(order_id + "|" + payment_id, secret)
      */
     public boolean verifyPaymentSignature(String razorpayOrderId, String razorpayPaymentId, String razorpaySignature) {
         if (razorpayOrderId == null || razorpayPaymentId == null || razorpaySignature == null) {
@@ -112,7 +116,8 @@ public class RazorpayService {
     /**
      * Confirms the payment status and amount with Razorpay REST API directly.
      */
-    public boolean verifyPaymentWithGateway(String razorpayOrderId, String razorpayPaymentId, BigDecimal expectedAmount) {
+    public boolean verifyPaymentWithGateway(String razorpayOrderId, String razorpayPaymentId,
+            BigDecimal expectedAmount) {
         if (keyId == null || keyId.isBlank() || keySecret == null || keySecret.isBlank()) {
             log.warn("Razorpay credentials not fully configured, relying only on cryptographic signature");
             return true;
@@ -141,7 +146,8 @@ public class RazorpayService {
             long amountInPaise = ((Number) payment.get("amount")).longValue();
             long expectedPaise = expectedAmount.multiply(BigDecimal.valueOf(100)).longValue();
             if (amountInPaise < expectedPaise) {
-                log.error("Razorpay payment amount mismatch: expected at least {} paise, but got {} paise", expectedPaise, amountInPaise);
+                log.error("Razorpay payment amount mismatch: expected at least {} paise, but got {} paise",
+                        expectedPaise, amountInPaise);
                 return false;
             }
 
