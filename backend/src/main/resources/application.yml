@@ -10,7 +10,7 @@ spring:
   application:
     name: sharpshadow-marketplace
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:mysql}
+    active: ${SPRING_PROFILES_ACTIVE:postgres}
   servlet:
     multipart:
       max-file-size: 500MB
@@ -140,7 +140,6 @@ spring:
     password: ${DB_PASSWORD:${PGPASSWORD:}}
     driver-class-name: org.postgresql.Driver
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
     generate-ddl: true
     hibernate:
       ddl-auto: update
