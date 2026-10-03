@@ -16,6 +16,13 @@ spring:
       max-file-size: 500MB
       max-request-size: 500MB
       enabled: true
+  jpa:
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        hbm2ddl.auto: update
   # Spring Mail SMTP — set MAIL_USERNAME + MAIL_PASSWORD in Railway to activate
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
@@ -134,10 +141,14 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: true
     hibernate:
       ddl-auto: update
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         format_sql: false
+        hbm2ddl.auto: update
+        default_schema: public
+
 
