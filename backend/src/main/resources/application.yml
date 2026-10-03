@@ -109,24 +109,24 @@ sharpshadow:
     password: ${ADMIN_PASSWORD:DevAdmin#2026!Secured}
 
 ---
-# # MySQL / Production Profile
-# spring:
-#   config:
-#     activate:
-#       on-profile: mysql
-#   datasource:
-#     url: ${DB_URL:jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQLDATABASE:sharpshadow}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
-#     username: ${DB_USERNAME:${MYSQLUSER:root}}
-#     password: ${DB_PASSWORD:${MYSQLPASSWORD:}}
-#     driver-class-name: com.mysql.cj.jdbc.Driver
-#   jpa:
-#     database-platform: org.hibernate.dialect.MySQLDialect
-#     hibernate:
-#       ddl-auto: update
-#     show-sql: false
-#     properties:
-#       hibernate:
-#         format_sql: false
+# MySQL / Production Profile
+spring:
+  config:
+    activate:
+      on-profile: mysql
+  datasource:
+    url: ${DB_URL:jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQLDATABASE:sharpshadow}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${DB_USERNAME:${MYSQLUSER:root}}
+    password: ${DB_PASSWORD:${MYSQLPASSWORD:}}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
 
 ---
 # PostgreSQL / Production Profile
