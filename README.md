@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="frontend/public/logo.png" alt="SharpShadow Logo" width="140" style="border-radius: 50%;" />
+  <img src="frontend/public/logo.png" alt="SharpShadows Logo" width="140" style="border-radius: 50%;" />
 </p>
 
-# SharpShadow — Digital PSD Marketplace
+# SharpShadows — Digital PSD Marketplace
 
-**SharpShadow** is a production-grade digital marketplace engineered for browsing, buying, and securely downloading high-resolution Adobe Photoshop (`.PSD`) templates, mockups, social graphics, and digital design assets.
+**SharpShadows** is a production-grade digital marketplace engineered for browsing, buying, and securely downloading high-resolution Adobe Photoshop (`.PSD`) templates, mockups, social graphics, and digital design assets.
 
 ---
 
@@ -158,7 +158,7 @@ The frontend starts at `http://localhost:3000`.
 
 ## 5. Step-by-Step Production Launch & Transition Guide
 
-Follow these 7 sequential steps to take Project SharpShadow from local development/testing to a fully secured, live production environment.
+Follow these 7 sequential steps to take Project SharpShadows from local development/testing to a fully secured, live production environment.
 
 ---
 
@@ -213,7 +213,7 @@ DOWNLOAD_SIGNING_SECRET=c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b7e1f4a9c8d3e2a1b0c9d8
 # 4. Administrator Account (Initialized automatically on empty database)
 ADMIN_EMAIL=admin@yourdomain.com
 ADMIN_PASSWORD=CreateAStrongComplexPassword2026!
-ADMIN_NAME=SharpShadow Administrator
+ADMIN_NAME=SharpShadows Administrator
 
 # 5. Live Razorpay Credentials
 RAZORPAY_KEY_ID=rzp_live_XXXXXXXXXXXXXXXX
@@ -263,7 +263,7 @@ To permanently retain all uploaded files:
 ### Step 4: Configure Production Transactional Email Service (Brevo API)
 
 > [!IMPORTANT]
-> **Railway officially blocks outbound SMTP ports (25, 465, and 587)** on Free, Trial, and Hobby plans to prevent spam abuse. Attempting to use raw SMTP (e.g. `smtp.gmail.com:587`) will result in a connection timeout (`Operation timed out`). SharpShadow solves this by integrating with **Brevo's transactional HTTPS API (Port 443)**, which is completely unblocked and provides **300 free emails per day** with zero custom domain DNS verification needed.
+> **Railway officially blocks outbound SMTP ports (25, 465, and 587)** on Free, Trial, and Hobby plans to prevent spam abuse. Attempting to use raw SMTP (e.g. `smtp.gmail.com:587`) will result in a connection timeout (`Operation timed out`). SharpShadows solves this by integrating with **Brevo's transactional HTTPS API (Port 443)**, which is completely unblocked and provides **300 free emails per day** with zero custom domain DNS verification needed.
 
 Follow these 3 quick steps to set up transactional email delivery:
 
@@ -436,7 +436,7 @@ Generates production-optimized static assets in `frontend/dist/`.
 
 ### 1. Upload Fails with "File too large" or Error 413
 - **Cause:** Nginx or Tomcat rejected a file exceeding the upload limit.
-- **Resolution:** SharpShadow is configured for uploads up to **500MB**. Ensure `client_max_body_size 500M;` is active in `frontend/nginx.conf` and `spring.servlet.multipart.max-file-size: 500MB` in `application.yml`.
+- **Resolution:** SharpShadows is configured for uploads up to **500MB**. Ensure `client_max_body_size 500M;` is active in `frontend/nginx.conf` and `spring.servlet.multipart.max-file-size: 500MB` in `application.yml`.
 
 ### 2. Uploaded Thumbnail Appears Broken (404)
 - **Cause:** Nginx static regex rule intercepted `/uploads/` requests before proxying to the backend.
@@ -452,7 +452,7 @@ Generates production-optimized static assets in `frontend/dist/`.
 
 ### 5. Password Reset Email Hangs or Times Out on Railway
 - **Cause:** Railway blocks outbound SMTP ports 25, 465, and 587 on Free and Hobby plans to prevent spam, causing standard SMTP/Gmail connections to time out (`Operation timed out`).
-- **Resolution:** SharpShadow includes built-in support for Brevo's transactional HTTPS API (Port 443, which is never blocked). Follow **Step 4** in the Production Launch Guide above to configure `BREVO_API_KEY` and `MAIL_USERNAME` in your Railway Backend variables. In the meantime, the single-use password reset URL is always printed directly into your Railway backend logs for immediate testing.
+- **Resolution:** SharpShadows includes built-in support for Brevo's transactional HTTPS API (Port 443, which is never blocked). Follow **Step 4** in the Production Launch Guide above to configure `BREVO_API_KEY` and `MAIL_USERNAME` in your Railway Backend variables. In the meantime, the single-use password reset URL is always printed directly into your Railway backend logs for immediate testing.
 
 ---
 

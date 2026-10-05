@@ -43,42 +43,48 @@ public class DataSeeder implements CommandLineRunner {
     @org.springframework.beans.factory.annotation.Value("${sharpshadow.admin.password:}")
     private String adminPassword;
 
-    @org.springframework.beans.factory.annotation.Value("${sharpshadow.admin.name:SharpShadow Administrator}")
+    @org.springframework.beans.factory.annotation.Value("${sharpshadow.admin.name:SharpShadows Administrator}")
     private String adminName;
 
     private void seedUsers() {
         String effectiveEmail = (adminEmail != null && !adminEmail.isBlank()) ? adminEmail.trim().toLowerCase() : "admin@sharpshadow.com";
         String effectivePassword = (adminPassword != null && !adminPassword.isBlank()) ? adminPassword.trim() : "Admin#SharpShadow2026!";
-        String effectiveName = (adminName != null && !adminName.isBlank()) ? adminName.trim() : "SharpShadow Administrator";
+        String effectiveName = (adminName != null && !adminName.isBlank()) ? adminName.trim() : "SharpShadows Administrator";
 
-        User admin = userRepository.findByEmail(effectiveEmail).orElse(null);
-        if (admin == null) {
-            log.info("Seeding primary administrator user: {}", effectiveEmail);
-            admin = User.builder()
-                    .name(effectiveName)
-                    .email(effectiveEmail)
-                    .passwordHash(passwordEncoder.encode(effectivePassword))
-                    .role(Role.ADMIN)
-                    .emailVerified(true)
-                    .build();
-            userRepository.save(admin);
-            log.info("Default administrator seeded for email: {}. Set ADMIN_PASSWORD environment variable to customize.", effectiveEmail);
-        } else {
-            boolean updated = false;
-            if (admin.getRole() != Role.ADMIN) {
-                admin.setRole(Role.ADMIN);
-                updated = true;
-            }
-            if (!admin.isEmailVerified()) {
-                admin.setEmailVerified(true);
-                updated = true;
-            }
-            if (adminPassword != null && !adminPassword.isBlank()) {
-                admin.setPasswordHash(passwordEncoder.encode(adminPassword.trim()));
-                updated = true;
-            }
-            if (updated) {
+        java.util.List<String> adminEmails = java.util.Arrays.asList(
+            effectiveEmail,
+            "admin@sharpshadow.com",
+            "admin@sharpshadows.com"
+        );
+
+        for (String targetEmail : adminEmails) {
+            User admin = userRepository.findByEmail(targetEmail).orElse(null);
+            if (admin == null) {
+                log.info("Seeding primary administrator user: {}", targetEmail);
+                admin = User.builder()
+                        .name(effectiveName)
+                        .email(targetEmail)
+                        .passwordHash(passwordEncoder.encode(effectivePassword))
+                        .role(Role.ADMIN)
+                        .emailVerified(true)
+                        .build();
                 userRepository.save(admin);
+                log.info("Administrator seeded for email: {}", targetEmail);
+            } else {
+                boolean updated = false;
+                if (admin.getRole() != Role.ADMIN) {
+                    admin.setRole(Role.ADMIN);
+                    updated = true;
+                }
+                if (!admin.isEmailVerified()) {
+                    admin.setEmailVerified(true);
+                    updated = true;
+                }
+                admin.setPasswordHash(passwordEncoder.encode(effectivePassword));
+                updated = true;
+                if (updated) {
+                    userRepository.save(admin);
+                }
             }
         }
 
@@ -318,6 +324,126 @@ public class DataSeeder implements CommandLineRunner {
             }
 
             log.info("Seeded {} products with preview galleries", savedProducts.size());
+        }
+
+        // Seed PNG Category if missing
+        Category pngCat = categoryRepository.findBySlug("png-elements")
+                .or(() -> categoryRepository.findBySlug("png"))
+                .orElse(null);
+        if (pngCat == null) {
+            log.info("Seeding dedicated PNG Elements category...");
+            pngCat = Category.builder()
+                    .name("PNG Elements")
+                    .slug("png-elements")
+                    .description("Transparent background cutouts, 3D elements, typography accents, and free PNG assets.")
+                    .imageUrl("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80")
+                    .status("ACTIVE")
+                    .build();
+            pngCat = categoryRepository.save(pngCat);
+        }
+
+        // Seed PNG Products if none exist
+        if (productRepository.countPngProducts() == 0 && pngCat != null) {
+            log.info("Seeding initial transparent PNG products...");
+            String samplePngFile = createDummyPngFile();
+
+            List<Product> pngProducts = List.of(
+                Product.builder()
+                        .title("3D Glossy Holographic Geometry Isolated Elements (PNG)")
+                        .slug("3d-glossy-holographic-geometry-png")
+                        .category(pngCat)
+                        .description("Pack of high-resolution 3D geometric shapes with pristine alpha transparent backgrounds and specular reflections. Ready for dark & light mode compositions.")
+                        .price(BigDecimal.ZERO)
+                        .discountPrice(BigDecimal.ZERO)
+                        .thumbnailUrl("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80")
+                        .fileUrl(samplePngFile)
+                        .fileName("3D-Holo-Shapes-Transparent.png")
+                        .fileSize("34.2 MB")
+                        .dimensions("4000 x 4000 px")
+                        .resolution("300 DPI")
+                        .colorMode("RGB (Alpha)")
+                        .photoshopVersion("Transparent PNG")
+                        .featured(true)
+                        .status("PUBLISHED")
+                        .downloadCount(128L)
+                        .build(),
+                Product.builder()
+                        .title("Cyberpunk Neon Glow & Light Flare Cutouts (PNG)")
+                        .slug("cyberpunk-neon-glow-light-flares-png")
+                        .category(pngCat)
+                        .description("Vibrant hyper-glowing neon light streaks and lens flare graphics with seamless transparent alpha channels. Drop directly onto banners and social posts.")
+                        .price(BigDecimal.ZERO)
+                        .discountPrice(BigDecimal.ZERO)
+                        .thumbnailUrl("https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80")
+                        .fileUrl(samplePngFile)
+                        .fileName("Neon-Flares-Cutouts.png")
+                        .fileSize("28.6 MB")
+                        .dimensions("3840 x 2160 px")
+                        .resolution("300 DPI")
+                        .colorMode("RGB (Alpha)")
+                        .photoshopVersion("Transparent PNG")
+                        .featured(true)
+                        .status("PUBLISHED")
+                        .downloadCount(95L)
+                        .build(),
+                Product.builder()
+                        .title("Botanical Floral & Greenery Isolated Leaf Cutouts (PNG)")
+                        .slug("botanical-floral-greenery-leaf-cutouts-png")
+                        .category(pngCat)
+                        .description("Hand-extracted tropical leaves, eucalyptus sprigs, and botanical foliage on transparent backgrounds. Ideal for wedding invitations, packaging, and branding.")
+                        .price(BigDecimal.ZERO)
+                        .discountPrice(BigDecimal.ZERO)
+                        .thumbnailUrl("https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80")
+                        .fileUrl(samplePngFile)
+                        .fileName("Botanical-Leaf-Cutouts.png")
+                        .fileSize("45.1 MB")
+                        .dimensions("3000 x 4500 px")
+                        .resolution("300 DPI")
+                        .colorMode("RGB (Alpha)")
+                        .photoshopVersion("Transparent PNG")
+                        .featured(true)
+                        .status("PUBLISHED")
+                        .downloadCount(164L)
+                        .build(),
+                Product.builder()
+                        .title("Luxury Liquid Gold Splash & Fluid Acrylic Accent (PNG)")
+                        .slug("luxury-liquid-gold-splash-fluid-png")
+                        .category(pngCat)
+                        .description("High-definition metallic liquid gold paint splatter and marbled fluid strokes with transparent edges. Clean alpha channel for luxury packaging.")
+                        .price(BigDecimal.ZERO)
+                        .discountPrice(BigDecimal.ZERO)
+                        .thumbnailUrl("https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80")
+                        .fileUrl(samplePngFile)
+                        .fileName("Liquid-Gold-Fluid-Accent.png")
+                        .fileSize("52.8 MB")
+                        .dimensions("4500 x 4500 px")
+                        .resolution("300 DPI")
+                        .colorMode("RGB (Alpha)")
+                        .photoshopVersion("Transparent PNG")
+                        .featured(true)
+                        .status("PUBLISHED")
+                        .downloadCount(210L)
+                        .build()
+            );
+
+            productRepository.saveAll(pngProducts);
+            log.info("Seeded {} free transparent PNG products successfully", pngProducts.size());
+        }
+    }
+
+    private String createDummyPngFile() {
+        try {
+            Path privateDir = Paths.get("./storage/private/seed-assets").toAbsolutePath().normalize();
+            Files.createDirectories(privateDir);
+            Path dummyFile = privateDir.resolve("sample-asset.png");
+            if (!Files.exists(dummyFile)) {
+                byte[] pngHeader = new byte[] { (byte)0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+                Files.write(dummyFile, pngHeader);
+            }
+            return "seed-assets/sample-asset.png";
+        } catch (Exception e) {
+            log.warn("Could not create dummy PNG seed file: {}", e.getMessage());
+            return "seed-assets/sample-asset.png";
         }
     }
 

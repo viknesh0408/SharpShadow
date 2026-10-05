@@ -39,7 +39,7 @@ export const ForgotPassword: React.FC = () => {
               <h1 className="text-xl font-bold text-white">Check Your Inbox</h1>
               <p className="text-xs text-slate-400 leading-relaxed">
                 If <span className="text-slate-200 font-mono">{email}</span> is registered with
-                SharpShadow, we've sent a password reset link to that address.
+                SharpShadows, we've sent a password reset link to that address.
               </p>
             </div>
 
@@ -78,7 +78,7 @@ export const ForgotPassword: React.FC = () => {
               <Link to="/" className="inline-flex items-center justify-center mb-2 group">
                 <img
                   src="/logo.png"
-                  alt="SharpShadow Logo"
+                  alt="SharpShadows Logo"
                   className="w-14 h-14 rounded-full object-contain shadow-sharp-glow group-hover:scale-105 transition-transform duration-300 ring-2 ring-sharp-500/30"
                 />
               </Link>

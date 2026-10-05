@@ -94,9 +94,9 @@ public class EmailService {
 
             String html = buildResetEmailHtml(userName, resetUrl);
             Map<String, Object> payload = Map.of(
-                    "sender", Map.of("name", "SharpShadow Marketplace", "email", senderEmail),
+                    "sender", Map.of("name", "SharpShadows Marketplace", "email", senderEmail),
                     "to", List.of(Map.of("email", toEmail, "name", userName != null && !userName.isBlank() ? userName : "Valued Customer")),
-                    "subject", "Reset Your SharpShadow Password",
+                    "subject", "Reset Your SharpShadows Password",
                     "htmlContent", html
             );
 
@@ -127,12 +127,12 @@ public class EmailService {
         try {
             log.info("Sending password reset email to {} via Resend HTTPS API...", toEmail);
             String html = buildResetEmailHtml(userName, resetUrl);
-            String from = "SharpShadow <onboarding@resend.dev>";
+            String from = "SharpShadows <onboarding@resend.dev>";
 
             Map<String, Object> payload = Map.of(
                     "from", from,
                     "to", List.of(toEmail),
-                    "subject", "Reset Your SharpShadow Password",
+                    "subject", "Reset Your SharpShadows Password",
                     "html", html
             );
 
@@ -165,10 +165,10 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            String displayName = "SharpShadow Marketplace";
+            String displayName = "SharpShadows Marketplace";
             helper.setFrom(mailUsername, displayName);
             helper.setTo(toEmail);
-            helper.setSubject("Reset Your SharpShadow Password");
+            helper.setSubject("Reset Your SharpShadows Password");
             helper.setText(buildResetEmailHtml(userName, resetUrl), true);
 
             mailSender.send(message);
@@ -201,7 +201,7 @@ public class EmailService {
                           <tr>
                             <td align="center" style="padding-bottom:32px;">
                               <span style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px;">
-                                Sharp<span style="color:#ef4444;">Shadow</span>
+                                Sharp<span style="color:#ef4444;">Shadows</span>
                               </span>
                             </td>
                           </tr>
@@ -218,7 +218,7 @@ public class EmailService {
                               </h1>
                               <p style="margin:0 0 24px;font-size:14px;color:#a1a1aa;line-height:1.6;">
                                 Hi %s,<br><br>
-                                We received a request to reset the password for your SharpShadow account.
+                                We received a request to reset the password for your SharpShadows account.
                                 Click the button below to choose a new password. This link is valid for
                                 <strong style="color:#fff;">30 minutes</strong>.
                               </p>
@@ -261,7 +261,7 @@ public class EmailService {
                           <tr>
                             <td align="center" style="padding-top:28px;">
                               <p style="margin:0;font-size:11px;color:#52525b;">
-                                © 2025 SharpShadow Marketplace. All rights reserved.<br>
+                                © 2025 SharpShadows Marketplace. All rights reserved.<br>
                                 This is an automated security email — please do not reply.
                               </p>
                             </td>
@@ -311,9 +311,9 @@ public class EmailService {
 
             String html = buildOtpEmailHtml(userName, toEmail, otp, verifyUrl);
             Map<String, Object> payload = Map.of(
-                    "sender", Map.of("name", "SharpShadow Marketplace", "email", senderEmail),
+                    "sender", Map.of("name", "SharpShadows Marketplace", "email", senderEmail),
                     "to", List.of(Map.of("email", toEmail, "name", userName != null && !userName.isBlank() ? userName : "Customer")),
-                    "subject", otp + " is your SharpShadow verification code",
+                    "subject", otp + " is your SharpShadows verification code",
                     "htmlContent", html
             );
 
@@ -344,12 +344,12 @@ public class EmailService {
         try {
             log.info("Sending email verification OTP to {} via Resend HTTPS API...", toEmail);
             String html = buildOtpEmailHtml(userName, toEmail, otp, verifyUrl);
-            String from = "SharpShadow <onboarding@resend.dev>";
+            String from = "SharpShadows <onboarding@resend.dev>";
 
             Map<String, Object> payload = Map.of(
                     "from", from,
                     "to", List.of(toEmail),
-                    "subject", otp + " is your SharpShadow verification code",
+                    "subject", otp + " is your SharpShadows verification code",
                     "html", html
             );
 
@@ -382,10 +382,10 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            String displayName = "SharpShadow Marketplace";
+            String displayName = "SharpShadows Marketplace";
             helper.setFrom(mailUsername, displayName);
             helper.setTo(toEmail);
-            helper.setSubject(otp + " is your SharpShadow verification code");
+            helper.setSubject(otp + " is your SharpShadows verification code");
             helper.setText(buildOtpEmailHtml(userName, toEmail, otp, verifyUrl), true);
 
             mailSender.send(message);
@@ -417,7 +417,7 @@ public class EmailService {
                           <tr>
                             <td align="center" style="padding-bottom:32px;">
                               <span style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px;">
-                                Sharp<span style="color:#ef4444;">Shadow</span>
+                                Sharp<span style="color:#ef4444;">Shadows</span>
                               </span>
                             </td>
                           </tr>
@@ -434,7 +434,7 @@ public class EmailService {
                               </h1>
                               <p style="margin:0 0 24px;font-size:14px;color:#a1a1aa;line-height:1.6;">
                                 Hi %s,<br><br>
-                                Welcome to SharpShadow! To activate your account and complete your signup, click the button below or enter the 6-digit code:
+                                Welcome to SharpShadows! To activate your account and complete your signup, click the button below or enter the 6-digit code:
                               </p>
 
                               <!-- OTP Code Display -->
@@ -481,7 +481,7 @@ public class EmailService {
                               <div style="background:#09090b;border:1px solid #27272a;border-radius:12px;padding:16px 20px;">
                                 <p style="margin:0;font-size:12px;color:#71717a;line-height:1.6;">
                                   🔒 <strong style="color:#a1a1aa;">Didn't create this account?</strong>
-                                  If you did not register on SharpShadow, please ignore this email. No account will be activated without this verification.
+                                  If you did not register on SharpShadows, please ignore this email. No account will be activated without this verification.
                                 </p>
                               </div>
                             </td>
@@ -491,7 +491,7 @@ public class EmailService {
                           <tr>
                             <td align="center" style="padding-top:28px;">
                               <p style="margin:0;font-size:11px;color:#52525b;">
-                                © 2025 SharpShadow Marketplace. All rights reserved.<br>
+                                © 2025 SharpShadows Marketplace. All rights reserved.<br>
                                 This is an automated security email — please do not reply.
                               </p>
                             </td>

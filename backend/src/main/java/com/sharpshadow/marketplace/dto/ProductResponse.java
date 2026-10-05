@@ -32,6 +32,8 @@ public class ProductResponse {
     private List<String> previewImages;
     private Boolean hasPurchased;
     private Boolean free;
+    private Boolean isPng;
+    private String fileFormat;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

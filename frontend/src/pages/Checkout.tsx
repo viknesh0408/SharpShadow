@@ -150,7 +150,7 @@ export const Checkout: React.FC = () => {
         key: order.razorpayKeyId,
         amount: Math.round(order.totalAmount * 100),
         currency: order.currency,
-        name: 'SharpShadow Digital',
+        name: 'SharpShadows Digital',
         description: `Order #${order.orderNumber}`,
         order_id: order.razorpayOrderId,
         handler: async (response: any) => {

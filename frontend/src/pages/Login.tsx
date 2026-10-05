@@ -112,7 +112,7 @@ export const Login: React.FC = () => {
           <Link to="/" className="inline-flex items-center justify-center mb-2 group">
             <img
               src="/logo.png"
-              alt="SharpShadow Logo"
+              alt="SharpShadows Logo"
               className="w-14 h-14 rounded-full object-contain shadow-sharp-glow group-hover:scale-105 transition-transform duration-300 ring-2 ring-sharp-500/30"
             />
           </Link>

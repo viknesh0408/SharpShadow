@@ -62,6 +62,17 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(products));
     }
 
+    @GetMapping("/products/png")
+    public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getAdminPngProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        PageResponse<ProductResponse> products = productService.getAdminPngProducts(
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
+        );
+        return ResponseEntity.ok(ApiResponse.success(products));
+    }
+
     @GetMapping("/products/{id}")
     public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@PathVariable Long id) {
         ProductResponse product = productService.getById(id, null, true);

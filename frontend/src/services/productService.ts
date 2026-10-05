@@ -7,6 +7,7 @@ export interface ProductFilters {
   minPrice?: number;
   maxPrice?: number;
   sort?: string;
+  format?: string;
   page?: number;
   size?: number;
 }
@@ -42,5 +43,12 @@ export const productService = {
   async getRelated(productId: number): Promise<Product[]> {
     const res = await api.get<ApiResponse<Product[]>>(`/products/${productId}/related`);
     return res.data.data || [];
+  },
+
+  async getPngProducts(page = 0, size = 12): Promise<PageResponse<Product>> {
+    const res = await api.get<ApiResponse<PageResponse<Product>>>('/products/png', {
+      params: { page, size },
+    });
+    return res.data.data!;
   },
 };

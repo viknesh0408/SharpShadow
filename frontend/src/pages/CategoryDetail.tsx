@@ -24,7 +24,7 @@ export const CategoryDetail: React.FC = () => {
         ]);
         setCategory(cat);
         setProducts(prods.content);
-        document.title = `${cat.name} PSD Templates — SharpShadow`;
+        document.title = `${cat.name} PSD Templates — SharpShadows`;
       } catch (err) {
         console.error('Failed to load category', err);
       } finally {

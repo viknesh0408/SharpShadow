@@ -13,11 +13,24 @@ export const AdminProducts: React.FC = () => {
   const [search, setSearch] = useState('');
   const { success, error } = useToast();
 
+  const isProductPng = (p: Product) => Boolean(
+    p.isPng ||
+    p.category?.slug?.includes('png') ||
+    p.category?.name?.toLowerCase().includes('png') ||
+    p.fileName?.toLowerCase().endsWith('.png') ||
+    p.photoshopVersion?.toLowerCase().includes('png') ||
+    p.title?.toLowerCase().includes('(png)') ||
+    p.title?.toLowerCase().includes('.png') ||
+    p.title?.toLowerCase().endsWith(' png') ||
+    p.slug?.includes('png')
+  );
+
   const loadProducts = async (page = 0) => {
     setLoading(true);
     try {
       const res = await adminService.getProducts(page, 20);
-      setProducts(res.content);
+      const psdItems = (res.content || []).filter((p) => !isProductPng(p));
+      setProducts(psdItems);
       setTotalPages(res.totalPages);
       setCurrentPage(res.pageNumber);
     } catch (err: any) {
@@ -42,25 +55,35 @@ export const AdminProducts: React.FC = () => {
     }
   };
 
-  const filtered = products.filter((p) =>
-    p.title.toLowerCase().includes(search.toLowerCase()) ||
-    p.category?.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = products
+    .filter((p) => !isProductPng(p))
+    .filter((p) =>
+      p.title.toLowerCase().includes(search.toLowerCase()) ||
+      p.category?.name.toLowerCase().includes(search.toLowerCase())
+    );
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Product Catalog Management</h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">Manage Photoshop PSD files, pricing, and assets</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">PSD Product Management</h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">Manage Photoshop PSD templates, layered files, and pricing (PSD templates only)</p>
         </div>
-        <Link
-          to="/admin/products/new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-semibold text-xs shadow-sharp-glow transition-all"
-        >
-          <PlusCircle className="w-4 h-4" />
-          <span>Upload New PSD</span>
-        </Link>
+        <div className="flex items-center gap-2.5">
+          <Link
+            to="/admin/png-products"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-dark-900 hover:bg-dark-850 text-cyan-300 hover:text-white border border-cyan-500/30 font-semibold text-xs transition-all"
+          >
+            <span>View PNG Products →</span>
+          </Link>
+          <Link
+            to="/admin/products/new"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-semibold text-xs shadow-sharp-glow transition-all"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>Upload New PSD</span>
+          </Link>
+        </div>
       </div>
 
       {/* Filter and Search Bar */}
@@ -68,7 +91,7 @@ export const AdminProducts: React.FC = () => {
         <Search className="w-4 h-4 text-slate-500" />
         <input
           type="text"
-          placeholder="Filter products in this page..."
+          placeholder="Filter PSD products in this page..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full bg-transparent text-sm text-white placeholder-slate-500 outline-none"
@@ -78,9 +101,9 @@ export const AdminProducts: React.FC = () => {
       {/* Products Table */}
       <div className="bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden shadow-card-dark">
         {loading ? (
-          <div className="py-20 text-center text-slate-400 text-sm">Loading product catalog...</div>
+          <div className="py-20 text-center text-slate-400 text-sm">Loading PSD products catalog...</div>
         ) : filtered.length === 0 ? (
-          <div className="py-20 text-center text-slate-400 text-sm">No products found.</div>
+          <div className="py-20 text-center text-slate-400 text-sm">No PSD templates found.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">

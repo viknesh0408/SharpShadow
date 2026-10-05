@@ -71,7 +71,7 @@ export const ProductDetail: React.FC = () => {
         setActiveImage(item.thumbnailUrl);
 
         // SEO meta
-        document.title = `${item.title} — SharpShadow`;
+        document.title = `${item.title} — SharpShadows`;
 
         // Load related
         const related = await productService.getRelated(item.id);
@@ -114,6 +114,22 @@ export const ProductDetail: React.FC = () => {
     (product.discountPrice != null && product.discountPrice === 0)
   );
   const hasDiscount = !isFree && product.discountPrice != null && product.discountPrice < product.price;
+
+  const isPng = Boolean(
+    product.isPng ||
+    product.category?.slug?.includes('png') ||
+    product.category?.name?.toLowerCase().includes('png') ||
+    product.fileName?.toLowerCase().endsWith('.png') ||
+    product.photoshopVersion?.toLowerCase().includes('png') ||
+    product.title?.toLowerCase().includes('(png)') ||
+    product.title?.toLowerCase().includes('.png') ||
+    product.title?.toLowerCase().endsWith(' png') ||
+    product.slug?.includes('png')
+  );
+
+  const fileExt = (product.fileName?.split('.').pop() || (isPng ? 'PNG' : 'PSD')).toUpperCase();
+  const formatBadge = isPng || fileExt === 'PNG' ? 'PNG Graphic' : fileExt === 'ZIP' ? 'ZIP Archive' : 'Layered PSD';
+  const formatFull = isPng || fileExt === 'PNG' ? 'PNG (Transparent / High-Res)' : fileExt === 'ZIP' ? 'ZIP Archive' : 'PSD (Adobe Photoshop)';
 
   const handleAddToCart = () => {
     if (!inCart) {
@@ -226,7 +242,7 @@ export const ProductDetail: React.FC = () => {
 
             <span className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/90 dark:bg-dark-950/80 backdrop-blur-md border border-slate-200 dark:border-dark-750 text-slate-700 dark:text-slate-200 font-mono text-[10px] sm:text-xs font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg flex items-center gap-1 sm:gap-1.5 z-10 pointer-events-none shadow-sm">
               <Layers className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sharp-600 dark:text-sharp-400" />
-              Layered PSD
+              {formatBadge}
             </span>
 
             {/* Amazon-style "Hover over image to zoom" hint pill */}
@@ -353,7 +369,7 @@ export const ProductDetail: React.FC = () => {
                   className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-base shadow-lg shadow-emerald-600/20 hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
                 >
                   {downloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
-                  <span>{isFree && !product.hasPurchased ? 'Download Free PSD Asset' : 'Download PSD Asset'}</span>
+                  <span>{isPng ? 'Download PNG' : isFree && !product.hasPurchased ? 'Download Free PSD Asset' : 'Download PSD Asset'}</span>
                 </button>
               ) : (
                 <>
@@ -405,7 +421,7 @@ export const ProductDetail: React.FC = () => {
             <div className="pt-4 border-t border-slate-200 dark:border-dark-800/80 grid grid-cols-2 gap-3 text-xs">
               <div className="bg-slate-50 dark:bg-dark-950/60 p-3 rounded-xl border border-slate-200 dark:border-dark-800">
                 <span className="text-slate-500 dark:text-slate-400 block font-mono text-[10px] uppercase">Format</span>
-                <span className="font-semibold text-slate-800 dark:text-slate-200">PSD (Adobe Photoshop)</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">{formatFull}</span>
               </div>
               <div className="bg-slate-50 dark:bg-dark-950/60 p-3 rounded-xl border border-slate-200 dark:border-dark-800">
                 <span className="text-slate-500 dark:text-slate-400 block font-mono text-[10px] uppercase">File Size</span>
@@ -424,7 +440,11 @@ export const ProductDetail: React.FC = () => {
             {/* Guarantee Note */}
             <div className="flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400 pt-2">
               <ShieldCheck className="w-4 h-4 text-emerald-500 dark:text-emerald-400 shrink-0" />
-              <span>Instant download access with Razorpay verified payment confirmation.</span>
+              <span>
+                {isFree
+                  ? 'Instant free download • Direct high-speed asset access without payment.'
+                  : 'Instant download access with Razorpay verified payment confirmation.'}
+              </span>
             </div>
           </div>
         </div>
@@ -448,34 +468,69 @@ export const ProductDetail: React.FC = () => {
           <div className="bg-white dark:bg-dark-900 border border-slate-200 dark:border-dark-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm dark:shadow-card-dark">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white">Features & Specifications</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-sharp-500 shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <h4 className="text-slate-900 dark:text-white font-semibold">100% Layered & Organized</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Organized into labeled color-coded folders.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-sharp-500 shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <h4 className="text-slate-900 dark:text-white font-semibold">Smart Object Placeholders</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Double click and drop your imagery instantly.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-sharp-500 shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <h4 className="text-slate-900 dark:text-white font-semibold">Print-Ready Dimensions</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Includes safety margins and 0.125-inch bleeds.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-sharp-500 shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <h4 className="text-slate-900 dark:text-white font-semibold">Free Fonts Used</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Documentation text file with all font download links.</p>
-                </div>
-              </div>
+              {isPng ? (
+                <>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-sharp-500 shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <h4 className="text-slate-900 dark:text-white font-semibold">Pre-Clipped Alpha Transparency</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Clean isolated edges ready to drop directly into layouts.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-sharp-500 shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <h4 className="text-slate-900 dark:text-white font-semibold">Universal Compatibility</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Drop into Photoshop, Canva, Illustrator, Figma, or any app.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-sharp-500 shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <h4 className="text-slate-900 dark:text-white font-semibold">Ultra High Resolution</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{product.resolution || '300 DPI'} print and digital ready clarity.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-sharp-500 shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <h4 className="text-slate-900 dark:text-white font-semibold">100% Free Download</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Zero cost for both personal and commercial projects.</p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-sharp-500 shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <h4 className="text-slate-900 dark:text-white font-semibold">100% Layered & Organized</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Organized into labeled color-coded folders.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-sharp-500 shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <h4 className="text-slate-900 dark:text-white font-semibold">Smart Object Placeholders</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Double click and drop your imagery instantly.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-sharp-500 shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <h4 className="text-slate-900 dark:text-white font-semibold">Print-Ready Dimensions</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Includes safety margins and 0.125-inch bleeds.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-sharp-500 shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <h4 className="text-slate-900 dark:text-white font-semibold">Free Fonts Used</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Documentation text file with all font download links.</p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="pt-6 border-t border-slate-200 dark:border-dark-800 space-y-3">
@@ -483,15 +538,27 @@ export const ProductDetail: React.FC = () => {
               <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-sharp-500" />
-                  <span>1x High-Resolution Adobe Photoshop Master File (.PSD)</span>
+                  <span>
+                    {isPng
+                      ? `1x Ultra-High Resolution Transparent Cutout (${product.fileName || '.PNG'})`
+                      : '1x High-Resolution Adobe Photoshop Master File (.PSD)'}
+                  </span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-sharp-500" />
-                  <span>Comprehensive PDF Quick Start & Customization Guide</span>
+                  <span>
+                    {isPng
+                      ? 'Isolated Alpha Transparency Layer'
+                      : 'Comprehensive PDF Quick Start & Customization Guide'}
+                  </span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-sharp-500" />
-                  <span>Font Documentation link manifest (.txt)</span>
+                  <span>
+                    {isPng
+                      ? 'Free Commercial & Personal Project License'
+                      : 'Font Documentation link manifest (.txt)'}
+                  </span>
                 </li>
               </ul>
             </div>
@@ -510,7 +577,9 @@ export const ProductDetail: React.FC = () => {
             <div className="space-y-3 text-xs divide-y divide-slate-100 dark:divide-dark-800">
               <div className="flex justify-between pt-2">
                 <span className="text-slate-500 dark:text-slate-400">Format:</span>
-                <span className="font-mono text-slate-900 dark:text-white">.PSD / Layered</span>
+                <span className="font-mono text-slate-900 dark:text-white">
+                  {isPng ? '.PNG / Transparent' : '.PSD / Layered'}
+                </span>
               </div>
               <div className="flex justify-between pt-2">
                 <span className="text-slate-500 dark:text-slate-400">File Size:</span>
@@ -529,8 +598,12 @@ export const ProductDetail: React.FC = () => {
                 <span className="font-mono text-slate-900 dark:text-white">{product.colorMode || 'CMYK'}</span>
               </div>
               <div className="flex justify-between pt-2">
-                <span className="text-slate-500 dark:text-slate-400">Photoshop Version:</span>
-                <span className="font-mono text-slate-900 dark:text-white">{product.photoshopVersion || 'Photoshop CC+'}</span>
+                <span className="text-slate-500 dark:text-slate-400">
+                  {isPng ? 'Compatibility:' : 'Photoshop Version:'}
+                </span>
+                <span className="font-mono text-slate-900 dark:text-white">
+                  {isPng ? (product.photoshopVersion || 'Universal / Any Software') : (product.photoshopVersion || 'Photoshop CC+')}
+                </span>
               </div>
               <div className="flex justify-between pt-2">
                 <span className="text-slate-500 dark:text-slate-400">Total Downloads:</span>
@@ -556,7 +629,9 @@ export const ProductDetail: React.FC = () => {
       {relatedProducts.length > 0 && (
         <section className="space-y-6 pt-10 border-t border-slate-200 dark:border-dark-800">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Related PSD Templates</h3>
+            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+              {isPng ? 'Related PNG Elements' : 'Related PSD Templates'}
+            </h3>
             <Link to={`/category/${product.category.slug}`} className="text-xs sm:text-sm text-slate-500 hover:text-sharp-600 dark:text-slate-400 dark:hover:text-sharp-400 transition-colors">
               More from {product.category.name} →
             </Link>

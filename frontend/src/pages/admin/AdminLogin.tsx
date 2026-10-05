@@ -67,11 +67,11 @@ export const AdminLogin: React.FC = () => {
           <Link to="/" className="inline-block group mb-1">
             <img
               src="/logo.png"
-              alt="SharpShadow Admin"
+              alt="SharpShadows Admin"
               className="w-16 h-16 rounded-full object-contain mx-auto shadow-sharp-glow group-hover:scale-105 transition-transform ring-2 ring-sharp-500/30"
             />
           </Link>
-          <h1 className="text-2xl font-black text-white tracking-wide">SHARPSHADOW ADMIN</h1>
+          <h1 className="text-2xl font-black text-white tracking-wide">SHARPSHADOWS ADMIN</h1>
           <p className="text-xs text-slate-400">
             Protected marketplace management console. Requires administrative privileges.
           </p>
@@ -80,13 +80,14 @@ export const AdminLogin: React.FC = () => {
         {/* Credentials Helper Pill - Only visible during local development */}
         {isDev && (
           <div className="relative z-10 bg-dark-950/80 border border-dark-750 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-xs">
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               <div className="text-slate-300 font-semibold flex items-center gap-1.5">
                 <KeyRound className="w-3.5 h-3.5 text-sharp-400" />
                 <span>Dev Admin Credentials:</span>
               </div>
-              <div className="text-slate-400 font-mono text-[11px] truncate">
-                admin@sharpshadow.com
+              <div className="text-slate-400 font-mono text-[11px] space-y-0.5">
+                <div>Email: <span className="text-slate-200">admin@sharpshadow.com</span></div>
+                <div>Pass: <span className="text-slate-200">Admin#SharpShadow2026!</span></div>
               </div>
             </div>
             <button

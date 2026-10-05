@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowRight, Clock, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles, ArrowRight, Clock, Search, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
 import { Product } from '../types';
 import { productService } from '../services/productService';
 import { ProductCard } from '../components/ProductCard';
@@ -14,6 +14,8 @@ export const Home: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [pngProducts, setPngProducts] = useState<Product[]>([]);
+  const [pngLoading, setPngLoading] = useState(true);
   const latestSectionRef = useRef<HTMLElement>(null);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -23,17 +25,37 @@ export const Home: React.FC = () => {
     }
   };
 
+  const isProductPng = (p: Product) => Boolean(
+    p.isPng ||
+    p.category?.slug?.includes('png') ||
+    p.category?.name?.toLowerCase().includes('png') ||
+    p.fileName?.toLowerCase().endsWith('.png') ||
+    p.photoshopVersion?.toLowerCase().includes('png') ||
+    p.title?.toLowerCase().includes('(png)') ||
+    p.title?.toLowerCase().includes('.png') ||
+    p.title?.toLowerCase().endsWith(' png') ||
+    p.slug?.includes('png')
+  );
+
+  const PAGE_SIZE = 12; // 3 rows of 4 columns
+
   const loadProducts = async (page: number) => {
     setLoading(true);
     try {
       const pageData = await productService.getProducts({
-        page,
-        size: 8,
+        size: 100,
         sort: 'newest',
+        format: 'psd',
       });
-      setProducts(pageData.content || []);
-      setTotalPages(pageData.totalPages || 1);
-      setTotalElements(pageData.totalElements || 0);
+      const allPsds = (pageData.content || []).filter((p) => !isProductPng(p));
+      const total = allPsds.length;
+      const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+      const startIndex = page * PAGE_SIZE;
+      const sliced = allPsds.slice(startIndex, startIndex + PAGE_SIZE);
+
+      setProducts(sliced);
+      setTotalPages(pages);
+      setTotalElements(total);
     } catch (err) {
       console.error('Failed to load home products', err);
     } finally {
@@ -44,6 +66,41 @@ export const Home: React.FC = () => {
   useEffect(() => {
     loadProducts(currentPage);
   }, [currentPage]);
+
+  useEffect(() => {
+    const fetchPngs = async () => {
+      setPngLoading(true);
+      try {
+        const res = await productService.getPngProducts(0, 8);
+        if (res?.content && res.content.length > 0) {
+          setPngProducts(res.content);
+        } else {
+          const fallback = await productService.getProducts({ category: 'png-elements', size: 8 });
+          if (fallback?.content && fallback.content.length > 0) {
+            setPngProducts(fallback.content);
+          } else {
+            const fallback2 = await productService.getProducts({ q: 'png', size: 8 });
+            setPngProducts(fallback2.content || []);
+          }
+        }
+      } catch (err) {
+        try {
+          const fallback = await productService.getProducts({ category: 'png-elements', size: 8 });
+          if (fallback?.content && fallback.content.length > 0) {
+            setPngProducts(fallback.content);
+          } else {
+            const fallback2 = await productService.getProducts({ q: 'png', size: 8 });
+            setPngProducts(fallback2.content || []);
+          }
+        } catch {
+          setPngProducts([]);
+        }
+      } finally {
+        setPngLoading(false);
+      }
+    };
+    fetchPngs();
+  }, []);
 
   const handlePageChange = (newPage: number) => {
     if (newPage === currentPage || newPage < 0 || newPage >= totalPages) return;
@@ -169,8 +226,8 @@ export const Home: React.FC = () => {
         {totalPages > 1 && (
           <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200 dark:border-dark-800">
             <div className="text-xs font-mono text-slate-500 dark:text-slate-400">
-              Showing <span className="text-slate-900 dark:text-white font-semibold">{currentPage * 8 + 1}</span>-
-              <span className="text-slate-900 dark:text-white font-semibold">{Math.min((currentPage + 1) * 8, totalElements)}</span> of{' '}
+              Showing <span className="text-slate-900 dark:text-white font-semibold">{currentPage * PAGE_SIZE + 1}</span>-
+              <span className="text-slate-900 dark:text-white font-semibold">{Math.min((currentPage + 1) * PAGE_SIZE, totalElements)}</span> of{' '}
               <span className="text-slate-900 dark:text-white font-semibold">{totalElements}</span> PSD templates
             </div>
 
@@ -236,7 +293,88 @@ export const Home: React.FC = () => {
         )}
       </section>
 
-      {/* 5. CTA BANNER */}
+      {/* 3. DEDICATED PNG PRODUCTS & TRANSPARENT ELEMENTS SECTION */}
+      <section id="png-assets" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative rounded-3xl p-6 sm:p-10 bg-slate-50/90 dark:bg-gradient-to-br dark:from-dark-900/90 dark:via-dark-950 dark:to-dark-900 border border-slate-200 dark:border-cyan-500/25 overflow-hidden shadow-lg dark:shadow-[0_20px_50px_rgba(6,182,212,0.08)]">
+          {/* Ambient cyan & emerald background glows */}
+          <div className="absolute top-0 right-1/4 w-80 h-80 bg-cyan-500/10 blur-[100px] pointer-events-none rounded-full" />
+          <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-emerald-500/10 blur-[100px] pointer-events-none rounded-full" />
+
+          {/* Section Header */}
+          <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 pb-6 border-b border-slate-200/80 dark:border-dark-800">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 dark:bg-cyan-500/15 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 text-xs font-mono font-bold uppercase tracking-wider mb-2">
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>Transparent Alpha PNGs</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">100% Free Downloads</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+                Transparent PNG Elements & Cutouts
+              </h2>
+              <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+                Pre-clipped isolated graphics, 3D geometric shapes, nature florals, and vibrant neon accents with clean alpha channels — ready to drop into any design without background extraction.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0">
+              <Link
+                to="/browse?category=png-elements"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-sharp-600 hover:from-cyan-500 hover:to-sharp-500 text-white text-xs font-bold shadow-sharp-glow transition-all hover:scale-[1.02]"
+              >
+                <span>View All PNGs</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+
+          {/* PNG Showcase Grid */}
+          {pngLoading ? (
+            <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-3 sm:gap-6 min-h-[260px] masonry-columns relative z-10">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <SkeletonCard key={i} aspect="square" />
+              ))}
+            </div>
+          ) : pngProducts.length > 0 ? (
+            <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-3 sm:gap-6 min-h-[260px] masonry-columns relative z-10">
+              {pngProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 text-center text-slate-500 dark:text-slate-400 text-sm bg-white dark:bg-dark-900 border border-slate-200 dark:border-dark-800 rounded-2xl relative z-10">
+              PNG elements catalog will appear here once listed.
+            </div>
+          )}
+
+          {/* Quick Info Footer Bar inside section */}
+          <div className="mt-8 pt-6 border-t border-slate-200/80 dark:border-dark-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-slate-500 dark:text-slate-400 relative z-10">
+            <div className="flex items-center gap-4 flex-wrap justify-center sm:justify-start">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                Zero Cost / Instant Download
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-cyan-500" />
+                Pre-clipped Alpha Transparency
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-indigo-500" />
+                300 DPI High-Resolution
+              </span>
+            </div>
+            <Link
+              to="/browse?category=png-elements"
+              className="text-cyan-600 dark:text-cyan-400 hover:underline font-bold flex items-center gap-1"
+            >
+              <span>Explore All Transparent Graphics</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. CTA BANNER */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative rounded-3xl p-6 sm:p-14 bg-white dark:bg-gradient-to-r dark:from-dark-900 dark:via-dark-850 dark:to-dark-900 border border-slate-200 dark:border-dark-750 overflow-hidden shadow-xl dark:shadow-2xl">
           <div className="absolute right-0 top-0 w-96 h-96 bg-sharp-600/10 blur-[100px] pointer-events-none rounded-full" />
@@ -249,7 +387,7 @@ export const Home: React.FC = () => {
               Ready to create stunning visuals in minutes instead of hours?
             </h2>
             <p className="mt-3 sm:mt-4 text-slate-600 dark:text-slate-400 text-xs sm:text-base leading-relaxed">
-              Every PSD on SharpShadow is meticulously crafted with smart objects, non-destructive adjustment layers, and organized folder hierarchies.
+              Every PSD on SharpShadows is meticulously crafted with smart objects, non-destructive adjustment layers, and organized folder hierarchies.
             </p>
             <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link

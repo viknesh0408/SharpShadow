@@ -17,6 +17,7 @@ import {
   Settings,
   Sun,
   Moon,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -35,7 +36,8 @@ export const AdminLayout: React.FC = () => {
 
   const navItems = [
     { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
-    { label: 'Products', path: '/admin/products', icon: Package },
+    { label: 'PSD Products', path: '/admin/products', icon: Package },
+    { label: 'PNG Products', path: '/admin/png-products', icon: ImageIcon, badge: 'PNG' },
     { label: 'Categories', path: '/admin/categories', icon: Layers },
     { label: 'Orders', path: '/admin/orders', icon: ShoppingBag },
     { label: 'Users', path: '/admin/users', icon: Users },
@@ -66,7 +68,7 @@ export const AdminLayout: React.FC = () => {
             <Link to="/admin" className="flex items-center gap-2.5 group">
               <img
                 src="/logo.png"
-                alt="SharpShadow Admin"
+                alt="SharpShadows Admin"
                 className="w-8 h-8 rounded-full object-contain shadow-sharp-glow group-hover:scale-105 transition-transform ring-1 ring-sharp-500/30"
               />
               <div className="flex flex-col">
@@ -106,14 +108,27 @@ export const AdminLayout: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                     isActive
                       ? 'bg-sharp-600 text-white shadow-sharp-glow'
                       : 'text-slate-400 hover:text-white hover:bg-dark-800'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
-                  {item.label}
+                  <div className="flex items-center gap-3">
+                    <Icon className="w-4 h-4" />
+                    <span>{item.label}</span>
+                  </div>
+                  {(item as any).badge && (
+                    <span
+                      className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded tracking-wider ${
+                        isActive
+                          ? 'bg-white/20 text-white'
+                          : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                      }`}
+                    >
+                      {(item as any).badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -185,7 +200,7 @@ export const AdminLayout: React.FC = () => {
 
         {/* Admin Footer */}
         <footer className="px-6 py-4 border-t border-dark-800 text-xs text-slate-500 flex flex-wrap items-center justify-between gap-2">
-          <span>SharpShadow Administration Panel</span>
+          <span>SharpShadows Administration Panel</span>
           <p className="flex items-center gap-1.5 text-slate-400">
             <span>Developed by</span>
             <a

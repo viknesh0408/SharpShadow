@@ -27,13 +27,14 @@ public class ProductController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(defaultValue = "newest") String sort,
+            @RequestParam(required = false) String format,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         Long userId = principal != null ? principal.getId() : null;
         PageResponse<ProductResponse> products = productService.getProducts(
-                category, q, minPrice, maxPrice, sort, page, size, userId
+                category, q, minPrice, maxPrice, sort, format, page, size, userId
         );
         return ResponseEntity.ok(ApiResponse.success(products));
     }
@@ -51,6 +52,17 @@ public class ProductController {
     @GetMapping("/latest")
     public ResponseEntity<ApiResponse<List<ProductResponse>>> getLatest() {
         return ResponseEntity.ok(ApiResponse.success(productService.getLatestProducts()));
+    }
+
+    @GetMapping("/png")
+    public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getPngProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        Long userId = principal != null ? principal.getId() : null;
+        PageResponse<ProductResponse> products = productService.getPngProducts(page, size, userId);
+        return ResponseEntity.ok(ApiResponse.success(products));
     }
 
     @GetMapping("/{slug}")

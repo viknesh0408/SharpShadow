@@ -60,7 +60,7 @@ export const Register: React.FC = () => {
       const res = await authRegister(data);
       if (res.emailVerified) {
         // In case account is already verified or direct login
-        success('Account created successfully! Welcome to SharpShadow.');
+        success('Account created successfully! Welcome to SharpShadows.');
         navigate(redirect);
       } else {
         // Move to OTP verification step
@@ -87,7 +87,7 @@ export const Register: React.FC = () => {
     setOtpLoading(true);
     try {
       await verifyEmail({ email: registeredEmail, otp: cleanOtp });
-      success('Email verified successfully! Welcome to SharpShadow.');
+      success('Email verified successfully! Welcome to SharpShadows.');
       navigate(redirect);
     } catch (err: any) {
       error(err.response?.data?.message || 'Invalid or expired verification code');
@@ -119,7 +119,7 @@ export const Register: React.FC = () => {
           <Link to="/" className="inline-flex items-center justify-center mb-2 group">
             <img
               src="/logo.png"
-              alt="SharpShadow Logo"
+              alt="SharpShadows Logo"
               className="w-14 h-14 rounded-full object-contain shadow-sharp-glow group-hover:scale-105 transition-transform duration-300 ring-2 ring-sharp-500/30"
             />
           </Link>

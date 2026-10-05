@@ -18,6 +18,16 @@ public class ProductSpecifications {
             BigDecimal maxPrice,
             String query
     ) {
+        return filter(categorySlug, minPrice, maxPrice, query, null);
+    }
+
+    public static Specification<Product> filter(
+            String categorySlug,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            String query,
+            String format
+    ) {
         return (root, criteriaQuery, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -44,6 +54,21 @@ public class ProductSpecifications {
                 Predicate descMatch = cb.like(cb.lower(root.get("description")), pattern);
                 Predicate catMatch = cb.like(cb.lower(root.get("category").get("name")), pattern);
                 predicates.add(cb.or(titleMatch, descMatch, catMatch));
+            }
+
+            if (StringUtils.hasText(format)) {
+                String fmt = format.trim().toLowerCase();
+                Predicate catSlugPng = cb.like(cb.lower(root.get("category").get("slug")), "%png%");
+                Predicate catNamePng = cb.like(cb.lower(root.get("category").get("name")), "%png%");
+                Predicate fileNamePng = cb.like(cb.lower(root.get("fileName")), "%.png");
+                Predicate psVersionPng = cb.like(cb.lower(root.get("photoshopVersion")), "%png%");
+                Predicate isPngPredicate = cb.or(catSlugPng, catNamePng, fileNamePng, psVersionPng);
+
+                if ("png".equals(fmt)) {
+                    predicates.add(isPngPredicate);
+                } else if ("psd".equals(fmt)) {
+                    predicates.add(cb.not(isPngPredicate));
+                }
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

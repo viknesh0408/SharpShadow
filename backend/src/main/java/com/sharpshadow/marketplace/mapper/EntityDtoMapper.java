@@ -67,6 +67,8 @@ public class EntityDtoMapper {
                 .previewImages(previews)
                 .hasPurchased(userHasAccess)
                 .free(isFree)
+                .isPng(product.isPng())
+                .fileFormat(product.getFileFormat())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
                 .internalFileUrl(isAdmin ? product.getFileUrl() : null)

@@ -51,6 +51,21 @@ public class ProductService {
             int size,
             Long currentUserId
     ) {
+        return getProducts(categorySlug, query, minPrice, maxPrice, sortBy, null, page, size, currentUserId);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<ProductResponse> getProducts(
+            String categorySlug,
+            String query,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            String sortBy,
+            String format,
+            int page,
+            int size,
+            Long currentUserId
+    ) {
         Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
         if ("popular".equalsIgnoreCase(sortBy)) {
             sort = Sort.by(Sort.Direction.DESC, "downloadCount");
@@ -65,12 +80,12 @@ public class ProductService {
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<Product> productPage;
 
-        boolean hasFilters = StringUtils.hasText(categorySlug) || minPrice != null || maxPrice != null || StringUtils.hasText(query);
+        boolean hasFilters = StringUtils.hasText(categorySlug) || minPrice != null || maxPrice != null || StringUtils.hasText(query) || StringUtils.hasText(format);
         if (!hasFilters) {
             productPage = productRepository.findByStatus("PUBLISHED", pageable);
         } else {
             productPage = productRepository.findAll(
-                    ProductSpecifications.filter(categorySlug, minPrice, maxPrice, query),
+                    ProductSpecifications.filter(categorySlug, minPrice, maxPrice, query, format),
                     pageable
             );
         }
@@ -84,24 +99,30 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public List<ProductResponse> getFeaturedProducts() {
-        Pageable pageable = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(0, 16, Sort.by(Sort.Direction.DESC, "createdAt"));
         return productRepository.findByStatusAndFeaturedTrue("PUBLISHED", pageable).stream()
+                .filter(p -> !p.isPng())
+                .limit(8)
                 .map(p -> mapper.toProductResponse(p, false, false))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<ProductResponse> getPopularProducts() {
-        Pageable pageable = PageRequest.of(0, 8);
+        Pageable pageable = PageRequest.of(0, 16);
         return productRepository.findTopPopular(pageable).stream()
+                .filter(p -> !p.isPng())
+                .limit(8)
                 .map(p -> mapper.toProductResponse(p, false, false))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<ProductResponse> getLatestProducts() {
-        Pageable pageable = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(0, 16, Sort.by(Sort.Direction.DESC, "createdAt"));
         return productRepository.findByStatus("PUBLISHED", pageable).stream()
+                .filter(p -> !p.isPng())
+                .limit(8)
                 .map(p -> mapper.toProductResponse(p, false, false))
                 .collect(Collectors.toList());
     }
@@ -158,7 +179,7 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public PageResponse<ProductResponse> getAdminProducts(Pageable pageable) {
-        Page<Product> page = productRepository.findAll(pageable);
+        Page<Product> page = productRepository.findPsdProducts(pageable);
         return PageResponse.of(page.map(p -> mapper.toProductResponse(p, false, true)));
     }
 
@@ -272,5 +293,22 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
         productRepository.delete(product);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<ProductResponse> getPngProducts(int page, int size, Long currentUserId) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Product> productPage = productRepository.findPublishedPngProducts(pageable);
+        return PageResponse.of(productPage.map(p -> {
+            boolean purchased = currentUserId != null &&
+                    orderRepository.existsByUserIdAndProductIdAndStatus(currentUserId, p.getId(), OrderStatus.PAID);
+            return mapper.toProductResponse(p, purchased, false);
+        }));
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<ProductResponse> getAdminPngProducts(Pageable pageable) {
+        Page<Product> productPage = productRepository.findPngProducts(pageable);
+        return PageResponse.of(productPage.map(p -> mapper.toProductResponse(p, false, true)));
     }
 }

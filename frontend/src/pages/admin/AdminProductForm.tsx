@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,6 +13,7 @@ import {
   FileCode,
   Plus,
   Trash2,
+  Sparkles,
 } from 'lucide-react';
 import { adminService, ProductPayload } from '../../services/adminService';
 import { categoryService } from '../../services/categoryService';
@@ -88,9 +89,33 @@ export const AdminProductForm: React.FC = () => {
     ? Math.round(((regularPriceNum - discountPriceNum) / regularPriceNum) * 100)
     : 0;
 
+  const [searchParams] = useSearchParams();
+  const isPngMode = searchParams.get('format') === 'png';
+
   // Load initial data
   useEffect(() => {
-    categoryService.getCategories().then(setCategories).catch(console.error);
+    categoryService.getCategories()
+      .then((cats) => {
+        setCategories(cats);
+        if (!isEdit && isPngMode) {
+          const pngCat = cats.find(
+            (c) => c.slug.includes('png') || c.name.toLowerCase().includes('png')
+          );
+          if (pngCat) {
+            setValue('categoryId', pngCat.id);
+          }
+        }
+      })
+      .catch(console.error);
+
+    if (!isEdit && isPngMode) {
+      setValue('price', 0);
+      setValue('discountPrice', null);
+      setValue('colorMode', 'RGB (Alpha)');
+      setValue('photoshopVersion', 'Transparent PNG');
+      setValue('resolution', '300 DPI');
+      setValue('dimensions', 'Transparent Cutout / High-Res');
+    }
 
     if (isEdit && id) {
       setLoading(true);
@@ -120,7 +145,7 @@ export const AdminProductForm: React.FC = () => {
         })
         .finally(() => setLoading(false));
     }
-  }, [id, isEdit, setValue]);
+  }, [id, isEdit, isPngMode, setValue]);
 
   // Handle Private PSD / ZIP Asset Upload
   const handleAssetUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -238,20 +263,45 @@ export const AdminProductForm: React.FC = () => {
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
         <Link
-          to="/admin/products"
+          to={isPngMode ? '/admin/png-products' : '/admin/products'}
           className="p-2 rounded-xl bg-dark-900 border border-dark-800 text-slate-400 hover:text-white"
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-white">
-            {isEdit ? 'Edit Photoshop Asset' : 'Upload New Photoshop PSD Asset'}
+            {isPngMode
+              ? 'Upload New Free PNG Asset'
+              : isEdit
+              ? 'Edit Photoshop Asset'
+              : 'Upload New Photoshop PSD Asset'}
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            Configure metadata, pricing, specifications, and upload private assets
+            {isPngMode
+              ? 'List high-resolution transparent PNG cutouts, 3D assets, and free client graphics'
+              : 'Configure metadata, pricing, specifications, and upload private assets'}
           </p>
         </div>
       </div>
+
+      {isPngMode && (
+        <div className="bg-gradient-to-r from-cyan-950/70 via-dark-900 to-dark-900 border border-cyan-500/40 rounded-2xl p-4 flex items-center gap-3 shadow-card-dark">
+          <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0 border border-cyan-500/30">
+            <ImageIcon className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-sm font-bold text-white flex items-center gap-2">
+              <span>PNG Elements & Transparent Graphics Mode</span>
+              <span className="bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
+                Free Download (₹0)
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Category pre-selected to PNG Elements. Price defaulted to ₹0 so clients can download free of cost without payment.
+            </p>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         
@@ -315,17 +365,29 @@ export const AdminProductForm: React.FC = () => {
           <h3 className="font-bold text-sm text-white uppercase tracking-wider font-mono">2. Pricing (INR)</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-mono text-slate-400 uppercase block mb-1.5">Regular Price (₹) *</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-mono text-slate-400 uppercase">Regular Price (₹) *</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValue('price', 0, { shouldValidate: true });
+                    setValue('discountPrice', null);
+                  }}
+                  className="text-[11px] font-mono text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 rounded-lg transition-colors font-semibold"
+                >
+                  Set as Free (₹0)
+                </button>
+              </div>
               <input
                 type="number"
                 step="0.01"
-                placeholder="499.00"
+                placeholder="499.00 (Enter 0 for Free)"
                 {...register('price')}
                 className="w-full bg-dark-950 border border-dark-750 focus:border-sharp-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none font-mono"
               />
               {Number(watchPrice) === 0 && (
                 <p className="text-xs text-emerald-400 mt-1 font-mono font-semibold flex items-center gap-1">
-                  <span>🎁 Free Asset:</span> Customers can download this template instantly without payment.
+                  <span>🎁 Free Asset:</span> Customers can download this product instantly without any payment gateway checkout.
                 </p>
               )}
               {errors.price && <p className="text-xs text-sharp-400 mt-1">{errors.price.message}</p>}
@@ -377,12 +439,12 @@ export const AdminProductForm: React.FC = () => {
         <div className="bg-dark-900 border border-dark-800 rounded-3xl p-6 sm:p-7 space-y-6 shadow-card-dark">
           <h3 className="font-bold text-sm text-white uppercase tracking-wider font-mono">3. File Storage & Uploads</h3>
 
-          {/* Private PSD Asset Upload */}
+          {/* Private Digital Asset Upload */}
           <div className="p-4 rounded-2xl bg-dark-950 border border-dark-800 space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-mono text-sharp-400 uppercase font-bold flex items-center gap-1.5">
                 <FileCode className="w-4 h-4" />
-                Master PSD or ZIP Asset (Private Storage)
+                Master Digital Asset (.PNG, .PSD, .ZIP)
               </label>
               <span className="text-[10px] bg-dark-900 text-slate-400 px-2 py-0.5 rounded font-mono">
                 Supports up to 500MB
@@ -392,10 +454,10 @@ export const AdminProductForm: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-dark-850 hover:bg-dark-800 text-slate-200 border border-dark-700 text-xs font-semibold flex items-center gap-2 transition-colors">
                 <Upload className="w-4 h-4" />
-                <span>{uploadingAsset ? 'Uploading PSD...' : 'Choose PSD / ZIP File'}</span>
+                <span>{uploadingAsset ? 'Uploading File...' : 'Choose File (.PNG, .PSD, .ZIP)'}</span>
                 <input
                   type="file"
-                  accept=".psd,.zip"
+                  accept=".png,.psd,.zip,.jpg,.jpeg"
                   onChange={handleAssetUpload}
                   className="hidden"
                   disabled={uploadingAsset}
@@ -410,7 +472,7 @@ export const AdminProductForm: React.FC = () => {
               )}
             </div>
             <p className="text-[11px] text-slate-500">
-              Files are stored privately with UUID obfuscation and are NEVER served directly without a verified purchase signature.
+              Files are stored privately with UUID obfuscation and are NEVER served directly without an authorized token or download signature.
             </p>
           </div>
 

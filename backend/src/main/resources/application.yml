@@ -53,7 +53,7 @@ sharpshadow:
   admin:
     email: ${ADMIN_EMAIL:admin@sharpshadow.com}
     password: ${ADMIN_PASSWORD:}
-    name: ${ADMIN_NAME:SharpShadow Administrator}
+    name: ${ADMIN_NAME:SharpShadows Administrator}
   storage:
     type: ${STORAGE_TYPE:local} # local or s3
     signing-secret: ${DOWNLOAD_SIGNING_SECRET:${JWT_SECRET:}}
@@ -106,7 +106,7 @@ sharpshadow:
   storage:
     signing-secret: ${DOWNLOAD_SIGNING_SECRET:ec8d6de3ef72a993b8f4731e1802be6f7903e93806d292e00982a08b452669e3}
   admin:
-    password: ${ADMIN_PASSWORD:DevAdmin#2026!Secured}
+    password: ${ADMIN_PASSWORD:Admin#SharpShadow2026!}
 
 ---
 # MySQL / Production Profile

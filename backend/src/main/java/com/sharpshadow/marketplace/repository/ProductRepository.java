@@ -47,4 +47,28 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     @Query("SELECT p FROM Product p WHERE p.status = 'PUBLISHED' ORDER BY p.downloadCount DESC")
     List<Product> findTopPopular(Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE " +
+           "(LOWER(p.category.slug) LIKE '%png%' OR LOWER(p.category.name) LIKE '%png%' OR LOWER(p.fileName) LIKE '%.png' OR UPPER(p.photoshopVersion) LIKE '%PNG%')")
+    Page<Product> findPngProducts(Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE NOT " +
+           "(LOWER(p.category.slug) LIKE '%png%' OR LOWER(p.category.name) LIKE '%png%' OR LOWER(p.fileName) LIKE '%.png' OR UPPER(p.photoshopVersion) LIKE '%PNG%')")
+    Page<Product> findPsdProducts(Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.status = 'PUBLISHED' AND " +
+           "(LOWER(p.category.slug) LIKE '%png%' OR LOWER(p.category.name) LIKE '%png%' OR LOWER(p.fileName) LIKE '%.png' OR UPPER(p.photoshopVersion) LIKE '%PNG%')")
+    Page<Product> findPublishedPngProducts(Pageable pageable);
+
+    @Query("SELECT COUNT(p) FROM Product p WHERE " +
+           "(LOWER(p.category.slug) LIKE '%png%' OR LOWER(p.category.name) LIKE '%png%' OR LOWER(p.fileName) LIKE '%.png' OR UPPER(p.photoshopVersion) LIKE '%PNG%')")
+    long countPngProducts();
+
+    @Query("SELECT COALESCE(SUM(p.downloadCount), 0) FROM Product p WHERE " +
+           "(LOWER(p.category.slug) LIKE '%png%' OR LOWER(p.category.name) LIKE '%png%' OR LOWER(p.fileName) LIKE '%.png' OR UPPER(p.photoshopVersion) LIKE '%PNG%')")
+    long sumPngDownloads();
+
+    @Query("SELECT COUNT(p) FROM Product p WHERE (COALESCE(p.discountPrice, p.price) <= 0) AND " +
+           "(LOWER(p.category.slug) LIKE '%png%' OR LOWER(p.category.name) LIKE '%png%' OR LOWER(p.fileName) LIKE '%.png' OR UPPER(p.photoshopVersion) LIKE '%PNG%')")
+    long countFreePngProducts();
 }

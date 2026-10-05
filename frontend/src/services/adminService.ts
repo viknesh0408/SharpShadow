@@ -58,6 +58,13 @@ export const adminService = {
     return res.data.data!;
   },
 
+  async getPngProducts(page = 0, size = 20): Promise<PageResponse<Product>> {
+    const res = await api.get<ApiResponse<PageResponse<Product>>>('/admin/products/png', {
+      params: { page, size },
+    });
+    return res.data.data!;
+  },
+
   async getProductById(id: number | string): Promise<Product> {
     const res = await api.get<ApiResponse<Product>>(`/admin/products/${id}`);
     return res.data.data!;

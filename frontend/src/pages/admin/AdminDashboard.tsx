@@ -10,6 +10,8 @@ import {
   ArrowUpRight,
   PlusCircle,
   Eye,
+  Image as ImageIcon,
+  Sparkles,
 } from 'lucide-react';
 import { adminService } from '../../services/adminService';
 import { AdminDashboardStats } from '../../types';
@@ -39,7 +41,7 @@ export const AdminDashboard: React.FC = () => {
   }
 
   const statCards = [
-    { label: 'Total Products', value: stats.totalProducts, icon: Package, color: 'text-rose-400', link: '/admin/products' },
+    { label: 'PSD Products', value: stats.totalProducts, icon: Package, color: 'text-rose-400', link: '/admin/products' },
     { label: 'Total Orders', value: stats.totalOrders, icon: ShoppingBag, color: 'text-cyan-400', link: '/admin/orders' },
     { label: 'Total Customers', value: stats.totalCustomers, icon: Users, color: 'text-purple-400', link: '/admin/users' },
     { label: 'Total Revenue', value: `₹${stats.totalRevenue.toFixed(2)}`, icon: DollarSign, color: 'text-emerald-400', link: '/admin/orders' },
@@ -55,13 +57,22 @@ export const AdminDashboard: React.FC = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-white">Marketplace Overview</h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">Live metrics and digital asset sales performance</p>
         </div>
-        <Link
-          to="/admin/products/new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sharp-600 hover:bg-sharp-500 text-white font-semibold text-xs shadow-sharp-glow transition-all"
-        >
-          <PlusCircle className="w-4 h-4" />
-          <span>Upload PSD File</span>
-        </Link>
+        <div className="flex items-center gap-2.5">
+          <Link
+            to="/admin/products/new?format=png"
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-dark-900 hover:bg-dark-850 text-cyan-300 hover:text-white border border-cyan-500/30 font-semibold text-xs transition-all"
+          >
+            <ImageIcon className="w-4 h-4 text-cyan-400" />
+            <span>Upload Free PNG</span>
+          </Link>
+          <Link
+            to="/admin/products/new"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sharp-600 hover:bg-sharp-500 text-white font-semibold text-xs shadow-sharp-glow transition-all"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>Upload PSD File</span>
+          </Link>
+        </div>
       </div>
 
       {/* 6 Stat Cards (Section 15) */}
@@ -89,6 +100,54 @@ export const AdminDashboard: React.FC = () => {
             </Link>
           );
         })}
+      </div>
+
+      {/* Dedicated PNG Products Section */}
+      <div className="bg-gradient-to-r from-dark-900 via-dark-850 to-dark-900 border border-cyan-500/30 rounded-3xl p-6 sm:p-7 shadow-card-dark relative overflow-hidden">
+        <div className="absolute -right-10 -top-10 w-72 h-72 bg-cyan-500/10 blur-[90px] pointer-events-none rounded-full" />
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 text-xs font-mono font-bold">
+              <ImageIcon className="w-3.5 h-3.5" />
+              <span>PNG Elements & Transparent Graphics</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white">Dedicated PNG Asset Portal</h2>
+            <p className="text-xs sm:text-sm text-slate-400 max-w-xl">
+              Manage free and commercial transparent PNG assets, isolated design cutouts, and monitor free instant customer downloads.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 shrink-0">
+            <div className="bg-dark-950/80 border border-dark-800 rounded-2xl px-4 py-3 text-center min-w-[95px]">
+              <span className="text-[10px] font-mono text-slate-400 uppercase block">PNG Items</span>
+              <span className="text-xl font-black font-mono text-white">{stats.totalPngProducts ?? 0}</span>
+            </div>
+            <div className="bg-dark-950/80 border border-dark-800 rounded-2xl px-4 py-3 text-center min-w-[95px]">
+              <span className="text-[10px] font-mono text-slate-400 uppercase block">Free Listings</span>
+              <span className="text-xl font-black font-mono text-emerald-400">{stats.freePngCount ?? 0}</span>
+            </div>
+            <div className="bg-dark-950/80 border border-dark-800 rounded-2xl px-4 py-3 text-center min-w-[95px]">
+              <span className="text-[10px] font-mono text-slate-400 uppercase block">Downloads</span>
+              <span className="text-xl font-black font-mono text-sky-400">{stats.totalPngDownloads ?? 0}</span>
+            </div>
+            <div className="flex flex-row sm:flex-col gap-2 w-full sm:w-auto">
+              <Link
+                to="/admin/png-products"
+                className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-sharp-600 hover:from-cyan-500 hover:to-sharp-500 text-white font-semibold text-xs transition-all shadow-sharp-glow text-center flex items-center justify-center gap-1.5"
+              >
+                <span>Manage PNGs</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </Link>
+              <Link
+                to="/admin/products/new?format=png"
+                className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-dark-800 hover:bg-dark-750 text-slate-200 border border-dark-700 font-semibold text-xs transition-all text-center flex items-center justify-center gap-1.5"
+              >
+                <PlusCircle className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Upload PNG</span>
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Charts Row: Sales by Day & Revenue by Month */}

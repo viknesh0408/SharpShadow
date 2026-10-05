@@ -28,6 +28,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     (product.discountPrice != null && product.discountPrice === 0)
   );
 
+  const isPng = Boolean(
+    product.isPng ||
+    product.category?.slug?.includes('png') ||
+    product.category?.name?.toLowerCase().includes('png') ||
+    product.fileName?.toLowerCase().endsWith('.png') ||
+    product.photoshopVersion?.toLowerCase().includes('png') ||
+    product.title?.toLowerCase().includes('(png)') ||
+    product.title?.toLowerCase().includes('.png') ||
+    product.title?.toLowerCase().endsWith(' png') ||
+    product.slug?.includes('png')
+  );
+
   const hasDiscount = !isFree && product.discountPrice != null && product.discountPrice < product.price;
 
   const handleAction = async (e: React.MouseEvent) => {
@@ -135,23 +147,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <Heart className={`w-3.5 h-3.5 ${wishlisted ? 'fill-current text-white' : 'text-white'}`} />
         </button>
 
-        {/* Bottom Overlay: Everything is inside the thumbnail */}
-        <div className="product-card-overlay absolute inset-x-0 bottom-0 z-10 p-3 sm:p-3.5 bg-gradient-to-t from-slate-950/95 via-slate-950/80 to-transparent pt-14 group-hover:pt-28 flex flex-col justify-end pointer-events-auto transition-all duration-150 ease-out">
+        {/* Bottom Overlay: Title, Category, Price & Action Buttons appear only on hover */}
+        <div className="product-card-overlay absolute inset-x-0 bottom-0 z-10 p-3 sm:p-3.5 bg-gradient-to-t from-slate-950/95 via-slate-950/80 to-transparent pt-14 flex flex-col justify-end space-y-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 pointer-events-none group-hover:pointer-events-auto transition-all duration-200 ease-out">
           
-          {/* Animated Product Title Section — ZERO delay instant 100ms response on hover */}
-          <div className="absolute bottom-[48px] sm:bottom-[52px] inset-x-0 px-3 sm:px-3.5 opacity-0 translate-y-1.5 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-100 ease-out pointer-events-none group-hover:pointer-events-auto space-y-1">
+          {/* Category & Title */}
+          <div className="space-y-1">
             <div className="flex items-center justify-between text-[10px] font-mono">
               <span className="product-card-category font-bold tracking-wider uppercase text-sharp-400">
                 {product.category.name}
               </span>
-              <span className="product-card-badge font-mono text-[9px] uppercase px-1.5 py-0.5 rounded bg-white/15 backdrop-blur-sm">
-                PSD
+              <span className="product-card-badge font-mono text-[9px] uppercase px-1.5 py-0.5 rounded bg-white/15 backdrop-blur-sm text-slate-200">
+                {(product.fileName?.split('.').pop() || 'PSD').toUpperCase()}
               </span>
             </div>
             <Link to={`/product/${product.slug}`} className="block">
               <h3
-                className="product-card-title text-xs sm:text-sm font-bold line-clamp-2 leading-snug drop-shadow-md transition-colors"
-                style={{ color: '#ffffff' }}
+                className="product-card-title text-xs sm:text-sm font-bold line-clamp-2 leading-snug drop-shadow-md transition-colors hover:text-sharp-400 text-white"
               >
                 {product.title}
               </h3>
@@ -159,7 +170,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
 
           {/* Bottom Bar: Price & Action Buttons (Add to Cart + Buy/Download) */}
-          <div className="relative z-10 flex items-center justify-between gap-2 pt-1 border-t border-white/15">
+          <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-white/15">
             {/* Price or FREE badge */}
             <div className="flex items-baseline gap-1.5 min-w-0">
               {isFree ? (
@@ -169,13 +180,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               ) : (
                 <>
                   <span
-                    className="product-card-price text-sm sm:text-base font-black font-mono tracking-tight"
-                    style={{ color: '#ffffff' }}
+                    className="product-card-price text-sm sm:text-base font-black font-mono tracking-tight text-white"
                   >
                     ₹{hasDiscount ? product.discountPrice : product.price}
                   </span>
                   {hasDiscount && (
-                    <span className="product-card-strike text-[10px] sm:text-xs font-mono line-through">
+                    <span className="product-card-strike text-[10px] sm:text-xs font-mono line-through text-slate-400">
                       ₹{product.price}
                     </span>
                   )}
@@ -200,13 +210,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <button
                 onClick={handleAction}
                 disabled={downloading}
-                className={`product-card-buy px-3 py-1.5 rounded-xl font-bold text-xs shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1 ${
+                className={`product-card-buy px-3 py-1.5 rounded-xl font-bold text-xs shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1 text-white ${
                   isFree
                     ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-emerald-500/20'
                     : 'bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 shadow-sharp-glow'
                 }`}
-                style={{ color: '#ffffff' }}
-                title={isFree ? 'Download Free PSD' : 'Buy Now'}
+                title={isFree ? (isPng ? 'Download Free PNG' : 'Download Free PSD') : 'Buy Now'}
               >
                 {downloading ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />

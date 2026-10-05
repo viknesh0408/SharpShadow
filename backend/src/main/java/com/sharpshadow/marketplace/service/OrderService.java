@@ -180,7 +180,10 @@ public class OrderService {
         long totalCustomers = userRepository.countByRole(Role.CUSTOMER);
         BigDecimal totalRevenue = orderRepository.sumTotalPaidRevenue();
         BigDecimal todaySales = orderRepository.sumPaidRevenueSince(LocalDate.now().atStartOfDay());
-        long totalDownloads = downloadRepository.count();
+        long totalRevenueCount = downloadRepository.count();
+        long totalPngProducts = productRepository.countPngProducts();
+        long totalPngDownloads = productRepository.sumPngDownloads();
+        long freePngCount = productRepository.countFreePngProducts();
 
         // 7-day sales chart
         List<Map<String, Object>> salesByDay = new ArrayList<>();
@@ -221,7 +224,10 @@ public class OrderService {
                 .totalCustomers(totalCustomers)
                 .totalRevenue(totalRevenue != null ? totalRevenue : BigDecimal.ZERO)
                 .todaySales(todaySales != null ? todaySales : BigDecimal.ZERO)
-                .totalDownloads(totalDownloads)
+                .totalDownloads(totalRevenueCount)
+                .totalPngProducts(totalPngProducts)
+                .totalPngDownloads(totalPngDownloads)
+                .freePngCount(freePngCount)
                 .salesByDay(salesByDay)
                 .revenueByMonth(revenueByMonth)
                 .popularProducts(popular)

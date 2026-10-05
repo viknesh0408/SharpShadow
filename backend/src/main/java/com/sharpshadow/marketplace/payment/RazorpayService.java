@@ -65,7 +65,7 @@ public class RazorpayService {
 
             JSONObject notes = new JSONObject();
             notes.put("internalOrderNumber", internalOrderNumber);
-            notes.put("platform", "SharpShadow");
+            notes.put("platform", "SharpShadows");
             orderRequest.put("notes", notes);
 
             com.razorpay.Order order = razorpay.orders.create(orderRequest);

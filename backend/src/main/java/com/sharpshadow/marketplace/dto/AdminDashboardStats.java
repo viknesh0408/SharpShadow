@@ -18,6 +18,9 @@ public class AdminDashboardStats {
     private BigDecimal totalRevenue;
     private BigDecimal todaySales;
     private long totalDownloads;
+    private long totalPngProducts;
+    private long totalPngDownloads;
+    private long freePngCount;
 
     // Charts data
     private List<Map<String, Object>> salesByDay;

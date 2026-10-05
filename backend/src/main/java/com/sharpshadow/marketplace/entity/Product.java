@@ -93,4 +93,22 @@ public class Product {
         BigDecimal effective = discountPrice != null ? discountPrice : price;
         return effective != null && effective.compareTo(BigDecimal.ZERO) <= 0;
     }
+
+    public boolean isPng() {
+        if (category != null && category.getSlug() != null &&
+                (category.getSlug().contains("png") || category.getName().toLowerCase().contains("png"))) {
+            return true;
+        }
+        if (fileName != null && fileName.toLowerCase().endsWith(".png")) {
+            return true;
+        }
+        if (photoshopVersion != null && photoshopVersion.toUpperCase().contains("PNG")) {
+            return true;
+        }
+        return false;
+    }
+
+    public String getFileFormat() {
+        return isPng() ? "PNG" : "PSD";
+    }
 }

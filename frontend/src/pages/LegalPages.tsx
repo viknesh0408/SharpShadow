@@ -11,7 +11,7 @@ export const PrivacyPolicy: React.FC = () => (
       <p>Last updated: October 2026</p>
       <h3 className="text-lg font-bold text-white">1. Information We Collect</h3>
       <p>
-        SharpShadow collects necessary personal information including your full name, email address, IP address for secure digital download auditing, and encrypted transaction metadata processed via Razorpay. We do not store full credit card numbers or banking passwords on our servers.
+        SharpShadows collects necessary personal information including your full name, email address, IP address for secure digital download auditing, and encrypted transaction metadata processed via Razorpay. We do not store full credit card numbers or banking passwords on our servers.
       </p>
       <h3 className="text-lg font-bold text-white">2. Use of Information</h3>
       <p>
@@ -35,11 +35,11 @@ export const Terms: React.FC = () => (
       <p>Last updated: October 2026</p>
       <h3 className="text-lg font-bold text-white">1. Acceptance of Terms</h3>
       <p>
-        By accessing SharpShadow and purchasing any digital design asset, template, or Photoshop file, you agree to abide by these Terms of Service and our Licensing Agreement.
+        By accessing SharpShadows and purchasing any digital design asset, template, or Photoshop file, you agree to abide by these Terms of Service and our Licensing Agreement.
       </p>
       <h3 className="text-lg font-bold text-white">2. Nature of Digital Goods</h3>
       <p>
-        Products sold on SharpShadow are digital, downloadable Adobe Photoshop PSD files and ZIP archives. Delivery is immediate and electronic upon confirmed payment.
+        Products sold on SharpShadows are digital, downloadable Adobe Photoshop PSD files and ZIP archives. Delivery is immediate and electronic upon confirmed payment.
       </p>
       <h3 className="text-lg font-bold text-white">3. Prohibited Conduct</h3>
       <p>

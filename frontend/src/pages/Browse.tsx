@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Filter, X, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Filter, X, SlidersHorizontal, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
 import { Product, Category } from '../types';
 import { productService } from '../services/productService';
 import { categoryService } from '../services/categoryService';
@@ -28,6 +28,23 @@ export const Browse: React.FC = () => {
   const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
+  // Check if viewing PNG Elements specifically
+  const isPngCategory = Boolean(
+    selectedCategory && (selectedCategory.includes('png') || selectedCategory === 'png-elements')
+  );
+
+  const isProductPng = (p: Product) => Boolean(
+    p.isPng ||
+    p.category?.slug?.includes('png') ||
+    p.category?.name?.toLowerCase().includes('png') ||
+    p.fileName?.toLowerCase().endsWith('.png') ||
+    p.photoshopVersion?.toLowerCase().includes('png') ||
+    p.title?.toLowerCase().includes('(png)') ||
+    p.title?.toLowerCase().includes('.png') ||
+    p.title?.toLowerCase().endsWith(' png') ||
+    p.slug?.includes('png')
+  );
+
   // Sync state when URL params change
   useEffect(() => {
     setSearchQuery(queryParam);
@@ -49,14 +66,26 @@ export const Browse: React.FC = () => {
           q: searchQuery || undefined,
           category: selectedCategory || undefined,
           sort: selectedSort,
+          format: isPngCategory ? 'png' : 'psd',
           minPrice,
           maxPrice,
-          page: currentPage,
-          size: 16,
+          size: 100,
         });
-        setProducts(res.content);
-        setTotalElements(res.totalElements);
-        setTotalPages(res.totalPages);
+
+        const items = res?.content || [];
+        // Strictly exclude PNG products from general PSD browsing
+        const cleanItems = isPngCategory
+          ? items.filter((p) => isProductPng(p))
+          : items.filter((p) => !isProductPng(p));
+
+        const PAGE_SIZE = 12; // 3 rows of 4 columns
+        const total = cleanItems.length;
+        const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+        const sliced = cleanItems.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+
+        setProducts(sliced);
+        setTotalElements(total);
+        setTotalPages(pages);
       } catch (err) {
         console.error('Failed to load products', err);
       } finally {
@@ -64,7 +93,7 @@ export const Browse: React.FC = () => {
       }
     };
     fetchProducts();
-  }, [searchQuery, selectedCategory, selectedSort, minPrice, maxPrice, currentPage]);
+  }, [searchQuery, selectedCategory, selectedSort, minPrice, maxPrice, currentPage, isPngCategory]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,10 +142,18 @@ export const Browse: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-8 border-b border-dark-800">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-            {searchQuery ? `Search Results for "${searchQuery}"` : selectedCategory ? `Category: ${categories.find(c => c.slug === selectedCategory)?.name || selectedCategory}` : 'Explore All PSD Templates'}
+            {isPngCategory
+              ? 'Transparent PNG Elements & Cutouts'
+              : searchQuery
+              ? `Search Results for "${searchQuery}"`
+              : selectedCategory
+              ? `Category: ${categories.find(c => c.slug === selectedCategory)?.name || selectedCategory}`
+              : 'Explore All PSD Templates'}
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            {totalElements} assets available • Layered Photoshop files
+            {isPngCategory
+              ? `${totalElements} assets available • Free Transparent Alpha PNGs`
+              : `${totalElements} PSD templates available • Layered Photoshop files`}
           </p>
         </div>
 
@@ -211,24 +248,47 @@ export const Browse: React.FC = () => {
                     !selectedCategory ? 'bg-sharp-500 text-white' : 'text-slate-400 hover:text-white hover:bg-dark-800'
                   }`}
                 >
-                  All Categories
+                  All PSD Templates
                 </button>
-                {categories.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => handleCategoryChange(cat.slug)}
-                    className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                      selectedCategory === cat.slug
-                        ? 'bg-sharp-500 text-white'
-                        : 'text-slate-400 hover:text-white hover:bg-dark-800'
-                    }`}
-                  >
-                    <span>{cat.name}</span>
-                    {cat.productCount ? (
-                      <span className="text-[10px] opacity-70 font-mono">{cat.productCount}</span>
-                    ) : null}
-                  </button>
-                ))}
+                {categories
+                  .filter((cat) => !cat.slug.includes('png'))
+                  .map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => handleCategoryChange(cat.slug)}
+                      className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                        selectedCategory === cat.slug
+                          ? 'bg-sharp-500 text-white'
+                          : 'text-slate-400 hover:text-white hover:bg-dark-800'
+                      }`}
+                    >
+                      <span>{cat.name}</span>
+                      {cat.productCount ? (
+                        <span className="text-[10px] opacity-70 font-mono">{cat.productCount}</span>
+                      ) : null}
+                    </button>
+                  ))}
+              </div>
+
+              {/* Dedicated PNG Category Switcher */}
+              <div className="pt-2.5 mt-2.5 border-t border-dark-800">
+                <button
+                  type="button"
+                  onClick={() => handleCategoryChange(selectedCategory === 'png-elements' ? '' : 'png-elements')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                    selectedCategory === 'png-elements'
+                      ? 'bg-cyan-600 text-white shadow-sharp-glow'
+                      : 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-3.5 h-3.5" />
+                    <span>PNG Elements</span>
+                  </div>
+                  <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-bold">
+                    FREE
+                  </span>
+                </button>
               </div>
             </div>
 

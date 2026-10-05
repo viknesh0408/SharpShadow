@@ -260,7 +260,7 @@ export const AdminSettings: React.FC = () => {
               Live Footer Preview
             </span>
             <div className="p-4 bg-dark-950 rounded-2xl border border-dark-800 flex items-center justify-between flex-wrap gap-4">
-              <span className="text-xs text-slate-400">Connect With SharpShadow:</span>
+              <span className="text-xs text-slate-400">Connect With SharpShadows:</span>
               <div className="flex items-center gap-2">
                 {platforms
                   .filter((p) => form[p.key].trim().length > 0)

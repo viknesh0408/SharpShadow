@@ -140,11 +140,11 @@ export const Footer: React.FC = () => {
           <Link to="/" className="flex items-center gap-3 group">
             <img
               src="/logo.png"
-              alt="SharpShadow Logo"
+              alt="SharpShadows Logo"
               className="w-10 h-10 rounded-full object-contain shadow-sharp-glow group-hover:scale-105 transition-transform duration-300 ring-1 ring-sharp-500/30"
             />
             <span className="font-black text-xl tracking-wider text-slate-900 dark:text-white">
-              SHARP<span className="text-sharp-500">SHADOW</span>
+              SHARP<span className="text-sharp-500">SHADOWS</span>
             </span>
           </Link>
           <span className="hidden sm:inline text-slate-300 dark:text-dark-750">|</span>
@@ -213,7 +213,7 @@ export const Footer: React.FC = () => {
       <div className="border-t border-slate-200 dark:border-dark-800/80 py-6 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-dark-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-2">
-            <p>© {new Date().getFullYear()} SharpShadow Digital Marketplace. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} SharpShadows Digital Marketplace. All rights reserved.</p>
             <span className="hidden sm:inline text-slate-300 dark:text-dark-700">•</span>
             <p className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
               <span>Developed by</span>

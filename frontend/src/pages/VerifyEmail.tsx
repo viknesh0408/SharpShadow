@@ -42,7 +42,7 @@ export const VerifyEmail: React.FC = () => {
     setLoading(true);
     try {
       await verifyEmail({ email: verifyEmailAddr.trim().toLowerCase(), otp: verifyOtpVal.trim() });
-      success('Email verified successfully! Welcome to SharpShadow.');
+      success('Email verified successfully! Welcome to SharpShadows.');
       navigate(redirect);
     } catch (err: any) {
       error(err.response?.data?.message || 'Invalid or expired verification code');
@@ -106,13 +106,13 @@ export const VerifyEmail: React.FC = () => {
           <Link to="/" className="inline-flex items-center justify-center mb-2 group">
             <img
               src="/logo.png"
-              alt="SharpShadow Logo"
+              alt="SharpShadows Logo"
               className="w-14 h-14 rounded-full object-contain shadow-sharp-glow group-hover:scale-105 transition-transform duration-300 ring-2 ring-sharp-500/30"
             />
           </Link>
           <h1 className="text-2xl font-bold text-white">Verify Your Email</h1>
           <p className="text-xs text-slate-400">
-            Enter the 6-digit code received in your email inbox to activate your SharpShadow account.
+            Enter the 6-digit code received in your email inbox to activate your SharpShadows account.
           </p>
         </div>
 

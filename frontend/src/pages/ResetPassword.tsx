@@ -63,13 +63,13 @@ export const ResetPassword: React.FC = () => {
           <Link to="/" className="inline-flex items-center justify-center mb-2 group">
             <img
               src="/logo.png"
-              alt="SharpShadow Logo"
+              alt="SharpShadows Logo"
               className="w-14 h-14 rounded-full object-contain shadow-sharp-glow group-hover:scale-105 transition-transform duration-300 ring-2 ring-sharp-500/30"
             />
           </Link>
           <h1 className="text-2xl font-bold text-white">Choose New Password</h1>
           <p className="text-xs text-slate-400">
-            Set a secure password for your SharpShadow account to regain access.
+            Set a secure password for your SharpShadows account to regain access.
           </p>
         </div>
 

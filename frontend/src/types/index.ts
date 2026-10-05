@@ -43,6 +43,8 @@ export interface Product {
   previewImages?: string[];
   hasPurchased?: boolean;
   free?: boolean;
+  isPng?: boolean;
+  fileFormat?: string;
   createdAt?: string;
   updatedAt?: string;
   internalFileUrl?: string;
@@ -122,6 +124,9 @@ export interface AdminDashboardStats {
   totalRevenue: number;
   todaySales: number;
   totalDownloads: number;
+  totalPngProducts?: number;
+  totalPngDownloads?: number;
+  freePngCount?: number;
   salesByDay: { day: string; sales: number }[];
   revenueByMonth: { month: string; revenue: number }[];
   popularProducts: Product[];
