@@ -323,6 +323,11 @@ export const AdminProductForm: React.FC = () => {
                 {...register('price')}
                 className="w-full bg-dark-950 border border-dark-750 focus:border-sharp-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none font-mono"
               />
+              {Number(watchPrice) === 0 && (
+                <p className="text-xs text-emerald-400 mt-1 font-mono font-semibold flex items-center gap-1">
+                  <span>🎁 Free Asset:</span> Customers can download this template instantly without payment.
+                </p>
+              )}
               {errors.price && <p className="text-xs text-sharp-400 mt-1">{errors.price.message}</p>}
             </div>
 

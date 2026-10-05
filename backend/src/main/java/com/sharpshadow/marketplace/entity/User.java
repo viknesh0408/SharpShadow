@@ -34,7 +34,7 @@ public class User {
     private Role role;
 
     @Builder.Default
-    @Column(name = "email_verified", nullable = false)
+    @Column(name = "email_verified", nullable = false, columnDefinition = "boolean default false")
     private boolean emailVerified = false;
 
     @Column(name = "verification_otp", length = 10)

@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===========================================================================
+   BASE LAYER — Default (Dark) Theme
+   =========================================================================== */
+
 @layer base {
   html {
     overflow-x: hidden;
@@ -9,52 +13,340 @@
     -webkit-text-size-adjust: 100%;
   }
 
+  /* Dark theme is the default */
+  html.dark body,
   body {
-    @apply bg-dark-950 text-slate-100 font-sans selection:bg-sharp-600 selection:text-white antialiased;
+    background-color: #07080a;
+    color: #f1f5f9;
+    @apply font-sans antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     overflow-x: hidden;
     max-width: 100%;
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Custom scrollbar for dark theme */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  /* Light theme body */
+  html:not(.dark) body {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
   }
-  ::-webkit-scrollbar-track {
-    background: #0c0e12;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: #232936;
-    border-radius: 4px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: #e63946;
-  }
+
+  /* Dark-mode scrollbar */
+  ::-webkit-scrollbar            { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track      { background: #0c0e12; }
+  ::-webkit-scrollbar-thumb      { background: #232936; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover{ background: #e63946; }
+
+  html:not(.dark) ::-webkit-scrollbar-track       { background: #f1f5f9; }
+  html:not(.dark) ::-webkit-scrollbar-thumb       { background: #cbd5e1; }
+  html:not(.dark) ::-webkit-scrollbar-thumb:hover { background: #e63946; }
 }
 
-/* Mobile smooth scrolling & scrollbar hiding */
-.scroll-touch {
-  -webkit-overflow-scrolling: touch;
+/* ===========================================================================
+   LIGHT MODE OVERRIDES  (html without .dark class)
+   All use html:not(.dark) for specificity over Tailwind utilities.
+   =========================================================================== */
+
+/* ── BACKGROUNDS ── */
+html:not(.dark) .bg-dark-950      { background-color: #f8fafc !important; }
+html:not(.dark) .bg-dark-900      { background-color: #ffffff !important; }
+html:not(.dark) .bg-dark-850      { background-color: #f1f5f9 !important; }
+html:not(.dark) .bg-dark-800      { background-color: #e2e8f0 !important; }
+html:not(.dark) .bg-dark-750      { background-color: #cbd5e1 !important; }
+html:not(.dark) .bg-dark-700      { background-color: #94a3b8 !important; }
+html:not(.dark) .bg-dark-600      { background-color: #64748b !important; }
+
+/* Translucent backgrounds */
+html:not(.dark) .bg-dark-950\/85  { background-color: rgba(255, 255, 255, 0.92) !important; }
+html:not(.dark) .bg-dark-950\/80  { background-color: rgba(255, 255, 255, 0.88) !important; }
+html:not(.dark) .bg-dark-950\/70  { background-color: rgba(255, 255, 255, 0.80) !important; }
+html:not(.dark) .bg-dark-950\/60  { background-color: rgba(255, 255, 255, 0.75) !important; }
+html:not(.dark) .bg-dark-900\/90  { background-color: rgba(255, 255, 255, 0.96) !important; }
+html:not(.dark) .bg-dark-900\/80  { background-color: rgba(255, 255, 255, 0.88) !important; }
+html:not(.dark) .bg-dark-900\/60  { background-color: rgba(255, 255, 255, 0.80) !important; }
+html:not(.dark) .bg-dark-900\/40  { background-color: rgba(241, 245, 249, 0.70) !important; }
+html:not(.dark) .bg-dark-900\/20  { background-color: rgba(241, 245, 249, 0.50) !important; }
+html:not(.dark) .bg-dark-850\/50  { background-color: rgba(241, 245, 249, 0.50) !important; }
+
+/* ── BORDERS ── */
+html:not(.dark) .border-dark-800         { border-color: #e2e8f0 !important; }
+html:not(.dark) .border-dark-750         { border-color: #cbd5e1 !important; }
+html:not(.dark) .border-dark-700         { border-color: #94a3b8 !important; }
+html:not(.dark) .border-dark-600         { border-color: #64748b !important; }
+html:not(.dark) .border-dark-800\/80     { border-color: rgba(226, 232, 240, 0.80) !important; }
+html:not(.dark) .border-dark-800\/60     { border-color: rgba(226, 232, 240, 0.60) !important; }
+html:not(.dark) .border-dark-750\/70     { border-color: rgba(203, 213, 225, 0.70) !important; }
+html:not(.dark) .divide-dark-800 > :not([hidden]) ~ :not([hidden]) { border-color: #e2e8f0 !important; }
+html:not(.dark) .border-white\/10        { border-color: rgba(226, 232, 240, 0.50) !important; }
+
+/* ── HOVER STATES ── */
+html:not(.dark) .hover\:bg-dark-900:hover    { background-color: #ffffff !important; }
+html:not(.dark) .hover\:bg-dark-850:hover    { background-color: #f1f5f9 !important; }
+html:not(.dark) .hover\:bg-dark-800:hover    { background-color: #e2e8f0 !important; }
+html:not(.dark) .hover\:bg-dark-850\/50:hover{ background-color: rgba(226, 232, 240, 0.50) !important; }
+html:not(.dark) .hover\:border-dark-750:hover{ border-color: #94a3b8 !important; }
+html:not(.dark) .hover\:border-dark-600:hover{ border-color: #64748b !important; }
+html:not(.dark) .hover\:border-sharp-500\/50:hover { border-color: rgba(230, 57, 70, 0.50) !important; }
+
+/* ── TEXT COLORS (light-on-dark → dark-on-light) ── */
+/* Map text-white to dark text ONLY when NOT on solid colored/gradient backgrounds and NOT transparent */
+html:not(.dark) .text-white:not(.bg-sharp-600):not(.bg-sharp-500):not(.bg-emerald-600):not([class*="from-sharp"]):not([class*="from-emerald"]):not(.bg-clip-text):not(.text-transparent):not(.zoom-hint-text):not(.zoom-hint-pill):not([class*="zoom-hint"]):not(.product-card-overlay):not([class*="product-card-overlay"]):not(.product-card-title):not([class*="product-card-title"]):not(.product-card-price):not(.product-card-badge):not(.product-card-buy) {
+  color: #0f172a !important;
 }
 
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+html:not(.dark) .text-slate-50  { color: #0f172a !important; }
+html:not(.dark) .text-slate-100 { color: #0f172a !important; }
+html:not(.dark) .text-slate-200 { color: #1e293b !important; }
+html:not(.dark) .text-slate-300 { color: #334155 !important; }
+html:not(.dark) .text-slate-400 { color: #64748b !important; }
+html:not(.dark) .text-slate-500 { color: #64748b !important; }
+html:not(.dark) .text-dark-750  { color: #94a3b8 !important; }
+html:not(.dark) .text-dark-700  { color: #94a3b8 !important; }
+
+/* ── ACCENT COLOURS — preserved vivid for light mode ── */
+html:not(.dark) .text-sharp-500   { color: #e63946 !important; }
+html:not(.dark) .text-sharp-400   { color: #d90429 !important; }
+html:not(.dark) .text-sharp-300   { color: #b91c1c !important; }
+html:not(.dark) .text-emerald-400 { color: #059669 !important; }
+html:not(.dark) .text-emerald-300 { color: #047857 !important; }
+html:not(.dark) .text-cyan-400    { color: #0891b2 !important; }
+html:not(.dark) .text-amber-400   { color: #d97706 !important; }
+html:not(.dark) .text-purple-400  { color: #7c3aed !important; }
+html:not(.dark) .text-rose-400    { color: #e11d48 !important; }
+html:not(.dark) .text-indigo-500  { color: #4f46e5 !important; }
+html:not(.dark) .text-blue-400    { color: #2563eb !important; }
+html:not(.dark) .text-blue-300    { color: #3b82f6 !important; }
+
+/* ── SOLID COLOURED & GRADIENT BUTTONS / BADGES / DARK CAPSULES — keep white text ── */
+html:not(.dark) .bg-sharp-600,
+html:not(.dark) .bg-sharp-500,
+html:not(.dark) .bg-emerald-600,
+html:not(.dark) [class*="bg-slate-9"],
+html:not(.dark) [class*="bg-slate-9"] *,
+html:not(.dark) .from-sharp-600:not(.bg-clip-text):not(.text-transparent),
+html:not(.dark) .from-sharp-500:not(.bg-clip-text):not(.text-transparent),
+html:not(.dark) .from-emerald-600:not(.bg-clip-text):not(.text-transparent) {
+  color: #ffffff !important;
 }
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+
+html:not(.dark) .bg-sharp-600 *,
+html:not(.dark) .bg-sharp-500 *,
+html:not(.dark) .bg-emerald-600 *,
+html:not(.dark) .from-sharp-600:not(.bg-clip-text):not(.text-transparent) *,
+html:not(.dark) .from-sharp-500:not(.bg-clip-text):not(.text-transparent) *,
+html:not(.dark) .from-emerald-600:not(.bg-clip-text):not(.text-transparent) * {
+  color: #ffffff !important;
 }
+
+/* Hover states: on solid colored hover backgrounds, text is white. On light backgrounds, hover:text-white turns dark */
+html:not(.dark) [class*="hover\:bg-sharp"]:hover,
+html:not(.dark) [class*="hover\:bg-sharp"]:hover *,
+html:not(.dark) [class*="hover\:bg-emerald"]:hover,
+html:not(.dark) [class*="hover\:bg-emerald"]:hover * {
+  color: #ffffff !important;
+}
+
+html:not(.dark) :not([class*="bg-sharp"]):not([class*="bg-emerald"]):not([class*="hover\:bg-sharp"]):not([class*="hover\:bg-emerald"]).hover\:text-white:hover {
+  color: #0f172a !important;
+}
+
+/* ── FORM INPUTS ── */
+html:not(.dark) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html:not(.dark) textarea,
+html:not(.dark) select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder {
+  color: #94a3b8 !important;
+}
+html:not(.dark) input:focus,
+html:not(.dark) textarea:focus,
+html:not(.dark) select:focus {
+  border-color: #e63946 !important;
+}
+
+/* ── NAVBAR / HEADER ── */
+html:not(.dark) header {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(16px) !important;
+  border-bottom-color: #e2e8f0 !important;
+}
+
+/* ── FOOTER ── */
+html:not(.dark) footer {
+  background-color: #f1f5f9 !important;
+  border-top-color: #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+/* ── GRADIENT CLEANUP ── */
+/* Kill any dark-color gradients */
+html:not(.dark) [class*="from-dark-"]:not([class*="dark\:"]) {
+  background-image: none !important;
+}
+html:not(.dark) .from-dark-800 { --tw-gradient-from: #f1f5f9 !important; }
+html:not(.dark) .from-dark-900 { --tw-gradient-from: #ffffff !important; }
+html:not(.dark) .via-dark-850  { --tw-gradient-stops: var(--tw-gradient-from), #f8fafc, var(--tw-gradient-to, rgba(248, 250, 252, 0)) !important; }
+html:not(.dark) .to-dark-750   { --tw-gradient-to: #e2e8f0 !important; }
+html:not(.dark) .to-dark-900   { --tw-gradient-to: #ffffff !important; }
+
+/* Dark overlay on product images — softer in light mode */
+html:not(.dark) .from-dark-950\/70 { --tw-gradient-from: rgba(248, 250, 252, 0.40) !important; }
+html:not(.dark) .to-black\/20      { --tw-gradient-to: rgba(0, 0, 0, 0.05) !important; }
+
+/* ── CARDS ── */
+html:not(.dark) .shadow-card-dark {
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+}
+html:not(.dark) .shadow-card-hover,
+html:not(.dark) .hover\:shadow-card-hover:hover {
+  box-shadow: 0 8px 30px -8px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(230, 57, 70, 0.15) !important;
+}
+html:not(.dark) .shadow-2xl {
+  box-shadow: 0 8px 30px -6px rgba(15, 23, 42, 0.10) !important;
+}
+html:not(.dark) .shadow-sharp-glow {
+  box-shadow: 0 4px 14px -3px rgba(230, 57, 70, 0.3) !important;
+}
+html:not(.dark) .shadow-inner {
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* ── GRADIENT TEXT (CRITICAL FIX FOR 'CREATIVE MINDS') ── */
+.bg-clip-text,
+.text-transparent,
+html:not(.dark) .bg-clip-text,
+html:not(.dark) .text-transparent {
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+}
+
+/* ── MISC ACCENTS ── */
+html:not(.dark) .bg-black\/70 { background-color: rgba(15, 23, 42, 0.50) !important; }
+html:not(.dark) .bg-sharp-500\/20 { background-color: rgba(230, 57, 70, 0.10) !important; }
+html:not(.dark) .bg-sharp-600\/20 { background-color: rgba(217, 4, 41, 0.10) !important; }
+html:not(.dark) .bg-sharp-600\/10 { background-color: rgba(217, 4, 41, 0.06) !important; }
+html:not(.dark) .bg-sharp-500\/10 { background-color: rgba(230, 57, 70, 0.06) !important; }
+html:not(.dark) .bg-emerald-500\/20 { background-color: rgba(16, 185, 129, 0.10) !important; }
+html:not(.dark) .bg-emerald-500\/10 { background-color: rgba(16, 185, 129, 0.06) !important; }
+html:not(.dark) .bg-cyan-500\/10    { background-color: rgba(6, 182, 212, 0.06) !important; }
+html:not(.dark) .bg-purple-500\/10  { background-color: rgba(139, 92, 246, 0.06) !important; }
+html:not(.dark) .bg-amber-500\/10   { background-color: rgba(245, 158, 11, 0.06) !important; }
+
+/* Ring overrides for light */
+html:not(.dark) .ring-sharp-500\/30   { --tw-ring-color: rgba(230, 57, 70, 0.15) !important; }
+html:not(.dark) .focus\:ring-sharp-500\/40:focus { --tw-ring-color: rgba(230, 57, 70, 0.20) !important; }
+
+/* ── SELECTION ── */
+::selection { background: #d90429; color: #ffffff; }
+
+/* ===========================================================================
+   SHARED UTILITIES (both themes)
+   =========================================================================== */
+.scroll-touch  { -webkit-overflow-scrolling: touch; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar  { -ms-overflow-style: none; scrollbar-width: none; }
 
 .text-gradient {
+  background: linear-gradient(135deg, #0f172a 0%, #334155 50%, #475569 100%);
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+}
+html.dark .text-gradient {
   background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
 }
 
 .text-gradient-sharp {
-  background: linear-gradient(135deg, #ff758f 0%, #e63946 50%, #d90429 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: linear-gradient(135deg, #d90429 0%, #e63946 50%, #b91c1c 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
 }
+html.dark .text-gradient-sharp {
+  background: linear-gradient(135deg, #fb7185 0%, #e63946 50%, #ffb703 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+}
+
+/* ── ZOOM HINT PILL & FLOATING DARK CAPSULES (ALWAYS CRISP WHITE TEXT) ── */
+.zoom-hint-pill,
+.zoom-hint-pill *,
+.zoom-hint-text,
+html:not(.dark) .zoom-hint-pill,
+html:not(.dark) .zoom-hint-pill *,
+html:not(.dark) .zoom-hint-text,
+html:not(.dark) [class*="zoom-hint"],
+html:not(.dark) [class*="zoom-hint"] * {
+  color: #ffffff !important;
+}
+
+html:not(.dark) .zoom-hint-pill svg,
+html:not(.dark) .zoom-hint-pill .text-sharp-400 {
+  color: #fb7185 !important;
+}
+
+/* ── PRODUCT CARD OVERLAYS (ALWAYS VIBRANT WHITE TEXT OVER THUMBNAIL) ── */
+.product-card-overlay,
+.product-card-overlay *,
+.product-card-title,
+.product-card-price,
+.product-card-badge,
+.product-card-buy,
+html:not(.dark) .product-card-overlay,
+html:not(.dark) .product-card-overlay *,
+html:not(.dark) .product-card-title,
+html:not(.dark) .product-card-price,
+html:not(.dark) .product-card-badge,
+html:not(.dark) .product-card-buy {
+  color: #ffffff !important;
+}
+
+.product-card-title:hover,
+html:not(.dark) .product-card-title:hover {
+  color: #fca5a5 !important;
+}
+
+.product-card-category,
+html:not(.dark) .product-card-category,
+html:not(.dark) .product-card-overlay .text-sharp-400 {
+  color: #fb7185 !important;
+}
+
+.product-card-strike,
+html:not(.dark) .product-card-strike,
+html:not(.dark) .product-card-overlay .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+.product-card-badge,
+html:not(.dark) .product-card-badge,
+html:not(.dark) .product-card-overlay .text-slate-300 {
+  color: #cbd5e1 !important;
+}
+
+/* ── MASONRY MULTI-COLUMN HELPER ── */
+.masonry-columns {
+  column-fill: balance;
+}
+.masonry-item {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+}
+

@@ -47,31 +47,48 @@ public class DataSeeder implements CommandLineRunner {
     private String adminName;
 
     private void seedUsers() {
-        if (userRepository.count() == 0) {
-            log.info("Seeding initial administrator user...");
+        String effectiveEmail = (adminEmail != null && !adminEmail.isBlank()) ? adminEmail.trim().toLowerCase() : "admin@sharpshadow.com";
+        String effectivePassword = (adminPassword != null && !adminPassword.isBlank()) ? adminPassword.trim() : "Admin#SharpShadow2026!";
+        String effectiveName = (adminName != null && !adminName.isBlank()) ? adminName.trim() : "SharpShadow Administrator";
 
-            String effectiveEmail = (adminEmail != null && !adminEmail.isBlank()) ? adminEmail.trim().toLowerCase() : "admin@sharpshadow.com";
-            String effectivePassword = (adminPassword != null && !adminPassword.isBlank()) ? adminPassword.trim() : "Admin#SharpShadow2026!";
-
-            User admin = User.builder()
-                    .name((adminName != null && !adminName.isBlank()) ? adminName.trim() : "SharpShadow Administrator")
+        User admin = userRepository.findByEmail(effectiveEmail).orElse(null);
+        if (admin == null) {
+            log.info("Seeding primary administrator user: {}", effectiveEmail);
+            admin = User.builder()
+                    .name(effectiveName)
                     .email(effectiveEmail)
                     .passwordHash(passwordEncoder.encode(effectivePassword))
                     .role(Role.ADMIN)
                     .emailVerified(true)
                     .build();
-
             userRepository.save(admin);
             log.info("Default administrator seeded for email: {}. Set ADMIN_PASSWORD environment variable to customize.", effectiveEmail);
         } else {
-            // Ensure existing admin users have emailVerified = true
-            userRepository.findAll().forEach(u -> {
-                if (u.getRole() == Role.ADMIN && !u.isEmailVerified()) {
-                    u.setEmailVerified(true);
-                    userRepository.save(u);
-                }
-            });
+            boolean updated = false;
+            if (admin.getRole() != Role.ADMIN) {
+                admin.setRole(Role.ADMIN);
+                updated = true;
+            }
+            if (!admin.isEmailVerified()) {
+                admin.setEmailVerified(true);
+                updated = true;
+            }
+            if (adminPassword != null && !adminPassword.isBlank()) {
+                admin.setPasswordHash(passwordEncoder.encode(adminPassword.trim()));
+                updated = true;
+            }
+            if (updated) {
+                userRepository.save(admin);
+            }
         }
+
+        // Ensure any user with Role.ADMIN has emailVerified = true
+        userRepository.findAll().forEach(u -> {
+            if (u.getRole() == Role.ADMIN && !u.isEmailVerified()) {
+                u.setEmailVerified(true);
+                userRepository.save(u);
+            }
+        });
     }
 
     private void seedCategories() {

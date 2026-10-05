@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="frontend/public/logo.png" alt="SharpShadow Logo" width="140" style="border-radius: 50%;" />
+</p>
+
 # SharpShadow — Digital PSD Marketplace
 
 **SharpShadow** is a production-grade digital marketplace engineered for browsing, buying, and securely downloading high-resolution Adobe Photoshop (`.PSD`) templates, mockups, social graphics, and digital design assets.
@@ -134,11 +138,11 @@ By default, the `dev` profile uses an embedded H2 database located at `./backend
 ```bash
 cd backend
 
-# On Windows PowerShell:
-.\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev
+# On Windows:
+.\mvnw.cmd spring-boot:run
 
 # On Linux/macOS:
-./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+./mvnw spring-boot:run
 ```
 The backend starts at `http://localhost:8085`.
 - **H2 Console:** `http://localhost:8085/h2-console` (JDBC URL: `jdbc:h2:file:./storage/data/sharpshadowdb`)

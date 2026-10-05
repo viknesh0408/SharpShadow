@@ -43,6 +43,9 @@ public class EntityDtoMapper {
                 ? product.getPreviewImages().stream().map(ProductImage::getImageUrl).collect(Collectors.toList())
                 : new ArrayList<String>();
 
+        boolean isFree = product.isFree();
+        boolean userHasAccess = isFree || (hasPurchased != null && hasPurchased);
+
         return ProductResponse.builder()
                 .id(product.getId())
                 .title(product.getTitle())
@@ -62,7 +65,8 @@ public class EntityDtoMapper {
                 .status(product.getStatus())
                 .downloadCount(product.getDownloadCount())
                 .previewImages(previews)
-                .hasPurchased(hasPurchased != null ? hasPurchased : false)
+                .hasPurchased(userHasAccess)
+                .free(isFree)
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
                 .internalFileUrl(isAdmin ? product.getFileUrl() : null)

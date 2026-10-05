@@ -75,9 +75,13 @@ export const ForgotPassword: React.FC = () => {
           /* ── Form State ── */
           <>
             <div className="text-center space-y-2">
-              <div className="w-12 h-12 rounded-2xl bg-sharp-500/10 border border-sharp-500/20 text-sharp-400 flex items-center justify-center mx-auto mb-2">
-                <Mail className="w-5 h-5" />
-              </div>
+              <Link to="/" className="inline-flex items-center justify-center mb-2 group">
+                <img
+                  src="/logo.png"
+                  alt="SharpShadow Logo"
+                  className="w-14 h-14 rounded-full object-contain shadow-sharp-glow group-hover:scale-105 transition-transform duration-300 ring-2 ring-sharp-500/30"
+                />
+              </Link>
               <h1 className="text-2xl font-bold text-white">Forgot Password?</h1>
               <p className="text-xs text-slate-400">
                 Enter your account email and we'll send you a secure reset link.

@@ -43,7 +43,7 @@ export const Categories: React.FC = () => {
               className="group relative bg-dark-900 border border-dark-800 hover:border-sharp-500/40 rounded-2xl overflow-hidden p-4 sm:p-6 transition-all duration-300 hover:shadow-card-hover flex flex-col justify-between"
             >
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-dark-800 to-dark-750 text-sharp-400 group-hover:from-sharp-600 group-hover:to-sharp-500 group-hover:text-white transition-all flex items-center justify-center font-bold text-base sm:text-lg shadow">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-slate-100 dark:bg-gradient-to-tr dark:from-dark-800 dark:to-dark-750 text-sharp-500 dark:text-sharp-400 group-hover:from-sharp-600 group-hover:to-sharp-500 group-hover:text-white transition-all flex items-center justify-center font-bold text-base sm:text-lg shadow">
                   {cat.name.charAt(0)}
                 </div>
                 <span className="text-[10px] sm:text-xs font-mono text-slate-500 group-hover:text-slate-400">

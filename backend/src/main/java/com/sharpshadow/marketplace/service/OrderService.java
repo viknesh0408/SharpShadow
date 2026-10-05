@@ -32,6 +32,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final DownloadRepository downloadRepository;
+    private final PaymentRepository paymentRepository;
     private final RazorpayService razorpayService;
     private final CouponService couponService;
     private final EntityDtoMapper mapper;
@@ -79,15 +80,23 @@ public class OrderService {
             appliedCouponCode = request.getCouponCode().trim().toUpperCase();
         }
 
-        if (totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            totalAmount = BigDecimal.valueOf(1.00); // Minimum nominal charge
-        }
+        boolean isFreeOrder = totalAmount.compareTo(BigDecimal.ZERO) <= 0;
 
-        String orderNumber = "SS-" + DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now()) + "-" +
+        String orderNumber = (isFreeOrder ? "FREE-" : "SS-") +
+                DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now()) + "-" +
                 UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 
-        // Create Razorpay order
-        String razorpayOrderId = razorpayService.createRazorpayOrder(orderNumber, totalAmount);
+        String razorpayOrderId;
+        String razorpayPaymentId = null;
+
+        if (isFreeOrder) {
+            totalAmount = BigDecimal.ZERO;
+            razorpayOrderId = "FREE-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+            razorpayPaymentId = "FREE-PAY-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        } else {
+            // Create Razorpay order
+            razorpayOrderId = razorpayService.createRazorpayOrder(orderNumber, totalAmount);
+        }
 
         Order order = Order.builder()
                 .orderNumber(orderNumber)
@@ -96,8 +105,9 @@ public class OrderService {
                 .discountAmount(discountAmount)
                 .couponCode(appliedCouponCode)
                 .currency("INR")
-                .status(OrderStatus.CREATED)
+                .status(isFreeOrder ? OrderStatus.PAID : OrderStatus.CREATED)
                 .razorpayOrderId(razorpayOrderId)
+                .razorpayPaymentId(razorpayPaymentId)
                 .build();
 
         Order savedOrder = orderRepository.save(order);
@@ -114,6 +124,18 @@ public class OrderService {
         }
         orderItemRepository.saveAll(items);
         savedOrder.setItems(items);
+
+        if (isFreeOrder) {
+            Payment payment = Payment.builder()
+                    .orderId(savedOrder.getId())
+                    .razorpayOrderId(razorpayOrderId)
+                    .razorpayPaymentId(razorpayPaymentId)
+                    .amount(BigDecimal.ZERO)
+                    .paymentMethod("FREE_DOWNLOAD")
+                    .status("captured")
+                    .build();
+            paymentRepository.save(payment);
+        }
 
         return mapper.toOrderResponse(savedOrder, user, razorpayService.getKeyId());
     }

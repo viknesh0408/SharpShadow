@@ -42,6 +42,7 @@ export interface Product {
   downloadCount: number;
   previewImages?: string[];
   hasPurchased?: boolean;
+  free?: boolean;
   createdAt?: string;
   updatedAt?: string;
   internalFileUrl?: string;

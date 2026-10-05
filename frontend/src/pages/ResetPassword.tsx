@@ -60,9 +60,13 @@ export const ResetPassword: React.FC = () => {
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full bg-dark-900 border border-dark-800 rounded-3xl p-8 shadow-card-dark space-y-6">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-sharp-500/10 border border-sharp-500/20 text-sharp-400 flex items-center justify-center mx-auto mb-2">
-            <KeyRound className="w-6 h-6" />
-          </div>
+          <Link to="/" className="inline-flex items-center justify-center mb-2 group">
+            <img
+              src="/logo.png"
+              alt="SharpShadow Logo"
+              className="w-14 h-14 rounded-full object-contain shadow-sharp-glow group-hover:scale-105 transition-transform duration-300 ring-2 ring-sharp-500/30"
+            />
+          </Link>
           <h1 className="text-2xl font-bold text-white">Choose New Password</h1>
           <p className="text-xs text-slate-400">
             Set a secure password for your SharpShadow account to regain access.

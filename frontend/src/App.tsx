@@ -70,7 +70,7 @@ export const App: React.FC = () => {
   const isAdminPath = location.pathname.startsWith('/admin');
 
   return (
-    <div className="min-h-screen bg-dark-950 text-slate-100 flex flex-col justify-between selection:bg-sharp-600 selection:text-white">
+    <div className="min-h-screen flex flex-col justify-between">
       {/* Scroll restoration on link clicks & route changes */}
       <ScrollToTop />
 

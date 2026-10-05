@@ -1,22 +1,25 @@
 import React from 'react';
 
-export const SkeletonCard: React.FC = () => {
+interface SkeletonCardProps {
+  aspect?: 'portrait' | 'square' | 'landscape';
+}
+
+export const SkeletonCard: React.FC<SkeletonCardProps> = ({ aspect = 'portrait' }) => {
+  const aspectClass =
+    aspect === 'portrait'
+      ? 'aspect-[3/4]'
+      : aspect === 'landscape'
+      ? 'aspect-[4/3]'
+      : 'aspect-square';
+
   return (
-    <div className="bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden shadow-card-dark animate-pulse flex flex-col h-full">
-      <div className="aspect-[4/3] bg-dark-800 w-full" />
-      <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-        <div>
-          <div className="h-3 bg-dark-750 rounded w-1/3 mb-2" />
-          <div className="h-4 bg-dark-750 rounded w-full mb-1" />
-          <div className="h-4 bg-dark-750 rounded w-4/5" />
-        </div>
-        <div className="pt-3 border-t border-dark-800/80 flex items-center justify-between">
-          <div className="h-5 bg-dark-750 rounded w-16" />
-          <div className="flex gap-1.5">
-            <div className="w-8 h-8 bg-dark-750 rounded-xl" />
-            <div className="w-8 h-8 bg-dark-750 rounded-xl" />
-            <div className="w-12 h-8 bg-dark-750 rounded-xl" />
-          </div>
+    <div className="bg-slate-200 dark:bg-dark-900 border border-slate-200/80 dark:border-dark-800 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm animate-pulse break-inside-avoid mb-4 sm:mb-6 w-full relative inline-block">
+      <div className={`w-full ${aspectClass} bg-slate-200 dark:bg-dark-800`} />
+      <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-slate-950/80 to-transparent flex items-center justify-between">
+        <div className="h-4 bg-white/20 rounded w-16" />
+        <div className="flex gap-1.5">
+          <div className="w-8 h-8 bg-white/20 rounded-xl" />
+          <div className="w-12 h-8 bg-white/30 rounded-xl" />
         </div>
       </div>
     </div>

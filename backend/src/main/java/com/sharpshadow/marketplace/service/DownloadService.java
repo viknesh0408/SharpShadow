@@ -6,10 +6,7 @@ import com.sharpshadow.marketplace.entity.*;
 import com.sharpshadow.marketplace.exception.BadRequestException;
 import com.sharpshadow.marketplace.exception.ForbiddenException;
 import com.sharpshadow.marketplace.exception.ResourceNotFoundException;
-import com.sharpshadow.marketplace.repository.DownloadRepository;
-import com.sharpshadow.marketplace.repository.OrderRepository;
-import com.sharpshadow.marketplace.repository.ProductRepository;
-import com.sharpshadow.marketplace.repository.UserRepository;
+import com.sharpshadow.marketplace.repository.*;
 import com.sharpshadow.marketplace.storage.LocalStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,9 +17,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +32,8 @@ public class DownloadService {
 
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final PaymentRepository paymentRepository;
     private final DownloadRepository downloadRepository;
     private final UserRepository userRepository;
     private final LocalStorageService storageService;
@@ -47,9 +50,50 @@ public class DownloadService {
             throw new BadRequestException("Product is not available for download");
         }
 
+        boolean isFree = product.isFree();
+
         // Check if user has a PAID order containing this product
-        Order order = orderRepository.findFirstPaidOrderForUserAndProduct(userId, productId)
-                .orElseThrow(() -> new ForbiddenException("Access denied: You have not purchased this product"));
+        Order order = orderRepository.findFirstPaidOrderForUserAndProduct(userId, productId).orElse(null);
+
+        if (order == null) {
+            if (isFree) {
+                // Auto-create a free completed order for this user and product!
+                String orderNumber = "FREE-" + DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now()) + "-" +
+                        UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+                String freeRef = "FREE-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
+                order = Order.builder()
+                        .orderNumber(orderNumber)
+                        .userId(userId)
+                        .totalAmount(BigDecimal.ZERO)
+                        .discountAmount(BigDecimal.ZERO)
+                        .currency("INR")
+                        .status(OrderStatus.PAID)
+                        .razorpayOrderId(freeRef)
+                        .razorpayPaymentId("PAY-" + freeRef)
+                        .build();
+                order = orderRepository.save(order);
+
+                OrderItem item = OrderItem.builder()
+                        .order(order)
+                        .product(product)
+                        .price(BigDecimal.ZERO)
+                        .build();
+                orderItemRepository.save(item);
+
+                Payment payment = Payment.builder()
+                        .orderId(order.getId())
+                        .razorpayOrderId(freeRef)
+                        .razorpayPaymentId("PAY-" + freeRef)
+                        .amount(BigDecimal.ZERO)
+                        .paymentMethod("FREE_DOWNLOAD")
+                        .status("captured")
+                        .build();
+                paymentRepository.save(payment);
+            } else {
+                throw new ForbiddenException("Access denied: You have not purchased this product");
+            }
+        }
 
         if (order.getStatus() != OrderStatus.PAID) {
             throw new ForbiddenException("Access denied: Order is not paid");

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { ShieldCheck, CreditCard, Lock, CheckCircle2, Loader2, Ticket } from 'lucide-react';
+import { ShieldCheck, CreditCard, Lock, CheckCircle2, Loader2, Ticket, Download } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -8,6 +8,7 @@ import { useToast } from '../context/ToastContext';
 import { orderService } from '../services/orderService';
 import { paymentService } from '../services/paymentService';
 import { couponService } from '../services/couponService';
+import { downloadService } from '../services/downloadService';
 
 declare global {
   interface Window {
@@ -117,6 +118,29 @@ export const Checkout: React.FC = () => {
         appliedCoupon?.code || stateCouponCode
       );
 
+      // If order is free, backend automatically marks it PAID without payment!
+      if (order.status === 'PAID' || order.totalAmount === 0) {
+        confetti({
+          particleCount: 120,
+          spread: 80,
+          origin: { y: 0.6 },
+        });
+
+        clearCart();
+        success('Free order confirmed! Your PSD downloads are now ready.');
+
+        // Auto-download if single item
+        if (items.length === 1) {
+          try {
+            const dl = await downloadService.getDownloadUrl(items[0].id);
+            window.location.href = dl.downloadUrl;
+          } catch (e) {}
+        }
+
+        navigate('/account?tab=downloads');
+        return;
+      }
+
       // 2. Open standard Razorpay Checkout Modal
       if (!window.Razorpay) {
         throw new Error('Razorpay SDK failed to load. Please check your internet connection.');
@@ -178,13 +202,19 @@ export const Checkout: React.FC = () => {
     }
   };
 
+  const isFreeCheckout = finalTotal === 0;
+
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
       {/* Checkout Title */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Secure Checkout</h1>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          Review your items and complete payment securely via Razorpay
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+          {isFreeCheckout ? 'Claim Free Assets' : 'Secure Checkout'}
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          {isFreeCheckout
+            ? 'Review your selected free PSD templates and get instant download access'
+            : 'Review your items and complete payment securely via Razorpay'}
         </p>
       </div>
 
@@ -192,34 +222,53 @@ export const Checkout: React.FC = () => {
         
         {/* Payment Methods (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="bg-dark-900 border border-dark-800 rounded-2xl sm:rounded-3xl p-4 sm:p-7 space-y-5 sm:space-y-6 shadow-card-dark">
-            <h3 className="font-bold text-base text-white">Payment Method</h3>
+          <div className="bg-white dark:bg-dark-900 border border-slate-200 dark:border-dark-800 rounded-2xl sm:rounded-3xl p-4 sm:p-7 space-y-5 sm:space-y-6 shadow-sm dark:shadow-card-dark">
+            <h3 className="font-bold text-base text-slate-900 dark:text-white">
+              {isFreeCheckout ? 'Order Information' : 'Payment Method'}
+            </h3>
 
-            {/* Razorpay Instant Checkout */}
-            <div className="p-4 rounded-2xl border bg-dark-850 border-sharp-500 shadow-sharp-glow/20">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-sharp-400" />
-                  <span className="font-semibold text-sm text-white">Razorpay Secure Checkout</span>
+            {/* Free or Razorpay Checkout */}
+            {isFreeCheckout ? (
+              <div className="p-4 rounded-2xl border bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/30">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    <span className="font-semibold text-sm text-slate-900 dark:text-white">100% Free Order</span>
+                  </div>
+                  <span className="text-[10px] bg-emerald-200/60 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 px-2.5 py-0.5 rounded font-mono font-bold">
+                    NO PAYMENT NEEDED
+                  </span>
                 </div>
-                <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2.5 py-0.5 rounded font-mono font-medium">
-                  VERIFIED GATEWAY
-                </span>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                  All items in this order are completely free. You do not need to enter payment details. Click below to claim and start your download immediately.
+                </p>
               </div>
-              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                Supports UPI (Google Pay, PhonePe, Paytm, QR Scan), Debit &amp; Credit Cards, and NetBanking via Razorpay's PCI-DSS compliant secure checkout.
-              </p>
-            </div>
+            ) : (
+              <div className="p-4 rounded-2xl border bg-slate-50 dark:bg-dark-850 border-sharp-500/40 shadow-sharp-glow/20">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="w-5 h-5 text-sharp-600 dark:text-sharp-400" />
+                    <span className="font-semibold text-sm text-slate-900 dark:text-white">Razorpay Secure Checkout</span>
+                  </div>
+                  <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2.5 py-0.5 rounded font-mono font-medium">
+                    VERIFIED GATEWAY
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                  Supports UPI (Google Pay, PhonePe, Paytm, QR Scan), Debit &amp; Credit Cards, and NetBanking via Razorpay's PCI-DSS compliant secure checkout.
+                </p>
+              </div>
+            )}
 
             {/* Customer Details Snapshot */}
-            <div className="pt-4 border-t border-dark-800 space-y-2">
-              <span className="text-xs font-mono text-slate-400 uppercase">Billing Customer</span>
-              <div className="p-3 bg-dark-950 rounded-xl border border-dark-800 text-xs text-slate-300 flex justify-between items-center font-mono">
+            <div className="pt-4 border-t border-slate-200 dark:border-dark-800 space-y-2">
+              <span className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase">Billing Customer</span>
+              <div className="p-3 bg-slate-50 dark:bg-dark-950 rounded-xl border border-slate-200 dark:border-dark-800 text-xs text-slate-700 dark:text-slate-300 flex justify-between items-center font-mono">
                 <div>
-                  <span className="font-semibold text-white block">{user?.name}</span>
-                  <span className="text-slate-400">{user?.email}</span>
+                  <span className="font-semibold text-slate-900 dark:text-white block">{user?.name}</span>
+                  <span className="text-slate-500 dark:text-slate-400">{user?.email}</span>
                 </div>
-                <span className="text-emerald-400">Authenticated</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold">Authenticated</span>
               </div>
             </div>
 
@@ -227,12 +276,21 @@ export const Checkout: React.FC = () => {
             <button
               onClick={handlePayWithRazorpay}
               disabled={processing}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-bold text-base shadow-sharp-glow transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              className={`w-full py-4 rounded-2xl text-white font-bold text-base transition-all flex items-center justify-center gap-2 disabled:opacity-50 ${
+                isFreeCheckout
+                  ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-lg shadow-emerald-600/25 hover:scale-[1.01]'
+                  : 'bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 shadow-sharp-glow hover:scale-[1.01]'
+              }`}
             >
               {processing ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Connecting to Razorpay...</span>
+                  <span>{isFreeCheckout ? 'Claiming Free Assets...' : 'Connecting to Razorpay...'}</span>
+                </>
+              ) : isFreeCheckout ? (
+                <>
+                  <Download className="w-5 h-5" />
+                  <span>Claim Free Download ({items.length} {items.length === 1 ? 'Asset' : 'Assets'})</span>
                 </>
               ) : (
                 <>
@@ -246,8 +304,8 @@ export const Checkout: React.FC = () => {
 
         {/* Order Review (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-dark-900 border border-dark-800 rounded-2xl sm:rounded-3xl p-4 sm:p-7 space-y-4 shadow-card-dark">
-            <h3 className="font-bold text-base text-white">Items in Order ({items.length})</h3>
+          <div className="bg-white dark:bg-dark-900 border border-slate-200 dark:border-dark-800 rounded-2xl sm:rounded-3xl p-4 sm:p-7 space-y-4 shadow-sm dark:shadow-card-dark">
+            <h3 className="font-bold text-base text-slate-900 dark:text-white">Items in Order ({items.length})</h3>
 
             <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
               {items.map((item) => (

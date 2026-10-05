@@ -15,11 +15,15 @@ import {
   PlusCircle,
   Github,
   Settings,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 export const AdminLayout: React.FC = () => {
   const { user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -59,10 +63,12 @@ export const AdminLayout: React.FC = () => {
         <div>
           {/* Admin Header */}
           <div className="h-20 px-6 flex items-center justify-between border-b border-dark-800">
-            <Link to="/admin" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-sharp-600 to-sharp-500 flex items-center justify-center text-white font-mono font-bold text-sm shadow-sharp-glow">
-                SS
-              </div>
+            <Link to="/admin" className="flex items-center gap-2.5 group">
+              <img
+                src="/logo.png"
+                alt="SharpShadow Admin"
+                className="w-8 h-8 rounded-full object-contain shadow-sharp-glow group-hover:scale-105 transition-transform ring-1 ring-sharp-500/30"
+              />
               <div className="flex flex-col">
                 <span className="font-bold text-sm tracking-wider text-white">
                   SHARP<span className="text-sharp-500">ADMIN</span>
@@ -150,6 +156,21 @@ export const AdminLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="relative p-2 rounded-full bg-dark-850 border border-dark-750 text-slate-300 hover:text-white hover:border-sharp-500/50 hover:bg-dark-800 active:scale-95 transition-all duration-300 group shadow-sm focus:outline-none"
+              title={isDark ? "Switch to light theme" : "Switch to dark theme"}
+              aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+            >
+              <div className="w-4 h-4 flex items-center justify-center">
+                {isDark ? (
+                  <Sun className="w-4 h-4 text-amber-400 group-hover:rotate-45 group-hover:scale-110 transition-all duration-300" />
+                ) : (
+                  <Moon className="w-4 h-4 text-indigo-500 group-hover:-rotate-12 group-hover:scale-110 transition-all duration-300" />
+                )}
+              </div>
+            </button>
             <span className="text-xs text-slate-400 hidden sm:inline">{user?.email}</span>
             <div className="w-8 h-8 rounded-full bg-sharp-500/20 text-sharp-400 border border-sharp-500/30 flex items-center justify-center font-bold text-xs uppercase">
               {user?.name.charAt(0) || 'A'}

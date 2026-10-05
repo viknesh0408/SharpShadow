@@ -109,10 +109,12 @@ export const Login: React.FC = () => {
       <div className="max-w-md w-full bg-dark-900 border border-dark-800 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-card-dark space-y-6">
 
         <div className="text-center space-y-2">
-          <Link to="/" className="inline-flex items-center gap-2 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sharp-600 to-sharp-500 flex items-center justify-center text-white font-mono font-bold text-lg shadow-sharp-glow">
-              SS
-            </div>
+          <Link to="/" className="inline-flex items-center justify-center mb-2 group">
+            <img
+              src="/logo.png"
+              alt="SharpShadow Logo"
+              className="w-14 h-14 rounded-full object-contain shadow-sharp-glow group-hover:scale-105 transition-transform duration-300 ring-2 ring-sharp-500/30"
+            />
           </Link>
           <h1 className="text-2xl font-bold text-white">
             {step === 'login' ? 'Welcome Back' : 'Verify Your Email'}

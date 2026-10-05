@@ -57,39 +57,39 @@ export const CategoryDetail: React.FC = () => {
       <div className="space-y-4">
         <Link
           to="/categories"
-          className="inline-flex items-center gap-2 text-xs font-mono text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-mono text-slate-500 hover:text-sharp-600 dark:text-slate-400 dark:hover:text-white transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>ALL CATEGORIES</span>
         </Link>
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-dark-800">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-slate-200 dark:border-dark-800">
           <div>
-            <div className="flex items-center gap-2 text-sharp-400 text-xs font-mono font-bold uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-sharp-600 dark:text-sharp-400 text-xs font-mono font-bold uppercase tracking-wider">
               <Layers className="w-4 h-4" />
               <span>Photoshop Niche</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black text-white mt-1">{category.name} PSDs</h1>
-            <p className="text-sm text-slate-400 mt-2 max-w-2xl">{category.description}</p>
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-1">{category.name} PSDs</h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 max-w-2xl">{category.description}</p>
           </div>
-          <span className="text-xs font-mono text-slate-400 bg-dark-900 border border-dark-800 px-3 py-1.5 rounded-xl shrink-0">
+          <span className="text-xs font-mono text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-dark-900 border border-slate-200 dark:border-dark-800 px-3 py-1.5 rounded-xl shrink-0">
             {products.length} {products.length === 1 ? 'Template' : 'Templates'}
           </span>
         </div>
       </div>
 
       {products.length === 0 ? (
-        <div className="bg-dark-900 border border-dark-800 rounded-3xl p-16 text-center space-y-4">
-          <Layers className="w-12 h-12 text-slate-500 mx-auto" />
-          <h3 className="text-lg font-bold text-white">No Templates in this Category Yet</h3>
-          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+        <div className="bg-white dark:bg-dark-900 border border-slate-200 dark:border-dark-800 rounded-3xl p-16 text-center space-y-4 shadow-sm dark:shadow-none">
+          <Layers className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto" />
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">No Templates in this Category Yet</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
             Our creative designers are constantly preparing new PSD assets for this niche.
           </p>
-          <Link to="/browse" className="inline-block px-5 py-2.5 rounded-xl bg-sharp-600 text-white text-xs font-semibold">
+          <Link to="/browse" className="inline-block px-5 py-2.5 rounded-xl bg-sharp-600 text-white text-xs font-semibold shadow-sharp-glow">
             Explore All PSDs
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+        <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-3 sm:gap-6 masonry-columns">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

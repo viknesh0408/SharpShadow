@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, ShoppingBag } from 'lucide-react';
+import { Heart, ShoppingBag, Download, Loader2 } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { downloadService } from '../services/downloadService';
 
 interface ProductCardProps {
   product: Product;
@@ -11,14 +13,48 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart, isInCart, toggleWishlist, isWishlisted } = useCart();
-  const { success } = useToast();
+  const { isAuthenticated } = useAuth();
+  const { success, error } = useToast();
   const navigate = useNavigate();
+
+  const [downloading, setDownloading] = useState(false);
 
   const inCart = isInCart(product.id);
   const wishlisted = isWishlisted(product.id);
 
-  const handleQuickBuy = (e: React.MouseEvent) => {
+  const isFree = Boolean(
+    product.free ||
+    product.price === 0 ||
+    (product.discountPrice != null && product.discountPrice === 0)
+  );
+
+  const hasDiscount = !isFree && product.discountPrice != null && product.discountPrice < product.price;
+
+  const handleAction = async (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+
+    // Free product: instant automatic download without payment
+    if (isFree) {
+      if (!isAuthenticated) {
+        navigate(`/login?redirect=${encodeURIComponent(`/product/${product.slug}`)}`);
+        return;
+      }
+
+      setDownloading(true);
+      try {
+        const res = await downloadService.getDownloadUrl(product.id);
+        success(`Free download authorized! Starting file download...`);
+        window.location.href = res.downloadUrl;
+      } catch (err: any) {
+        error(err.response?.data?.message || 'Could not initiate free download');
+      } finally {
+        setDownloading(false);
+      }
+      return;
+    }
+
+    // Paid product: buy now flow
     if (!inCart) {
       addToCart(product);
     }
@@ -27,6 +63,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!inCart) {
       addToCart(product);
       success(`Added "${product.title}" to cart`);
@@ -37,121 +74,148 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     toggleWishlist(product);
   };
 
-  const hasDiscount = product.discountPrice != null && product.discountPrice < product.price;
-
   return (
-    <div className="group relative bg-dark-900 border border-dark-800 hover:border-sharp-500/40 rounded-2xl overflow-hidden shadow-card-dark hover:shadow-card-hover transition-all duration-300 flex flex-col h-full">
+    <div className="group relative rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 dark:border-dark-800/80 bg-white dark:bg-dark-900 shadow-sm hover:shadow-xl dark:hover:shadow-sharp-glow/20 transition-all duration-300 break-inside-avoid mb-4 sm:mb-6 w-full inline-block">
       
-      {/* Thumbnail Container - Square on mobile for maximum visibility */}
-      <Link to={`/product/${product.slug}`} className="relative block aspect-square sm:aspect-[4/3] overflow-hidden bg-dark-950">
-        <img
-          src={product.thumbnailUrl}
-          alt={product.title}
-          loading="lazy"
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            if (!target.src.includes('unsplash.com')) {
-              target.src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80';
-            }
-          }}
-        />
+      {/* Visual Canvas: Thumbnail container that naturally scales to portrait, square, or landscape */}
+      <div className="relative w-full overflow-hidden bg-slate-100 dark:bg-dark-950">
         
-        {/* Subtle dark gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-dark-950/70 via-transparent to-black/20 opacity-50 group-hover:opacity-30 transition-opacity" />
+        {/* Full Image Link */}
+        <Link to={`/product/${product.slug}`} className="block w-full">
+          <img
+            src={product.thumbnailUrl}
+            alt={product.title}
+            loading="lazy"
+            className="w-full h-auto object-cover block group-hover:scale-105 transition-transform duration-500 ease-out"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (!target.src.includes('unsplash.com')) {
+                target.src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80';
+              }
+            }}
+          />
+        </Link>
 
-        {/* Badges: Featured & Offer Percentage */}
-        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap z-10">
-          {product.featured && (
-            <span className="bg-gradient-to-r from-sharp-600 to-rose-500 text-white font-mono text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md shadow-sharp-glow uppercase tracking-wider">
-              Featured
+        {/* Top Badges (Free, Featured & Discount Offer) */}
+        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap z-10 pointer-events-none">
+          {isFree ? (
+            <span className="bg-emerald-600 text-white font-mono text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-sm uppercase tracking-wider">
+              Free
             </span>
-          )}
-          {hasDiscount && (
-            <span className="bg-emerald-600 text-white font-mono text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md shadow-sm uppercase tracking-wider">
-              {Math.round(((product.price - product.discountPrice!) / product.price) * 100)}% off
-            </span>
+          ) : (
+            <>
+              {product.featured && (
+                <span className="bg-gradient-to-r from-sharp-600 to-rose-500 text-white font-mono text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-sharp-glow uppercase tracking-wider">
+                  Featured
+                </span>
+              )}
+              {hasDiscount && (
+                <span className="bg-emerald-600 text-white font-mono text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-sm uppercase tracking-wider">
+                  {Math.round(((product.price - product.discountPrice!) / product.price) * 100)}% off
+                </span>
+              )}
+            </>
           )}
         </div>
 
-        {/* Wishlist Button Overlay */}
+        {/* Top Right: Wishlist Button */}
         <button
           onClick={handleWishlist}
-          className={`absolute bottom-2.5 right-2.5 p-2 rounded-full backdrop-blur-md border transition-all ${
+          className={`absolute top-2.5 right-2.5 p-2 rounded-full backdrop-blur-md border transition-all z-20 ${
             wishlisted
-              ? 'bg-sharp-500 text-white border-sharp-400 shadow-sharp-glow'
-              : 'bg-dark-900/80 text-slate-300 border-dark-700 hover:text-white hover:bg-dark-850'
+              ? 'bg-sharp-500 text-white border-sharp-400 shadow-sharp-glow scale-105'
+              : 'bg-slate-900/60 hover:bg-slate-900/90 text-white border-white/20 hover:scale-105 shadow-sm'
           }`}
           title={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
         >
-          <Heart className={`w-3.5 h-3.5 ${wishlisted ? 'fill-current' : ''}`} />
+          <Heart className={`w-3.5 h-3.5 ${wishlisted ? 'fill-current text-white' : 'text-white'}`} />
         </button>
-      </Link>
 
-      {/* Card Content */}
-      <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between">
-        <div>
-          {/* Category & PSD label */}
-          <div className="flex items-center justify-between gap-1">
-            <Link
-              to={`/category/${product.category.slug}`}
-              className="text-[10px] sm:text-[11px] font-mono text-sharp-400 hover:text-sharp-300 uppercase tracking-wider font-semibold transition-colors truncate block"
-            >
-              {product.category.name}
+        {/* Bottom Overlay: Everything is inside the thumbnail */}
+        <div className="product-card-overlay absolute inset-x-0 bottom-0 z-10 p-3 sm:p-3.5 bg-gradient-to-t from-slate-950/95 via-slate-950/80 to-transparent pt-14 group-hover:pt-28 flex flex-col justify-end pointer-events-auto transition-all duration-150 ease-out">
+          
+          {/* Animated Product Title Section — ZERO delay instant 100ms response on hover */}
+          <div className="absolute bottom-[48px] sm:bottom-[52px] inset-x-0 px-3 sm:px-3.5 opacity-0 translate-y-1.5 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-100 ease-out pointer-events-none group-hover:pointer-events-auto space-y-1">
+            <div className="flex items-center justify-between text-[10px] font-mono">
+              <span className="product-card-category font-bold tracking-wider uppercase text-sharp-400">
+                {product.category.name}
+              </span>
+              <span className="product-card-badge font-mono text-[9px] uppercase px-1.5 py-0.5 rounded bg-white/15 backdrop-blur-sm">
+                PSD
+              </span>
+            </div>
+            <Link to={`/product/${product.slug}`} className="block">
+              <h3
+                className="product-card-title text-xs sm:text-sm font-bold line-clamp-2 leading-snug drop-shadow-md transition-colors"
+                style={{ color: '#ffffff' }}
+              >
+                {product.title}
+              </h3>
             </Link>
-            <span className="text-[9px] sm:text-[10px] font-mono text-slate-500 uppercase tracking-wider shrink-0 font-medium">
-              PSD
-            </span>
           </div>
 
-          {/* Title */}
-          <Link to={`/product/${product.slug}`} className="block mt-1">
-            <h3 className="font-semibold text-xs sm:text-base text-slate-100 hover:text-white line-clamp-2 transition-colors leading-snug">
-              {product.title}
-            </h3>
-          </Link>
-        </div>
-
-        {/* Price & Action Row */}
-        <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-dark-800/80 flex items-center justify-between gap-2">
-          
-          {/* Price */}
-          <div className="flex flex-col min-w-0">
-            <div className="flex items-baseline gap-1.5 flex-wrap">
-              <span className={`text-sm sm:text-lg font-bold font-mono ${hasDiscount ? 'text-blue-400' : 'text-white'} truncate`}>
-                ₹{hasDiscount ? product.discountPrice : product.price}
-              </span>
-              {hasDiscount && (
-                <span className="text-[10px] sm:text-xs font-mono text-slate-400 line-through">
-                  ₹{product.price}
+          {/* Bottom Bar: Price & Action Buttons (Add to Cart + Buy/Download) */}
+          <div className="relative z-10 flex items-center justify-between gap-2 pt-1 border-t border-white/15">
+            {/* Price or FREE badge */}
+            <div className="flex items-baseline gap-1.5 min-w-0">
+              {isFree ? (
+                <span className="product-card-price text-xs sm:text-sm font-black font-mono text-emerald-400 tracking-wider uppercase bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 rounded-md">
+                  FREE
                 </span>
+              ) : (
+                <>
+                  <span
+                    className="product-card-price text-sm sm:text-base font-black font-mono tracking-tight"
+                    style={{ color: '#ffffff' }}
+                  >
+                    ₹{hasDiscount ? product.discountPrice : product.price}
+                  </span>
+                  {hasDiscount && (
+                    <span className="product-card-strike text-[10px] sm:text-xs font-mono line-through">
+                      ₹{product.price}
+                    </span>
+                  )}
+                </>
               )}
             </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              onClick={handleAddToCart}
-              className={`p-2 rounded-xl transition-all border flex items-center justify-center ${
-                inCart
-                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
-                  : 'bg-sharp-600/20 hover:bg-sharp-600 text-sharp-400 hover:text-white border-sharp-500/40 shadow-sm'
-              }`}
-              title={inCart ? 'In Cart (Click to view)' : 'Add to Cart'}
-            >
-              <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </button>
+            {/* Action Buttons */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={handleAddToCart}
+                className={`p-2 rounded-xl transition-all border flex items-center justify-center ${
+                  inCart
+                    ? 'bg-emerald-500 text-white border-emerald-400 shadow-md'
+                    : 'bg-white/15 hover:bg-white/30 text-white border-white/25 hover:border-white/40 backdrop-blur-md active:scale-95'
+                }`}
+                title={inCart ? 'In Cart (Click to view)' : 'Add to Cart'}
+              >
+                <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+              </button>
 
-            <button
-              onClick={handleQuickBuy}
-              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-semibold text-xs shadow-sharp-glow transition-all"
-            >
-              Buy
-            </button>
+              <button
+                onClick={handleAction}
+                disabled={downloading}
+                className={`product-card-buy px-3 py-1.5 rounded-xl font-bold text-xs shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1 ${
+                  isFree
+                    ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-emerald-500/20'
+                    : 'bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 shadow-sharp-glow'
+                }`}
+                style={{ color: '#ffffff' }}
+                title={isFree ? 'Download Free PSD' : 'Buy Now'}
+              >
+                {downloading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : isFree ? (
+                  <Download className="w-3.5 h-3.5" />
+                ) : null}
+                <span>{isFree ? 'Free' : 'Buy'}</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

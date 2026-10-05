@@ -129,7 +129,11 @@ export const AdminProducts: React.FC = () => {
                     </td>
                     <td className="py-3 px-4 font-mono text-slate-400">{p.category?.name}</td>
                     <td className="py-3 px-4 font-mono">
-                      {p.discountPrice != null && p.discountPrice < p.price ? (
+                      {p.price === 0 || (p.discountPrice != null && p.discountPrice === 0) ? (
+                        <span className="font-bold text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded">
+                          FREE
+                        </span>
+                      ) : p.discountPrice != null && p.discountPrice < p.price ? (
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-bold text-blue-400 text-sm">₹{p.discountPrice}</span>
                           <span className="text-[11px] text-slate-400 line-through">₹{p.price}</span>

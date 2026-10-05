@@ -88,4 +88,9 @@ public class Product {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    public boolean isFree() {
+        BigDecimal effective = discountPrice != null ? discountPrice : price;
+        return effective != null && effective.compareTo(BigDecimal.ZERO) <= 0;
+    }
 }

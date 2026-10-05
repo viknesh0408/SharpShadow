@@ -12,10 +12,11 @@ spring:
 
 sharpshadow:
   jwt:
-    secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+    secret: dGVzdC1zZWNyZXQta2V5LXNoYXJwc2hhZG93LTIwMjYtdGVzdGluZy1vbmx5LWtleS0xMjM=
     expiration-ms: 86400000
   storage:
     type: local
+    signing-secret: dGVzdC1zZWNyZXQta2V5LXNoYXJwc2hhZG93LTIwMjYtdGVzdGluZy1vbmx5LWtleS0xMjM=
     local:
       upload-dir: ./target/test-storage/uploads
       private-dir: ./target/test-storage/private

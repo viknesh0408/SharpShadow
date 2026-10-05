@@ -31,6 +31,7 @@ public class ProductResponse {
     private Long downloadCount;
     private List<String> previewImages;
     private Boolean hasPurchased;
+    private Boolean free;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

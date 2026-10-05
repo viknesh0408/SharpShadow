@@ -258,30 +258,30 @@ export const Browse: React.FC = () => {
         {/* Product Grid (4 col desktop, 3 tablet, 2 mobile - Section 8) */}
         <main className="flex-1">
           {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+            <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-3 sm:gap-6 masonry-columns">
               {Array.from({ length: 8 }).map((_, i) => (
-                <SkeletonCard key={i} />
+                <SkeletonCard key={i} aspect={i % 2 === 0 ? 'portrait' : 'landscape'} />
               ))}
             </div>
           ) : products.length === 0 ? (
-            <div className="bg-dark-900 border border-dark-800 rounded-2xl p-6 sm:p-12 text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-dark-800 flex items-center justify-center mx-auto text-slate-500">
+            <div className="bg-white dark:bg-dark-900 border border-slate-200 dark:border-dark-800 rounded-2xl p-6 sm:p-12 text-center space-y-4 shadow-sm dark:shadow-none">
+              <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-dark-800 flex items-center justify-center mx-auto text-slate-400 dark:text-slate-500">
                 <Search className="w-8 h-8" />
               </div>
-              <h3 className="text-lg font-bold text-white">No PSD templates found</h3>
-              <p className="text-sm text-slate-400 max-w-md mx-auto">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">No PSD templates found</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
                 We couldn't find any templates matching your criteria. Try adjusting your search keywords, price range, or category filter.
               </p>
               <button
                 onClick={clearAllFilters}
-                className="px-5 py-2.5 rounded-xl bg-sharp-600 text-white font-medium text-sm hover:bg-sharp-500 transition-colors"
+                className="px-5 py-2.5 rounded-xl bg-sharp-600 text-white font-medium text-sm hover:bg-sharp-500 transition-colors shadow-sharp-glow"
               >
                 Reset All Filters
               </button>
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+              <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-3 sm:gap-6 masonry-columns">
                 {products.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
