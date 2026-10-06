@@ -278,8 +278,8 @@ export const Checkout: React.FC = () => {
               disabled={processing}
               className={`w-full py-4 rounded-2xl text-white font-bold text-base transition-all flex items-center justify-center gap-2 disabled:opacity-50 ${
                 isFreeCheckout
-                  ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-lg shadow-emerald-600/25 hover:scale-[1.01]'
-                  : 'bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 shadow-sharp-glow hover:scale-[1.01]'
+                  ? 'bg-emerald-600 hover:bg-emerald-500 dark:bg-gradient-to-r dark:from-emerald-600 dark:to-emerald-500 dark:hover:from-emerald-500 dark:hover:to-emerald-400 shadow-lg shadow-emerald-600/25 hover:scale-[1.01]'
+                  : 'bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 shadow-sharp-glow hover:scale-[1.01]'
               }`}
             >
               {processing ? (

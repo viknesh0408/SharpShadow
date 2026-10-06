@@ -229,7 +229,7 @@ export const ProductDetail: React.FC = () => {
             {/* Top Badges (Featured & Offer Percentage) */}
             <div className="absolute top-3 left-3 sm:top-4 sm:left-4 flex items-center gap-2 flex-wrap z-10 pointer-events-none">
               {product.featured && (
-                <span className="bg-gradient-to-r from-sharp-600 to-rose-500 text-white font-mono text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg shadow-sharp-glow uppercase tracking-wider">
+                <span className="bg-sharp-600 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-rose-500 text-white font-mono text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg shadow-sharp-glow uppercase tracking-wider">
                   Featured Asset
                 </span>
               )}
@@ -366,7 +366,7 @@ export const ProductDetail: React.FC = () => {
                 <button
                   onClick={handleDownload}
                   disabled={downloading}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-base shadow-lg shadow-emerald-600/20 hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
+                  className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 dark:bg-gradient-to-r dark:from-emerald-600 dark:to-emerald-500 dark:hover:from-emerald-500 dark:hover:to-emerald-400 text-white font-bold text-base shadow-lg shadow-emerald-600/20 hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
                 >
                   {downloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
                   <span>{isPng ? 'Download PNG' : isFree && !product.hasPurchased ? 'Download Free PSD Asset' : 'Download PSD Asset'}</span>
@@ -375,7 +375,7 @@ export const ProductDetail: React.FC = () => {
                 <>
                   <button
                     onClick={handleBuyNow}
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-bold text-base shadow-sharp-glow hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
+                    className="w-full py-4 rounded-2xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white font-bold text-base shadow-sharp-glow hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
                   >
                     <ShoppingBag className="w-5 h-5" />
                     <span>Buy Now</span>

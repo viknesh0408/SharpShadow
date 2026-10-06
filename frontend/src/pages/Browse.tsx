@@ -277,8 +277,8 @@ export const Browse: React.FC = () => {
                   onClick={() => handleCategoryChange(selectedCategory === 'png-elements' ? '' : 'png-elements')}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                     selectedCategory === 'png-elements'
-                      ? 'bg-cyan-600 text-white shadow-sharp-glow'
-                      : 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                      ? 'bg-sharp-600 text-white shadow-sharp-glow'
+                      : 'bg-sharp-500/10 hover:bg-sharp-500/20 text-sharp-600 dark:text-sharp-400 border border-sharp-500/30'
                   }`}
                 >
                   <div className="flex items-center gap-2">

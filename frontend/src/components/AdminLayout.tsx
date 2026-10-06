@@ -91,7 +91,7 @@ export const AdminLayout: React.FC = () => {
             <Link
               to="/admin/products/new"
               onClick={() => setSidebarOpen(false)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-semibold text-xs shadow-sharp-glow transition-all"
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white font-semibold text-xs shadow-sharp-glow transition-all"
             >
               <PlusCircle className="w-4 h-4" />
               Upload New PSD

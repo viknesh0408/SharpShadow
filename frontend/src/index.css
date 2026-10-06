@@ -193,6 +193,79 @@ html:not(.dark) .via-dark-850  { --tw-gradient-stops: var(--tw-gradient-from), #
 html:not(.dark) .to-dark-750   { --tw-gradient-to: #e2e8f0 !important; }
 html:not(.dark) .to-dark-900   { --tw-gradient-to: #ffffff !important; }
 
+/* In light mode, turn gradient buttons/links/badges into clean solid colors (NO gradients) */
+html:not(.dark) button[class*="bg-gradient-"]:not(.bg-clip-text):not(.text-transparent),
+html:not(.dark) a[class*="bg-gradient-"]:not(.bg-clip-text):not(.text-transparent),
+html:not(.dark) [role="button"][class*="bg-gradient-"]:not(.bg-clip-text):not(.text-transparent),
+html:not(.dark) input[type="submit"][class*="bg-gradient-"]:not(.bg-clip-text):not(.text-transparent),
+html:not(.dark) input[type="button"][class*="bg-gradient-"]:not(.bg-clip-text):not(.text-transparent),
+html:not(.dark) .from-sharp-600:not(.bg-clip-text):not(.text-transparent),
+html:not(.dark) .from-sharp-500:not(.bg-clip-text):not(.text-transparent) {
+  background-image: none !important;
+  background-color: #d90429 !important; /* solid sharp brand red */
+  color: #ffffff !important;
+}
+
+html:not(.dark) button[class*="bg-gradient-"]:not(.bg-clip-text):not(.text-transparent):hover,
+html:not(.dark) a[class*="bg-gradient-"]:not(.bg-clip-text):not(.text-transparent):hover,
+html:not(.dark) [role="button"][class*="bg-gradient-"]:not(.bg-clip-text):not(.text-transparent):hover,
+html:not(.dark) input[type="submit"][class*="bg-gradient-"]:not(.bg-clip-text):not(.text-transparent):hover,
+html:not(.dark) input[type="button"][class*="bg-gradient-"]:not(.bg-clip-text):not(.text-transparent):hover,
+html:not(.dark) .from-sharp-600:not(.bg-clip-text):not(.text-transparent):hover,
+html:not(.dark) .from-sharp-500:not(.bg-clip-text):not(.text-transparent):hover,
+html:not(.dark) .hover\:from-sharp-500:hover,
+html:not(.dark) .hover\:from-sharp-400:hover {
+  background-image: none !important;
+  background-color: #ef233c !important; /* solid sharp red hover */
+  color: #ffffff !important;
+}
+
+/* Emerald action buttons in light mode (Free Download / Paid Checkout) */
+html:not(.dark) button[class*="bg-gradient-"][class*="emerald"]:not(.bg-clip-text):not(.text-transparent),
+html:not(.dark) a[class*="bg-gradient-"][class*="emerald"]:not(.bg-clip-text):not(.text-transparent),
+html:not(.dark) .from-emerald-600:not(.bg-clip-text):not(.text-transparent),
+html:not(.dark) .from-emerald-500:not(.bg-clip-text):not(.text-transparent) {
+  background-image: none !important;
+  background-color: #059669 !important; /* solid emerald */
+  color: #ffffff !important;
+}
+
+html:not(.dark) button[class*="bg-gradient-"][class*="emerald"]:not(.bg-clip-text):not(.text-transparent):hover,
+html:not(.dark) a[class*="bg-gradient-"][class*="emerald"]:not(.bg-clip-text):not(.text-transparent):hover,
+html:not(.dark) .from-emerald-600:not(.bg-clip-text):not(.text-transparent):hover,
+html:not(.dark) .from-emerald-500:not(.bg-clip-text):not(.text-transparent):hover,
+html:not(.dark) .hover\:from-emerald-500:hover,
+html:not(.dark) .hover\:from-emerald-400:hover {
+  background-image: none !important;
+  background-color: #10b981 !important; /* solid emerald hover */
+  color: #ffffff !important;
+}
+
+/* Cyan action buttons in light mode (make them brand red, not blue) */
+html:not(.dark) button[class*="bg-gradient-"][class*="cyan"]:not(.bg-clip-text):not(.text-transparent),
+html:not(.dark) a[class*="bg-gradient-"][class*="cyan"]:not(.bg-clip-text):not(.text-transparent),
+html:not(.dark) button.bg-cyan-600,
+html:not(.dark) a.bg-cyan-600,
+html:not(.dark) .from-cyan-600:not(.bg-clip-text):not(.text-transparent),
+html:not(.dark) .from-cyan-500:not(.bg-clip-text):not(.text-transparent) {
+  background-image: none !important;
+  background-color: #d90429 !important; /* solid sharp brand red */
+  color: #ffffff !important;
+}
+
+html:not(.dark) button[class*="bg-gradient-"][class*="cyan"]:not(.bg-clip-text):not(.text-transparent):hover,
+html:not(.dark) a[class*="bg-gradient-"][class*="cyan"]:not(.bg-clip-text):not(.text-transparent):hover,
+html:not(.dark) button.bg-cyan-600:hover,
+html:not(.dark) a.bg-cyan-600:hover,
+html:not(.dark) .from-cyan-600:not(.bg-clip-text):not(.text-transparent):hover,
+html:not(.dark) .from-cyan-500:not(.bg-clip-text):not(.text-transparent):hover,
+html:not(.dark) .hover\:from-cyan-500:hover,
+html:not(.dark) .hover\:bg-cyan-500:hover {
+  background-image: none !important;
+  background-color: #ef233c !important; /* solid sharp red hover */
+  color: #ffffff !important;
+}
+
 /* Dark overlay on product images — softer in light mode */
 html:not(.dark) .from-dark-950\/70 { --tw-gradient-from: rgba(248, 250, 252, 0.40) !important; }
 html:not(.dark) .to-black\/20      { --tw-gradient-to: rgba(0, 0, 0, 0.05) !important; }

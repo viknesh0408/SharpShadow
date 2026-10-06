@@ -159,7 +159,7 @@ export const Home: React.FC = () => {
 
                 <button
                   type="submit"
-                  className="px-3.5 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:via-sharp-500 dark:to-cyan-500 dark:hover:from-sharp-500 dark:hover:to-cyan-400 text-white font-bold text-xs sm:text-sm shadow-sharp-glow hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1 sm:gap-1.5 shrink-0"
+                  className="px-3.5 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white font-bold text-xs sm:text-sm shadow-sharp-glow hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1 sm:gap-1.5 shrink-0"
                 >
                   <span>Search</span>
                   <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -172,7 +172,7 @@ export const Home: React.FC = () => {
           <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-sm sm:max-w-none mx-auto">
             <Link
               to="/browse"
-              className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-bold text-sm sm:text-base shadow-sharp-glow hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white font-bold text-sm sm:text-base shadow-sharp-glow hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
             >
               <span>Explore PSDs</span>
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -258,7 +258,7 @@ export const Home: React.FC = () => {
                         disabled={loading}
                         className={`w-8 h-8 rounded-xl font-mono text-xs font-semibold transition-all ${
                           currentPage === idx
-                            ? 'bg-gradient-to-r from-sharp-600 to-sharp-500 text-white shadow-sharp-glow'
+                            ? 'bg-sharp-600 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 text-white shadow-sharp-glow'
                             : 'bg-slate-100 hover:bg-slate-200 dark:bg-dark-900 dark:hover:bg-dark-850 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-dark-750'
                         }`}
                       >
@@ -320,7 +320,7 @@ export const Home: React.FC = () => {
             <div className="flex items-center gap-3 shrink-0">
               <Link
                 to="/browse?category=png-elements"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-sharp-600 hover:from-cyan-500 hover:to-sharp-500 text-white text-xs font-bold shadow-sharp-glow transition-all hover:scale-[1.02]"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white text-xs font-bold shadow-sharp-glow transition-all hover:scale-[1.02]"
               >
                 <span>View All PNGs</span>
                 <ArrowRight className="w-4 h-4" />
@@ -392,7 +392,7 @@ export const Home: React.FC = () => {
             <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link
                 to="/browse"
-                className="w-full sm:w-auto text-center px-6 py-3 rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-semibold text-sm shadow-sharp-glow transition-all"
+                className="w-full sm:w-auto text-center px-6 py-3 rounded-xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white font-semibold text-sm shadow-sharp-glow transition-all"
               >
                 Browse All 100+ Templates
               </Link>

@@ -121,7 +121,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           ) : (
             <>
               {product.featured && (
-                <span className="bg-gradient-to-r from-sharp-600 to-rose-500 text-white font-mono text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-sharp-glow uppercase tracking-wider">
+                <span className="bg-sharp-600 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-rose-500 text-white font-mono text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-sharp-glow uppercase tracking-wider">
                   Featured
                 </span>
               )}
@@ -212,8 +212,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 disabled={downloading}
                 className={`product-card-buy px-3 py-1.5 rounded-xl font-bold text-xs shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1 text-white ${
                   isFree
-                    ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-emerald-500/20'
-                    : 'bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 shadow-sharp-glow'
+                    ? 'bg-emerald-600 hover:bg-emerald-500 dark:bg-gradient-to-r dark:from-emerald-600 dark:to-emerald-500 dark:hover:from-emerald-500 dark:hover:to-emerald-400 shadow-emerald-500/20'
+                    : 'bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 shadow-sharp-glow'
                 }`}
                 title={isFree ? (isPng ? 'Download Free PNG' : 'Download Free PSD') : 'Buy Now'}
               >

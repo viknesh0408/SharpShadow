@@ -60,9 +60,9 @@ export const AdminDashboard: React.FC = () => {
         <div className="flex items-center gap-2.5">
           <Link
             to="/admin/products/new?format=png"
-            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-dark-900 hover:bg-dark-850 text-cyan-300 hover:text-white border border-cyan-500/30 font-semibold text-xs transition-all"
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-dark-900 hover:bg-dark-850 text-sharp-400 hover:text-white border border-sharp-500/30 font-semibold text-xs transition-all"
           >
-            <ImageIcon className="w-4 h-4 text-cyan-400" />
+            <ImageIcon className="w-4 h-4 text-sharp-400" />
             <span>Upload Free PNG</span>
           </Link>
           <Link
@@ -133,7 +133,7 @@ export const AdminDashboard: React.FC = () => {
             <div className="flex flex-row sm:flex-col gap-2 w-full sm:w-auto">
               <Link
                 to="/admin/png-products"
-                className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-sharp-600 hover:from-cyan-500 hover:to-sharp-500 text-white font-semibold text-xs transition-all shadow-sharp-glow text-center flex items-center justify-center gap-1.5"
+                className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white font-semibold text-xs transition-all shadow-sharp-glow text-center flex items-center justify-center gap-1.5"
               >
                 <span>Manage PNGs</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />

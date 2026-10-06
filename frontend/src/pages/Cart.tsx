@@ -55,7 +55,7 @@ export const Cart: React.FC = () => {
         </p>
         <Link
           to="/browse"
-          className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-sharp-600 to-sharp-500 text-white font-semibold text-sm shadow-sharp-glow hover:scale-[1.02] transition-all"
+          className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 text-white font-semibold text-sm shadow-sharp-glow hover:scale-[1.02] transition-all"
         >
           <span>Explore PSD Catalog</span>
           <ArrowRight className="w-4 h-4" />
@@ -250,7 +250,7 @@ export const Cart: React.FC = () => {
             {/* Checkout Button */}
             <button
               onClick={() => navigate('/checkout', { state: { couponCode: appliedCoupon?.code } })}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-bold text-sm shadow-sharp-glow transition-all flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-2xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white font-bold text-sm shadow-sharp-glow transition-all flex items-center justify-center gap-2"
             >
               <span>Proceed to Checkout</span>
               <ArrowRight className="w-4 h-4" />

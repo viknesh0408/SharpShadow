@@ -72,13 +72,13 @@ export const AdminProducts: React.FC = () => {
         <div className="flex items-center gap-2.5">
           <Link
             to="/admin/png-products"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-dark-900 hover:bg-dark-850 text-cyan-300 hover:text-white border border-cyan-500/30 font-semibold text-xs transition-all"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-dark-900 hover:bg-dark-850 text-sharp-400 hover:text-white border border-sharp-500/30 font-semibold text-xs transition-all"
           >
             <span>View PNG Products →</span>
           </Link>
           <Link
             to="/admin/products/new"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-semibold text-xs shadow-sharp-glow transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white font-semibold text-xs shadow-sharp-glow transition-all"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Upload New PSD</span>

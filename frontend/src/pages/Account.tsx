@@ -131,7 +131,7 @@ export const Account: React.FC = () => {
       {/* Header Profile Bar */}
       <div className="bg-white dark:bg-dark-900 border border-slate-200 dark:border-dark-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 shadow-sm dark:shadow-card-dark">
         <div className="flex items-center gap-3.5 sm:gap-4">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-sharp-600 to-rose-400 text-white flex items-center justify-center font-bold text-xl sm:text-2xl font-mono shadow-sharp-glow shrink-0">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-sharp-600 dark:bg-gradient-to-tr dark:from-sharp-600 dark:to-rose-400 text-white flex items-center justify-center font-bold text-xl sm:text-2xl font-mono shadow-sharp-glow shrink-0">
             {user?.name.charAt(0) || 'U'}
           </div>
           <div className="min-w-0">
@@ -249,7 +249,7 @@ export const Account: React.FC = () => {
                   <button
                     onClick={() => handleDownloadFile(item.productId)}
                     disabled={downloadingId === item.productId}
-                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-semibold text-xs transition-all flex items-center justify-center gap-2 shadow"
+                    className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 dark:bg-gradient-to-r dark:from-emerald-600 dark:to-emerald-500 dark:hover:from-emerald-500 dark:hover:to-emerald-400 text-white font-semibold text-xs transition-all flex items-center justify-center gap-2 shadow"
                   >
                     <Download className="w-4 h-4" />
                     <span>{downloadingId === item.productId ? 'Generating...' : 'Download File'}</span>

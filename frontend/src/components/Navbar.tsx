@@ -72,7 +72,7 @@ export const Navbar: React.FC = () => {
             <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-300 animate-in fade-in duration-200">
               <Link to="/" className="hover:text-sharp-600 dark:hover:text-white transition-colors">Home</Link>
               <Link to="/browse" className="hover:text-sharp-600 dark:hover:text-white transition-colors">Browse PSDs</Link>
-              <Link to="/browse?category=png-elements" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors flex items-center gap-1.5">
+              <Link to="/browse?category=png-elements" className="hover:text-sharp-600 dark:hover:text-sharp-400 transition-colors flex items-center gap-1.5">
                 <span>PNG Assets</span>
                 <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-500 dark:text-emerald-400 font-mono text-[9px] font-bold border border-emerald-500/30">FREE</span>
               </Link>
@@ -179,7 +179,7 @@ export const Navbar: React.FC = () => {
                   </Link>
                   <Link
                     to="/register"
-                    className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white text-xs sm:text-sm font-semibold shadow-sharp-glow transition-all"
+                    className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white text-xs sm:text-sm font-semibold shadow-sharp-glow transition-all"
                   >
                     Register
                   </Link>
@@ -231,7 +231,7 @@ export const Navbar: React.FC = () => {
                           <Link
                             to="/register"
                             onClick={() => setAuthDropdownOpen(false)}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 px-3 text-xs font-semibold rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white shadow-sharp-glow transition-all"
+                            className="w-full flex items-center justify-center gap-2 py-2.5 px-3 text-xs font-semibold rounded-xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white shadow-sharp-glow transition-all"
                           >
                             <UserPlus className="w-3.5 h-3.5" />
                             Register
@@ -301,10 +301,10 @@ export const Navbar: React.FC = () => {
                       <Link
                         to="/browse?category=png-elements"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:text-cyan-500 dark:hover:text-cyan-400 hover:bg-slate-50 dark:hover:bg-dark-800 transition-colors"
+                        className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:text-sharp-600 dark:hover:text-sharp-400 hover:bg-slate-50 dark:hover:bg-dark-800 transition-colors"
                       >
                         <div className="flex items-center gap-2.5">
-                          <ImageIcon className="w-4 h-4 text-cyan-500" />
+                          <ImageIcon className="w-4 h-4 text-sharp-500" />
                           <span>PNG Elements</span>
                         </div>
                         <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-500 font-mono text-[9px] font-bold border border-emerald-500/30">
@@ -354,7 +354,7 @@ export const Navbar: React.FC = () => {
                         <Link
                           to="/register"
                           onClick={() => setMobileMenuOpen(false)}
-                          className="flex-1 py-1.5 text-center text-xs font-semibold rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white shadow-sharp-glow transition-all"
+                          className="flex-1 py-1.5 text-center text-xs font-semibold rounded-xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white shadow-sharp-glow transition-all"
                         >
                           Register
                         </Link>

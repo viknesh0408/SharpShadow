@@ -610,7 +610,7 @@ export const AdminProductForm: React.FC = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="px-8 py-3 rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-bold text-sm shadow-sharp-glow transition-all flex items-center gap-2 disabled:opacity-50"
+            className="px-8 py-3 rounded-xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white font-bold text-sm shadow-sharp-glow transition-all flex items-center gap-2 disabled:opacity-50"
           >
             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Save & Publish Product</span>}
           </button>

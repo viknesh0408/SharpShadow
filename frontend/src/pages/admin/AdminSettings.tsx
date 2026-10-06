@@ -195,7 +195,7 @@ export const AdminSettings: React.FC = () => {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-semibold text-xs shadow-sharp-glow transition-all disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white font-semibold text-xs shadow-sharp-glow transition-all disabled:opacity-50"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           <span>{saving ? 'Saving...' : 'Save Settings'}</span>
@@ -334,7 +334,7 @@ export const AdminSettings: React.FC = () => {
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-bold text-sm shadow-sharp-glow transition-all disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white font-bold text-sm shadow-sharp-glow transition-all disabled:opacity-50"
           >
             {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
             <span>{saving ? 'Saving...' : 'Save Settings'}</span>
@@ -450,7 +450,7 @@ export const AdminSettings: React.FC = () => {
                 newPassword.length < 6 ||
                 newPassword !== confirmPassword
               }
-              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-sharp-600 to-sharp-500 hover:from-sharp-500 hover:to-sharp-400 text-white font-semibold text-xs shadow-sharp-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white font-semibold text-xs shadow-sharp-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {changingPassword ? (
                 <>

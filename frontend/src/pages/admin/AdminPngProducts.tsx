@@ -122,7 +122,7 @@ export const AdminPngProducts: React.FC = () => {
           </Link>
           <Link
             to="/admin/products/new?format=png"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 via-sharp-600 to-sharp-500 hover:from-cyan-500 hover:to-sharp-400 text-white font-semibold text-xs shadow-sharp-glow transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sharp-600 hover:bg-sharp-500 dark:bg-gradient-to-r dark:from-sharp-600 dark:to-sharp-500 dark:hover:from-sharp-500 dark:hover:to-sharp-400 text-white font-semibold text-xs shadow-sharp-glow transition-all"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Upload Free PNG</span>
