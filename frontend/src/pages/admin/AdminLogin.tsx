@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Shield, Lock, Mail, Loader2, Eye, EyeOff, KeyRound } from 'lucide-react';
+import { Shield, Lock, Mail, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 
@@ -21,25 +21,17 @@ export const AdminLogin: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const isDev = import.meta.env.DEV;
-
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<AdminLoginData>({
     resolver: zodResolver(adminLoginSchema),
     defaultValues: {
-      email: isDev ? 'admin@sharpshadow.com' : '',
+      email: '',
       password: '',
     },
   });
-
-  const handleAutoFill = () => {
-    setValue('email', 'admin@sharpshadow.com', { shouldValidate: true });
-    setValue('password', 'Admin#SharpShadow2026!', { shouldValidate: true });
-  };
 
   const onSubmit = async (data: AdminLoginData) => {
     setLoading(true);
@@ -76,29 +68,6 @@ export const AdminLogin: React.FC = () => {
             Protected marketplace management console. Requires administrative privileges.
           </p>
         </div>
-
-        {/* Credentials Helper Pill - Only visible during local development */}
-        {isDev && (
-          <div className="relative z-10 bg-dark-950/80 border border-dark-750 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-xs">
-            <div className="space-y-1">
-              <div className="text-slate-300 font-semibold flex items-center gap-1.5">
-                <KeyRound className="w-3.5 h-3.5 text-sharp-400" />
-                <span>Dev Admin Credentials:</span>
-              </div>
-              <div className="text-slate-400 font-mono text-[11px] space-y-0.5">
-                <div>Email: <span className="text-slate-200">admin@sharpshadow.com</span></div>
-                <div>Pass: <span className="text-slate-200">Admin#SharpShadow2026!</span></div>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={handleAutoFill}
-              className="px-3 py-1.5 text-xs font-bold rounded-xl bg-sharp-500/15 hover:bg-sharp-500/25 text-sharp-400 border border-sharp-500/30 transition-all flex items-center gap-1 shrink-0"
-            >
-              Auto-fill
-            </button>
-          </div>
-        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 relative z-10">
           <div>

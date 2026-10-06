@@ -12,6 +12,7 @@ import {
   Linkedin,
   MessageSquare,
   Facebook,
+  Mail,
 } from 'lucide-react';
 import { settingService } from '../services/settingService';
 
@@ -21,6 +22,7 @@ export const Footer: React.FC = () => {
     social_instagram: 'https://instagram.com',
     social_twitter: 'https://x.com',
     social_linkedin: 'https://linkedin.com',
+    public_contact_email: 'sharpshadowss@gmail.com',
   });
 
   useEffect(() => {
@@ -205,6 +207,15 @@ export const Footer: React.FC = () => {
             <Link to="/contact" className="hover:text-sharp-600 dark:hover:text-white transition-colors">
               Contact Support
             </Link>
+            <span className="text-slate-300 dark:text-dark-750 hidden sm:inline">•</span>
+            <a
+              href={`mailto:${socialLinks.public_contact_email || 'sharpshadowss@gmail.com'}`}
+              className="hover:text-sharp-600 dark:hover:text-white transition-colors inline-flex items-center gap-1.5 font-mono text-xs"
+              title="Client Contact Email"
+            >
+              <Mail className="w-3.5 h-3.5 text-sharp-500" />
+              <span>{socialLinks.public_contact_email || 'sharpshadowss@gmail.com'}</span>
+            </a>
           </nav>
         </div>
       </div>

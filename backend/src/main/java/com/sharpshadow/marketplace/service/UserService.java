@@ -38,9 +38,6 @@ public class UserService {
     private final EmailService emailService;
     private final SecureRandom secureRandom = new SecureRandom();
 
-    @org.springframework.beans.factory.annotation.Value("${sharpshadow.admin.password:}")
-    private String configuredAdminPassword;
-
     private String generateOtp() {
         int code = 100000 + secureRandom.nextInt(900000);
         return String.valueOf(code);
@@ -161,48 +158,14 @@ public class UserService {
         String inputEmail = request.getEmail() != null ? request.getEmail().toLowerCase().trim() : "";
         String inputPassword = request.getPassword() != null ? request.getPassword() : "";
 
-        // Admin fallback check: allow admin@sharpshadows.com and admin@sharpshadow.com interchangeably
-        String effectiveEmail = inputEmail;
-        if ("admin@sharpshadows.com".equals(effectiveEmail) && userRepository.findByEmail("admin@sharpshadows.com").isEmpty()) {
-            effectiveEmail = "admin@sharpshadow.com";
-        } else if ("admin@sharpshadow.com".equals(effectiveEmail) && userRepository.findByEmail("admin@sharpshadow.com").isEmpty()) {
-            effectiveEmail = "admin@sharpshadows.com";
-        }
-
-        User adminCandidate = userRepository.findByEmail(effectiveEmail).orElse(null);
-        if (adminCandidate != null && adminCandidate.getRole() == Role.ADMIN) {
-            boolean isKnownAdminPassword =
-                    "Admin#SharpShadow2026!".equals(inputPassword) ||
-                    "Admin#SharpShadows2026!".equals(inputPassword) ||
-                    "DevAdmin#2026!Secured".equals(inputPassword) ||
-                    (configuredAdminPassword != null && !configuredAdminPassword.isBlank() && configuredAdminPassword.trim().equals(inputPassword));
-
-            if (isKnownAdminPassword || passwordEncoder.matches(inputPassword, adminCandidate.getPasswordHash())) {
-                if (!passwordEncoder.matches(inputPassword, adminCandidate.getPasswordHash())) {
-                    adminCandidate.setPasswordHash(passwordEncoder.encode(inputPassword));
-                }
-                adminCandidate.setEmailVerified(true);
-                userRepository.save(adminCandidate);
-
-                String token = jwtUtils.generateTokenFromEmail(adminCandidate.getEmail(), adminCandidate.getId(), adminCandidate.getRole().name());
-                return AuthResponse.builder()
-                        .token(token)
-                        .type("Bearer")
-                        .expiresIn(jwtUtils.getExpirationMs() / 1000)
-                        .user(mapper.toUserDto(adminCandidate))
-                        .emailVerified(true)
-                        .build();
-            }
-        }
-
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        effectiveEmail,
+                        inputEmail,
                         inputPassword
                 )
         );
 
-        User user = (adminCandidate != null) ? adminCandidate : userRepository.findByEmail(effectiveEmail)
+        User user = userRepository.findByEmail(inputEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (!user.isEmailVerified()) {

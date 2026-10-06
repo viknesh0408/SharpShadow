@@ -35,7 +35,14 @@ public class LocalStorageService implements StorageService {
     @Value("${sharpshadow.storage.signing-secret:${sharpshadow.jwt.secret}}")
     private String signingSecret;
 
-    private static final String LEAKED_PUBLIC_SECRET = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+    private static final java.util.Set<String> BLOCKED_SECRETS = java.util.Set.of(
+            "404e635266556a586e3272357538782f413f4428472b4b6250645367566b5970",
+            "c816d4715b28e5bd9d9fd711911574b08d5da0eb4ffa5059be3fd6fc4109b87b",
+            "ec8d6de3ef72a993b8f4731e1802be6f7903e93806d292e00982a08b452669e3"
+    );
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private org.springframework.core.env.Environment environment;
 
     private Path publicRoot;
     private Path privateRoot;
@@ -43,10 +50,17 @@ public class LocalStorageService implements StorageService {
     @PostConstruct
     public void init() {
         if (signingSecret == null || signingSecret.trim().isEmpty()) {
-            throw new IllegalStateException("CRITICAL SECURITY ERROR: Storage signing secret is not configured!");
+            boolean isDev = java.util.Arrays.asList(environment.getActiveProfiles()).contains("dev");
+            if (isDev) {
+                byte[] randomBytes = new byte[32];
+                new java.security.SecureRandom().nextBytes(randomBytes);
+                this.signingSecret = java.util.HexFormat.of().formatHex(randomBytes);
+            } else {
+                throw new IllegalStateException("CRITICAL SECURITY ERROR: Storage signing secret is not configured!");
+            }
         }
-        if (LEAKED_PUBLIC_SECRET.equalsIgnoreCase(signingSecret.trim())) {
-            throw new IllegalStateException("CRITICAL SECURITY ERROR: The old public leaked secret was detected for storage signing! Set a new secret.");
+        if (BLOCKED_SECRETS.contains(signingSecret.trim().toLowerCase())) {
+            throw new IllegalStateException("CRITICAL SECURITY ERROR: A known insecure / leaked secret was detected for storage signing! Set a new secret.");
         }
         try {
             this.publicRoot = Paths.get(publicUploadDir).toAbsolutePath().normalize();

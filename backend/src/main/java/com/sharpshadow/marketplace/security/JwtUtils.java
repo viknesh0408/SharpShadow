@@ -22,15 +22,29 @@ public class JwtUtils {
     @Value("${sharpshadow.jwt.expiration-ms}")
     private long jwtExpirationMs;
 
-    private static final String LEAKED_PUBLIC_SECRET = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+    private static final java.util.Set<String> BLOCKED_SECRETS = java.util.Set.of(
+            "404e635266556a586e3272357538782f413f4428472b4b6250645367566b5970",
+            "c816d4715b28e5bd9d9fd711911574b08d5da0eb4ffa5059be3fd6fc4109b87b",
+            "ec8d6de3ef72a993b8f4731e1802be6f7903e93806d292e00982a08b452669e3"
+    );
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private org.springframework.core.env.Environment environment;
 
     @PostConstruct
     public void validateSecret() {
         if (jwtSecret == null || jwtSecret.trim().isEmpty()) {
+            boolean isDev = java.util.Arrays.asList(environment.getActiveProfiles()).contains("dev");
+            if (isDev) {
+                byte[] randomBytes = new byte[32];
+                new java.security.SecureRandom().nextBytes(randomBytes);
+                this.jwtSecret = java.util.HexFormat.of().formatHex(randomBytes);
+                return;
+            }
             throw new IllegalStateException("CRITICAL SECURITY ERROR: 'sharpshadow.jwt.secret' (JWT_SECRET) is not configured! A 256-bit secret is required.");
         }
-        if (LEAKED_PUBLIC_SECRET.equalsIgnoreCase(jwtSecret.trim())) {
-            throw new IllegalStateException("CRITICAL SECURITY ERROR: The old public leaked JWT secret was detected. You MUST generate a new secure JWT_SECRET in your environment!");
+        if (BLOCKED_SECRETS.contains(jwtSecret.trim().toLowerCase())) {
+            throw new IllegalStateException("CRITICAL SECURITY ERROR: A known insecure / leaked JWT secret was detected. You MUST generate a new secure 256-bit JWT_SECRET in your environment!");
         }
     }
 

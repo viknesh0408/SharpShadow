@@ -24,7 +24,8 @@ public class SettingService {
                 "social_twitter", "https://x.com",
                 "social_youtube", "",
                 "social_linkedin", "https://linkedin.com",
-                "social_discord", ""
+                "social_discord", "",
+                "public_contact_email", "sharpshadowss@gmail.com"
         );
 
         for (Map.Entry<String, String> entry : defaults.entrySet()) {

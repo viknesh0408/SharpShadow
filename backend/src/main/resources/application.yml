@@ -97,16 +97,8 @@ spring:
         format_sql: false
   h2:
     console:
-      enabled: true
+      enabled: false
       path: /h2-console
-
-sharpshadow:
-  jwt:
-    secret: ${JWT_SECRET:c816d4715b28e5bd9d9fd711911574b08d5da0eb4ffa5059be3fd6fc4109b87b}
-  storage:
-    signing-secret: ${DOWNLOAD_SIGNING_SECRET:ec8d6de3ef72a993b8f4731e1802be6f7903e93806d292e00982a08b452669e3}
-  admin:
-    password: ${ADMIN_PASSWORD:Admin#SharpShadow2026!}
 
 ---
 # MySQL / Production Profile

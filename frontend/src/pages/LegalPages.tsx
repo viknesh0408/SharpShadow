@@ -102,32 +102,59 @@ export const License: React.FC = () => (
   </div>
 );
 
-export const Contact: React.FC = () => (
-  <div className="max-w-4xl mx-auto px-4 py-16 space-y-8">
-    <div className="flex items-center gap-3 text-sharp-400">
-      <Mail className="w-8 h-8" />
-      <h1 className="text-3xl font-extrabold text-white">Contact & Support</h1>
-    </div>
-    <div className="bg-dark-900 border border-dark-800 rounded-3xl p-8 space-y-6 text-sm text-slate-300 leading-relaxed">
-      <p>
-        Have questions regarding a PSD purchase, payment verification, custom licensing, or technical template support? Our team is here to assist you.
-      </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-        <div className="p-5 rounded-2xl bg-dark-950 border border-dark-800 space-y-2">
-          <h4 className="font-bold text-white text-base">Customer Support</h4>
-          <p className="text-xs text-slate-400">For download issues, invoices, or payment inquiries:</p>
-          <a href="mailto:support@sharpshadow.com" className="text-sharp-400 font-mono font-semibold block text-sm">
-            support@sharpshadow.com
-          </a>
-        </div>
-        <div className="p-5 rounded-2xl bg-dark-950 border border-dark-800 space-y-2">
-          <h4 className="font-bold text-white text-base">Licensing & Partnerships</h4>
-          <p className="text-xs text-slate-400">For enterprise licensing or creative collaborations:</p>
-          <a href="mailto:partnerships@sharpshadow.com" className="text-sharp-400 font-mono font-semibold block text-sm">
-            partnerships@sharpshadow.com
-          </a>
+import { settingService } from '../services/settingService';
+
+export const Contact: React.FC = () => {
+  const [contactEmail, setContactEmail] = React.useState('sharpshadowss@gmail.com');
+
+  React.useEffect(() => {
+    let isMounted = true;
+    settingService
+      .getPublicSettings()
+      .then((settings) => {
+        if (isMounted && settings?.public_contact_email) {
+          setContactEmail(settings.public_contact_email);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-16 space-y-8">
+      <div className="flex items-center gap-3 text-sharp-400">
+        <Mail className="w-8 h-8" />
+        <h1 className="text-3xl font-extrabold text-white">Contact & Support</h1>
+      </div>
+      <div className="bg-dark-900 border border-dark-800 rounded-3xl p-8 space-y-6 text-sm text-slate-300 leading-relaxed">
+        <p>
+          Have questions regarding a PSD purchase, payment verification, custom licensing, or technical template support? Our team is here to assist you.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div className="p-5 rounded-2xl bg-dark-950 border border-dark-800 space-y-2">
+            <h4 className="font-bold text-white text-base">Customer Support</h4>
+            <p className="text-xs text-slate-400">For download issues, invoices, or payment inquiries:</p>
+            <a
+              href={`mailto:${contactEmail}`}
+              className="text-sharp-400 hover:text-sharp-300 font-mono font-semibold block text-sm transition-colors"
+            >
+              {contactEmail}
+            </a>
+          </div>
+          <div className="p-5 rounded-2xl bg-dark-950 border border-dark-800 space-y-2">
+            <h4 className="font-bold text-white text-base">Licensing & Partnerships</h4>
+            <p className="text-xs text-slate-400">For enterprise licensing or creative collaborations:</p>
+            <a
+              href={`mailto:${contactEmail}`}
+              className="text-sharp-400 hover:text-sharp-300 font-mono font-semibold block text-sm transition-colors"
+            >
+              {contactEmail}
+            </a>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};

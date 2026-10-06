@@ -9,6 +9,7 @@ import {
   Linkedin,
   MessageSquare,
   Facebook,
+  Mail,
   Loader2,
   CheckCircle2,
   Eye,
@@ -42,6 +43,7 @@ export const AdminSettings: React.FC = () => {
     social_linkedin: '',
     social_discord: '',
     social_facebook: '',
+    public_contact_email: 'sharpshadowss@gmail.com',
   });
 
   useEffect(() => {
@@ -56,6 +58,7 @@ export const AdminSettings: React.FC = () => {
           social_linkedin: data.social_linkedin || '',
           social_discord: data.social_discord || '',
           social_facebook: data.social_facebook || '',
+          public_contact_email: data.public_contact_email || 'sharpshadowss@gmail.com',
         });
       } catch (err: any) {
         error(err.response?.data?.message || 'Failed to load settings');
@@ -200,6 +203,48 @@ export const AdminSettings: React.FC = () => {
       </div>
 
       <form onSubmit={handleSave} className="space-y-8">
+        {/* Contact Email Section */}
+        <div className="bg-dark-900 border border-dark-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-card-dark">
+          <div className="flex items-center justify-between pb-4 border-b border-dark-800">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-sharp-500/10 text-sharp-400 flex items-center justify-center">
+                <Mail className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-white uppercase tracking-wider font-mono">
+                  Official Support & Client Contact Email
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Displayed on the Contact & Support page, footer links, and customer inquiries.
+                </p>
+              </div>
+            </div>
+            {form.public_contact_email.trim() && (
+              <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1 bg-dark-950 border border-dark-750 px-2.5 py-1 rounded-lg">
+                <CheckCircle2 className="w-3 h-3" />
+                Active
+              </span>
+            )}
+          </div>
+
+          <div className="max-w-xl space-y-2">
+            <label className="text-xs font-mono text-slate-300 uppercase flex items-center gap-2">
+              <Mail className="w-3.5 h-3.5 text-sharp-400" />
+              <span>Contact Email Address</span>
+            </label>
+            <input
+              type="email"
+              value={form.public_contact_email}
+              onChange={(e) => handleChange('public_contact_email' as any, e.target.value)}
+              placeholder="e.g. sharpshadowss@gmail.com"
+              className="w-full bg-dark-950 border border-dark-750 focus:border-sharp-500 rounded-xl px-4 py-2.5 text-xs text-white outline-none font-mono placeholder:text-slate-600 transition-colors"
+            />
+            <p className="text-[11px] text-slate-500">
+              Client verified contact address. Fallback is <span className="text-slate-300 font-mono">sharpshadowss@gmail.com</span>.
+            </p>
+          </div>
+        </div>
+
         {/* Social Media Links Section */}
         <div className="bg-dark-900 border border-dark-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-card-dark">
           <div className="flex items-center justify-between pb-4 border-b border-dark-800">

@@ -46,53 +46,66 @@ public class DataSeeder implements CommandLineRunner {
     @org.springframework.beans.factory.annotation.Value("${sharpshadow.admin.name:SharpShadows Administrator}")
     private String adminName;
 
+    private static final String CHAR_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*";
+
+    private String generateSecureBootstrapPassword() {
+        java.security.SecureRandom random = new java.security.SecureRandom();
+        StringBuilder sb = new StringBuilder(16);
+        for (int i = 0; i < 16; i++) {
+            sb.append(CHAR_SET.charAt(random.nextInt(CHAR_SET.length())));
+        }
+        return sb.toString();
+    }
+
     private void seedUsers() {
         String effectiveEmail = (adminEmail != null && !adminEmail.isBlank()) ? adminEmail.trim().toLowerCase() : "admin@sharpshadow.com";
-        String effectivePassword = (adminPassword != null && !adminPassword.isBlank()) ? adminPassword.trim() : "Admin#SharpShadow2026!";
         String effectiveName = (adminName != null && !adminName.isBlank()) ? adminName.trim() : "SharpShadows Administrator";
 
-        java.util.List<String> adminEmails = java.util.Arrays.asList(
-            effectiveEmail,
-            "admin@sharpshadow.com",
-            "admin@sharpshadows.com"
-        );
-
-        for (String targetEmail : adminEmails) {
-            User admin = userRepository.findByEmail(targetEmail).orElse(null);
-            if (admin == null) {
-                log.info("Seeding primary administrator user: {}", targetEmail);
-                admin = User.builder()
-                        .name(effectiveName)
-                        .email(targetEmail)
-                        .passwordHash(passwordEncoder.encode(effectivePassword))
-                        .role(Role.ADMIN)
-                        .emailVerified(true)
-                        .build();
-                userRepository.save(admin);
-                log.info("Administrator seeded for email: {}", targetEmail);
+        User admin = userRepository.findByEmail(effectiveEmail).orElse(null);
+        if (admin == null) {
+            String initialPassword;
+            if (adminPassword != null && !adminPassword.isBlank()) {
+                initialPassword = adminPassword.trim();
             } else {
-                boolean updated = false;
-                if (admin.getRole() != Role.ADMIN) {
-                    admin.setRole(Role.ADMIN);
-                    updated = true;
-                }
-                if (!admin.isEmailVerified()) {
-                    admin.setEmailVerified(true);
-                    updated = true;
-                }
-                admin.setPasswordHash(passwordEncoder.encode(effectivePassword));
+                initialPassword = generateSecureBootstrapPassword();
+                log.warn("================================================================================");
+                log.warn("SECURITY NOTICE: No ADMIN_PASSWORD configured in environment!");
+                log.warn("Created initial bootstrap administrator: {}", effectiveEmail);
+                log.warn("Generated temporary bootstrap password: {}", initialPassword);
+                log.warn("Please log in and immediately update your password via Admin Settings.");
+                log.warn("================================================================================");
+            }
+
+            admin = User.builder()
+                    .name(effectiveName)
+                    .email(effectiveEmail)
+                    .passwordHash(passwordEncoder.encode(initialPassword))
+                    .role(Role.ADMIN)
+                    .emailVerified(true)
+                    .build();
+            userRepository.save(admin);
+            log.info("Primary administrator seeded for email: {}", effectiveEmail);
+        } else {
+            // Administrator already exists: NEVER overwrite their password on restart!
+            boolean updated = false;
+            if (admin.getRole() != Role.ADMIN) {
+                admin.setRole(Role.ADMIN);
                 updated = true;
-                if (updated) {
-                    userRepository.save(admin);
-                }
+            }
+            if (!admin.isEmailVerified()) {
+                admin.setEmailVerified(true);
+                updated = true;
+            }
+            if (updated) {
+                userRepository.save(admin);
             }
         }
 
-        // Ensure any user with Role.ADMIN has emailVerified = true
-        userRepository.findAll().forEach(u -> {
-            if (u.getRole() == Role.ADMIN && !u.isEmailVerified()) {
-                u.setEmailVerified(true);
-                userRepository.save(u);
+        // Clean up legacy shadow backdoor admin account if present
+        userRepository.findByEmail("admin@sharpshadows.com").ifPresent(shadowUser -> {
+            if (!shadowUser.getEmail().equalsIgnoreCase(effectiveEmail)) {
+                log.warn("Removing legacy shadow administrator account: {}", shadowUser.getEmail());
+                userRepository.delete(shadowUser);
             }
         });
     }

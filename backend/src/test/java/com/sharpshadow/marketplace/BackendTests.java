@@ -173,8 +173,12 @@ class BackendTests {
     @DisplayName("Test 5: Download Authorization (403 for unpaid product)")
     void testDownloadUnauthorized() {
         UserDto user = userService.getCurrentUserDto("customer@sharpshadow.com");
-        var products = productService.getProducts(null, null, null, null, "newest", 0, 1, null);
-        Long prodId = products.getContent().get(0).getId();
+        var products = productService.getProducts(null, null, null, null, "newest", 0, 20, null);
+        Long prodId = products.getContent().stream()
+                .filter(p -> p.getPrice() != null && p.getPrice().compareTo(BigDecimal.ZERO) > 0)
+                .findFirst()
+                .orElseThrow()
+                .getId();
 
         // Should throw ForbiddenException because customer hasn't paid yet
         assertThrows(ForbiddenException.class, () -> {

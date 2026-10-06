@@ -32,6 +32,10 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final org.springframework.core.env.Environment environment;
+
+    @Value("${spring.h2.console.enabled:false}")
+    private boolean h2ConsoleEnabled;
 
     @Value("${sharpshadow.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
     private String allowedOrigins;
@@ -48,15 +52,25 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        boolean isDevWithH2 = Arrays.asList(environment.getActiveProfiles()).contains("dev") && h2ConsoleEnabled;
+
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .headers(headers -> headers
-                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
-                        .contentTypeOptions(contentType -> {})
-                )
-                .authorizeHttpRequests(auth -> auth
+                .headers(headers -> {
+                    if (isDevWithH2) {
+                        headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin);
+                    } else {
+                        headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::deny);
+                    }
+                    headers.contentTypeOptions(contentType -> {});
+                })
+                .authorizeHttpRequests(auth -> {
+                    if (isDevWithH2) {
+                        auth.requestMatchers("/h2-console/**").permitAll();
+                    }
+                    auth
                         // Public endpoints
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
@@ -65,7 +79,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/downloads/file").permitAll()
                         .requestMatchers("/api/settings/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
                         
                         // Admin endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -78,8 +91,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/account/**").authenticated()
                         
                         // All others
-                        .anyRequest().authenticated()
-                );
+                        .anyRequest().authenticated();
+                });
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
