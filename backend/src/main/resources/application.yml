@@ -3,8 +3,8 @@ server:
   servlet:
     context-path: /
   tomcat:
-    max-swallow-size: 500MB
-    max-http-form-post-size: 500MB
+    max-swallow-size: 1500MB
+    max-http-form-post-size: 1500MB
 
 spring:
   application:
@@ -13,8 +13,8 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   servlet:
     multipart:
-      max-file-size: 500MB
-      max-request-size: 500MB
+      max-file-size: 1500MB
+      max-request-size: 1500MB
       enabled: true
   jpa:
     generate-ddl: true

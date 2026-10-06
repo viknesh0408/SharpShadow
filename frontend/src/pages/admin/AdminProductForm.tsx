@@ -447,7 +447,7 @@ export const AdminProductForm: React.FC = () => {
                 Master Digital Asset (.PNG, .PSD, .ZIP)
               </label>
               <span className="text-[10px] bg-dark-900 text-slate-400 px-2 py-0.5 rounded font-mono">
-                Supports up to 500MB
+                Supports up to 1500MB
               </span>
             </div>
 

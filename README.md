@@ -72,7 +72,7 @@
 - **Persistence:** Spring Data JPA + Hibernate 6
 - **Database:** MySQL 8.0 (Production) / H2 (Development fallback)
 - **Payment Gateway:** Razorpay Java SDK 1.4.6
-- **Web Server:** Embedded Apache Tomcat with 500MB multipart streaming
+- **Web Server:** Embedded Apache Tomcat with 1500MB (1.5GB) multipart streaming
 - **Build System:** Apache Maven 3.9+
 
 ---
@@ -107,7 +107,7 @@
 │   │   ├── services/        # Axios API clients
 │   │   ├── types/           # TypeScript interfaces
 │   │   └── App.tsx          # Client router
-│   ├── nginx.conf           # Reverse proxy, caching, and 500M file upload config
+│   ├── nginx.conf           # Reverse proxy, caching, and 1500M file upload config
 │   ├── Dockerfile
 │   └── package.json
 │
@@ -324,7 +324,7 @@ To link your branded domain (e.g. `sharpshadow.com`):
    - Click **Add Product**.
    - Fill in asset details: Title, Category, Description, Dimensions, DPI, Color Mode.
    - Set standard Price and optional Discount Price.
-   - Upload the private digital asset (Layered PSD or ZIP file, up to 500MB).
+   - Upload the private digital asset (Layered PSD or ZIP file, up to 1500MB).
    - Upload primary thumbnail and preview gallery images.
    - Set status to **PUBLISHED**.
 4. **Create Promotional Coupons (Optional):**
@@ -394,7 +394,7 @@ Access the admin dashboard at `/admin` (or `/login` with an administrator accoun
 - **Dashboard (`/admin`):** Real-time metrics including total revenue, paid order count, registered customers, total downloads, 7-day sales breakdown, and popular products.
 - **Product Management (`/admin/products`):**
   - Create, update, or archive products.
-  - Upload private PSD/ZIP templates (up to 500MB).
+  - Upload private PSD/ZIP templates (up to 1500MB).
   - Upload primary thumbnail images and preview gallery images.
   - Set regular price, discount price, dimensions, resolution (DPI), color mode (CMYK/RGB), and Photoshop version.
   - Publish or draft status toggle.
@@ -436,7 +436,7 @@ Generates production-optimized static assets in `frontend/dist/`.
 
 ### 1. Upload Fails with "File too large" or Error 413
 - **Cause:** Nginx or Tomcat rejected a file exceeding the upload limit.
-- **Resolution:** SharpShadows is configured for uploads up to **500MB**. Ensure `client_max_body_size 500M;` is active in `frontend/nginx.conf` and `spring.servlet.multipart.max-file-size: 500MB` in `application.yml`.
+- **Resolution:** SharpShadows is configured for uploads up to **1500MB (1.5GB)**. Ensure `client_max_body_size 1500M;` is active in `frontend/nginx.conf` and `spring.servlet.multipart.max-file-size: 1500MB` in `application.yml`.
 
 ### 2. Uploaded Thumbnail Appears Broken (404)
 - **Cause:** Nginx static regex rule intercepted `/uploads/` requests before proxying to the backend.
