@@ -34,4 +34,11 @@ public interface StorageService {
      * Formats bytes into human-readable representation (e.g. 45.2 MB)
      */
     String formatFileSize(long bytes);
+
+    /**
+     * Verifies HMAC signature for local storage proxied downloads.
+     */
+    default boolean verifySignature(String relativePath, Long userId, long expiresAtEpoch, String signature) {
+        return false;
+    }
 }

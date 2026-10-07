@@ -247,7 +247,30 @@ VITE_RAZORPAY_KEY_ID=rzp_live_XXXXXXXXXXXXXXXX
 > [!IMPORTANT]
 > Docker container filesystems in cloud environments like Railway reset on each redeployment. Without a volume, uploaded PSD files and thumbnails will be lost when new code is pushed.
 
-To permanently retain all uploaded files:
+To permanently retain all uploaded files, you can choose either:
+- **Option A (Recommended for scale & zero egress fees): Cloudflare R2 Object Storage**
+- **Option B (Zero external services): Railway Persistent Disk Volume**
+
+#### Option A: Cloudflare R2 Object Storage (Recommended)
+Cloudflare R2 provides 10 GB free storage with **zero egress fees**, perfect for large PSD/ZIP assets and high-traffic image delivery.
+
+1. In the **Cloudflare Dashboard**, navigate to **R2 ➔ Create bucket** (e.g. `sharpshadow-assets`).
+2. Go to **R2 ➔ Manage R2 API Tokens ➔ Create API Token**:
+   - Permission: **Object Read & Write**
+   - TTL: Permanent or custom
+   - Save the **Access Key ID** and **Secret Access Key**.
+3. (Optional for CDN Previews) In your bucket settings, connect a Custom Domain or enable the **Public R2.dev Subdomain** (e.g. `https://pub-xxxxxx.r2.dev`).
+4. In Railway / production `.env`, set:
+   ```env
+   STORAGE_TYPE=r2
+   R2_ACCOUNT_ID=<your-cloudflare-account-id>
+   R2_ACCESS_KEY_ID=<your-r2-access-key-id>
+   R2_SECRET_ACCESS_KEY=<your-r2-secret-access-key>
+   R2_BUCKET_NAME=sharpshadow-assets
+   R2_PUBLIC_URL=https://pub-xxxxxx.r2.dev  # (or your custom CDN domain)
+   ```
+
+#### Option B: Attach Persistent Disk Volume in Railway (Local Disk)
 1. In your **Railway Dashboard**, click on the **Backend** service.
 2. Go to **Settings** (or **Data**) ➔ Scroll down to the **Volumes** section.
 3. Click **+ Add Volume**.

@@ -55,18 +55,26 @@ sharpshadow:
     password: ${ADMIN_PASSWORD:}
     name: ${ADMIN_NAME:SharpShadows Administrator}
   storage:
-    type: ${STORAGE_TYPE:local} # local or s3
+    type: ${STORAGE_TYPE:local} # local, r2, or s3
     signing-secret: ${DOWNLOAD_SIGNING_SECRET:${JWT_SECRET:}}
+    url-expiry-minutes: ${STORAGE_URL_EXPIRY_MINUTES:60}
     local:
       upload-dir: ${STORAGE_LOCAL_DIR:./storage/uploads}
       private-dir: ${STORAGE_PRIVATE_DIR:./storage/private}
+    r2:
+      account-id: ${R2_ACCOUNT_ID:${STORAGE_ACCOUNT_ID:}}
+      endpoint: ${R2_ENDPOINT:${STORAGE_ENDPOINT:}}
+      access-key-id: ${R2_ACCESS_KEY_ID:${STORAGE_ACCESS_KEY:}}
+      secret-access-key: ${R2_SECRET_ACCESS_KEY:${STORAGE_SECRET_KEY:}}
+      bucket: ${R2_BUCKET_NAME:${STORAGE_BUCKET:sharpshadow-assets}}
+      public-url: ${R2_PUBLIC_URL:${STORAGE_PUBLIC_URL:}}
+      region: ${R2_REGION:${STORAGE_REGION:auto}}
     s3:
       endpoint: ${STORAGE_ENDPOINT:https://s3.amazonaws.com}
       access-key: ${STORAGE_ACCESS_KEY:test_access_key}
       secret-key: ${STORAGE_SECRET_KEY:test_secret_key}
       bucket: ${STORAGE_BUCKET:sharpshadow-psds}
       region: ${STORAGE_REGION:ap-south-1}
-    url-expiry-minutes: 60
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173,https://*.up.railway.app,https://*.vercel.app}
   mail:

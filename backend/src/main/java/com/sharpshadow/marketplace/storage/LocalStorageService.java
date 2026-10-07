@@ -4,6 +4,7 @@ import com.sharpshadow.marketplace.exception.BadRequestException;
 import com.sharpshadow.marketplace.exception.ResourceNotFoundException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import java.util.Base64;
 import java.util.UUID;
 
 @Service
+@ConditionalOnProperty(name = "sharpshadow.storage.type", havingValue = "local", matchIfMissing = true)
 public class LocalStorageService implements StorageService {
 
     @Value("${sharpshadow.storage.local.upload-dir:./storage/uploads}")
@@ -165,6 +167,7 @@ public class LocalStorageService implements StorageService {
         return "/api/downloads/file?file=" + encodedFile + "&uid=" + uidStr + "&expires=" + expiresAtEpoch + "&filename=" + encodedName + "&sig=" + encodedSig;
     }
 
+    @Override
     public boolean verifySignature(String relativePath, Long userId, long expiresAtEpoch, String signature) {
         if (Instant.now().getEpochSecond() > expiresAtEpoch) {
             return false;

@@ -7,7 +7,7 @@ import com.sharpshadow.marketplace.exception.BadRequestException;
 import com.sharpshadow.marketplace.exception.ForbiddenException;
 import com.sharpshadow.marketplace.exception.ResourceNotFoundException;
 import com.sharpshadow.marketplace.repository.*;
-import com.sharpshadow.marketplace.storage.LocalStorageService;
+import com.sharpshadow.marketplace.storage.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,7 +36,7 @@ public class DownloadService {
     private final PaymentRepository paymentRepository;
     private final DownloadRepository downloadRepository;
     private final UserRepository userRepository;
-    private final LocalStorageService storageService;
+    private final StorageService storageService;
 
     @Value("${sharpshadow.storage.url-expiry-minutes:60}")
     private long expiryMinutes;
