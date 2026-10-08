@@ -57,6 +57,25 @@ export const AdminProductForm: React.FC = () => {
   const [fileSize, setFileSize] = useState('');
   const [previewImages, setPreviewImages] = useState<string[]>([]);
 
+  // Demo file state (Strictly PDF only)
+  const [demoFileUrl, setDemoFileUrl] = useState('');
+  const [demoFileName, setDemoFileName] = useState('');
+  const [demoFileSize, setDemoFileSize] = useState('');
+  const [uploadingDemo, setUploadingDemo] = useState(false);
+  const [demoUploadStatus, setDemoUploadStatus] = useState<UploadStatus>('idle');
+  const [demoUploadProgress, setDemoUploadProgress] = useState(0);
+  const [demoLoadedBytes, setDemoLoadedBytes] = useState(0);
+  const [demoTotalBytes, setDemoTotalBytes] = useState(0);
+  const [demoSpeed, setDemoSpeed] = useState('');
+  const [demoTimeRemaining, setDemoTimeRemaining] = useState('');
+  const [demoErrorMessage, setDemoErrorMessage] = useState<string | null>(null);
+  const [isDemoDragOver, setIsDemoDragOver] = useState(false);
+  const demoAbortControllerRef = useRef<AbortController | null>(null);
+  const demoFileInputRef = useRef<HTMLInputElement | null>(null);
+  const lastSelectedDemoFileRef = useRef<File | null>(null);
+  const lastDemoUploadTimeRef = useRef<number>(0);
+  const lastDemoLoadedRef = useRef<number>(0);
+
   // Master asset upload progress & state
   const [uploadingAsset, setUploadingAsset] = useState(false);
   const [assetUploadStatus, setAssetUploadStatus] = useState<UploadStatus>('idle');
@@ -158,6 +177,13 @@ export const AdminProductForm: React.FC = () => {
           setFileName(product.fileName || '');
           setFileSize(product.fileSize || '');
           setPreviewImages(product.previewImages || []);
+
+          setDemoFileUrl(product.demoFileUrl || '');
+          setDemoFileName(product.demoFileName || '');
+          if (product.demoFileUrl) {
+            setDemoUploadStatus('completed');
+            setDemoUploadProgress(100);
+          }
 
           if (product.fileName) {
             setAssetUploadStatus('completed');
@@ -327,6 +353,153 @@ export const AdminProductForm: React.FC = () => {
     }
   };
 
+  // Handle Demo PDF Upload (Strictly PDF only)
+  const uploadDemoFile = async (file: File) => {
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (ext !== 'pdf' && file.type !== 'application/pdf') {
+      error('Only PDF (.pdf) files can be attached as demo files.');
+      return;
+    }
+
+    lastSelectedDemoFileRef.current = file;
+
+    if (demoAbortControllerRef.current) {
+      demoAbortControllerRef.current.abort();
+    }
+    const abortController = new AbortController();
+    demoAbortControllerRef.current = abortController;
+
+    setUploadingDemo(true);
+    setDemoUploadStatus('uploading');
+    setDemoUploadProgress(0);
+    setDemoLoadedBytes(0);
+    setDemoTotalBytes(file.size);
+    setDemoFileName(file.name);
+    setDemoErrorMessage(null);
+    setDemoSpeed('');
+    setDemoTimeRemaining('');
+    lastDemoUploadTimeRef.current = Date.now();
+    lastDemoLoadedRef.current = 0;
+
+    try {
+      const res = await adminService.uploadDemoPdf(
+        file,
+        (percent, loaded, total) => {
+          setDemoUploadProgress(percent);
+          setDemoLoadedBytes(loaded);
+          setDemoTotalBytes(total);
+
+          const now = Date.now();
+          const timeDiff = (now - lastDemoUploadTimeRef.current) / 1000;
+          if (timeDiff >= 0.4) {
+            const bytesDiff = loaded - lastDemoLoadedRef.current;
+            const bytesPerSec = bytesDiff / timeDiff;
+            if (bytesPerSec > 0) {
+              const mbPerSec = (bytesPerSec / (1024 * 1024)).toFixed(1);
+              setDemoSpeed(`${mbPerSec} MB/s`);
+              const remainingBytes = total - loaded;
+              const remainingSeconds = Math.round(remainingBytes / bytesPerSec);
+              if (remainingSeconds < 60) {
+                setDemoTimeRemaining(`~${Math.max(1, remainingSeconds)}s left`);
+              } else {
+                setDemoTimeRemaining(`~${Math.round(remainingSeconds / 60)}m left`);
+              }
+            }
+            lastDemoUploadTimeRef.current = now;
+            lastDemoLoadedRef.current = loaded;
+          }
+
+          if (percent >= 100) {
+            setDemoUploadStatus('processing');
+          }
+        },
+        abortController.signal
+      );
+
+      setDemoFileUrl(res.fileUrl);
+      setDemoFileName(res.originalFileName);
+      setDemoFileSize(res.formattedSize);
+      setDemoUploadStatus('completed');
+      setDemoUploadProgress(100);
+      success(`Demo PDF attached: ${res.originalFileName} (${res.formattedSize})`);
+    } catch (err: any) {
+      if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
+        setDemoUploadStatus('idle');
+        return;
+      }
+      const msg = err.response?.data?.message || err.message || 'Failed to upload demo PDF';
+      setDemoErrorMessage(msg);
+      setDemoUploadStatus('error');
+      error(msg);
+    } finally {
+      setUploadingDemo(false);
+      demoAbortControllerRef.current = null;
+    }
+  };
+
+  const handleDemoFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      uploadDemoFile(file);
+    }
+  };
+
+  const handleCancelDemoUpload = () => {
+    if (demoAbortControllerRef.current) {
+      demoAbortControllerRef.current.abort();
+      demoAbortControllerRef.current = null;
+    }
+    setUploadingDemo(false);
+    setDemoUploadStatus('idle');
+    setDemoUploadProgress(0);
+    setDemoFileName('');
+    setDemoFileSize('');
+    setDemoFileUrl('');
+    if (demoFileInputRef.current) {
+      demoFileInputRef.current.value = '';
+    }
+  };
+
+  const handleRetryDemoUpload = () => {
+    if (lastSelectedDemoFileRef.current) {
+      uploadDemoFile(lastSelectedDemoFileRef.current);
+    } else {
+      demoFileInputRef.current?.click();
+    }
+  };
+
+  const handleRemoveDemo = () => {
+    setDemoFileUrl('');
+    setDemoFileName('');
+    setDemoFileSize('');
+    setDemoUploadStatus('idle');
+    setDemoUploadProgress(0);
+    setDemoErrorMessage(null);
+    lastSelectedDemoFileRef.current = null;
+    if (demoFileInputRef.current) {
+      demoFileInputRef.current.value = '';
+    }
+  };
+
+  const handleDemoDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDemoDragOver(true);
+  };
+
+  const handleDemoDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDemoDragOver(false);
+  };
+
+  const handleDemoDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDemoDragOver(false);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      uploadDemoFile(files[0]);
+    }
+  };
+
   // Handle Thumbnail Upload with progress
   const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -396,6 +569,8 @@ export const AdminProductForm: React.FC = () => {
       featured: data.featured,
       status: data.status,
       previewImages,
+      demoFileUrl: demoFileUrl || null,
+      demoFileName: demoFileName || null,
     };
 
     try {
@@ -691,6 +866,96 @@ export const AdminProductForm: React.FC = () => {
                     <span>•</span>
                     <span>Private storage with UUID obfuscation</span>
                   </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Demo File Attachment (Strictly PDF only) */}
+          <div className="space-y-3 pt-4 border-t border-dark-800">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-mono text-rose-400 uppercase font-bold flex items-center gap-1.5">
+                <FileText className="w-4 h-4" />
+                Demo / Sample Document (PDF Only • Shown in Description)
+              </label>
+              <span className="text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded font-mono font-bold">
+                .PDF ONLY
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-400">
+              Attach a demo or preview PDF document. Clients browsing this product can preview or download this file directly in the product description before purchasing.
+            </p>
+
+            <input
+              ref={demoFileInputRef}
+              type="file"
+              accept=".pdf,application/pdf"
+              onChange={handleDemoFileUpload}
+              className="hidden"
+              disabled={uploadingDemo}
+            />
+
+            {demoUploadStatus !== 'idle' || demoFileUrl ? (
+              <div className="space-y-2">
+                <UploadProgressBar
+                  fileName={demoFileName || lastSelectedDemoFileRef.current?.name || 'demo-preview.pdf'}
+                  fileSize={demoFileSize}
+                  progress={demoUploadProgress}
+                  loadedBytes={demoLoadedBytes}
+                  totalBytes={demoTotalBytes}
+                  speed={demoSpeed}
+                  timeRemaining={demoTimeRemaining}
+                  status={demoUploadStatus}
+                  errorMessage={demoErrorMessage}
+                  onCancel={handleCancelDemoUpload}
+                  onRetry={handleRetryDemoUpload}
+                  onRemove={handleRemoveDemo}
+                  onReplace={() => demoFileInputRef.current?.click()}
+                />
+
+                {demoFileUrl && (
+                  <div className="flex items-center justify-between px-3.5 py-2.5 bg-dark-950 border border-dark-750 rounded-xl text-xs font-mono">
+                    <span className="text-slate-400">Storefront Description Demo Link:</span>
+                    <a
+                      href={demoFileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-rose-400 hover:text-rose-300 underline font-semibold flex items-center gap-1"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      Test Open Demo PDF
+                    </a>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div
+                onDragOver={handleDemoDragOver}
+                onDragLeave={handleDemoDragLeave}
+                onDrop={handleDemoDrop}
+                onClick={() => demoFileInputRef.current?.click()}
+                className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-5 sm:p-6 text-center transition-all ${
+                  isDemoDragOver
+                    ? 'border-rose-500 bg-rose-950/20 scale-[1.005]'
+                    : 'border-dark-750 bg-dark-950 hover:border-rose-500/50 hover:bg-dark-900/60'
+                }`}
+              >
+                <div className="flex flex-col items-center justify-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white group-hover:text-rose-400 transition-colors">
+                      Attach Demo PDF Document
+                    </p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Drag & drop a sample .pdf file here, or click to browse (Strictly PDF only)
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-500">
+                    Publicly accessible to clients in description • Automatically verified
+                  </span>
                 </div>
               </div>
             )}

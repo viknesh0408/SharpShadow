@@ -48,6 +48,8 @@ export interface Product {
   createdAt?: string;
   updatedAt?: string;
   internalFileUrl?: string;
+  demoFileUrl?: string | null;
+  demoFileName?: string | null;
 }
 
 export type OrderStatus = 'CREATED' | 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDED';

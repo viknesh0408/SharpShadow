@@ -50,6 +50,12 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(metadata, "Image preview uploaded successfully"));
     }
 
+    @PostMapping("/upload/demo")
+    public ResponseEntity<ApiResponse<FileMetadata>> uploadDemoPdf(@RequestParam("file") MultipartFile file) {
+        FileMetadata metadata = storageService.uploadDemo(file);
+        return ResponseEntity.ok(ApiResponse.success(metadata, "Demo PDF attached successfully"));
+    }
+
     // --- Products ---
     @GetMapping("/products")
     public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getAdminProducts(

@@ -57,6 +57,8 @@ public class EntityDtoMapper {
                 .thumbnailUrl(product.getThumbnailUrl())
                 .fileName(product.getFileName())
                 .fileSize(product.getFileSize())
+                .demoFileUrl(product.getDemoFileUrl())
+                .demoFileName(product.getDemoFileName())
                 .dimensions(product.getDimensions())
                 .resolution(product.getResolution())
                 .colorMode(product.getColorMode())

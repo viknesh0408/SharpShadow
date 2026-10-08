@@ -19,6 +19,8 @@ export interface ProductPayload {
   featured?: boolean;
   status?: string;
   previewImages?: string[];
+  demoFileUrl?: string | null;
+  demoFileName?: string | null;
 }
 
 export interface UploadMetadata {
@@ -44,6 +46,25 @@ export const adminService = {
     const formData = new FormData();
     formData.append('file', file);
     const res = await api.post<ApiResponse<UploadMetadata>>('/admin/upload/asset', formData, {
+      signal,
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total && progressEvent.total > 0) {
+          const percent = Math.min(100, Math.round((progressEvent.loaded * 100) / progressEvent.total));
+          onProgress?.(percent, progressEvent.loaded, progressEvent.total);
+        }
+      },
+    });
+    return res.data.data!;
+  },
+
+  async uploadDemoPdf(
+    file: File,
+    onProgress?: (percent: number, loaded: number, total: number) => void,
+    signal?: AbortSignal
+  ): Promise<UploadMetadata> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await api.post<ApiResponse<UploadMetadata>>('/admin/upload/demo', formData, {
       signal,
       onUploadProgress: (progressEvent) => {
         if (progressEvent.total && progressEvent.total > 0) {

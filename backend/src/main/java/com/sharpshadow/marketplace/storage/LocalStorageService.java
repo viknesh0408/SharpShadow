@@ -132,6 +132,31 @@ public class LocalStorageService implements StorageService {
     }
 
     @Override
+    public FileMetadata uploadDemo(MultipartFile file) {
+        validateDemoPdfFile(file);
+        try {
+            String originalFilename = StringUtils.cleanPath(file.getOriginalFilename() != null ? file.getOriginalFilename() : "demo.pdf");
+            String storedFileName = "demo-" + UUID.randomUUID() + ".pdf";
+
+            Path targetLocation = this.publicRoot.resolve(storedFileName);
+            file.transferTo(targetLocation.toFile());
+
+            String publicUrl = "/uploads/" + storedFileName;
+
+            return FileMetadata.builder()
+                    .originalFileName(originalFilename)
+                    .storedFileName(storedFileName)
+                    .fileUrl(publicUrl)
+                    .contentType("application/pdf")
+                    .size(file.getSize())
+                    .formattedSize(formatFileSize(file.getSize()))
+                    .build();
+        } catch (IOException ex) {
+            throw new BadRequestException("Could not store demo PDF file: " + ex.getMessage());
+        }
+    }
+
+    @Override
     public void delete(String fileUrl) {
         if (!StringUtils.hasText(fileUrl)) return;
         try {
@@ -259,6 +284,23 @@ public class LocalStorageService implements StorageService {
         );
         if (blockedExts.contains(ext)) {
             throw new BadRequestException("Executable or script file type is not permitted.");
+        }
+    }
+
+    private void validateDemoPdfFile(MultipartFile file) {
+        validateBasic(file);
+        String ext = getFileExtension(file.getOriginalFilename()).toLowerCase();
+        if (!"pdf".equals(ext)) {
+            throw new BadRequestException("Only PDF (.pdf) files are allowed for demo attachments.");
+        }
+        try (java.io.InputStream is = file.getInputStream()) {
+            byte[] header = new byte[4];
+            int read = is.read(header);
+            if (read < 4 || header[0] != 0x25 || header[1] != 0x50 || header[2] != 0x44 || header[3] != 0x46) {
+                throw new BadRequestException("Invalid or corrupted PDF file signature. File must be a valid PDF document.");
+            }
+        } catch (IOException e) {
+            throw new BadRequestException("Could not read demo file contents for validation.");
         }
     }
 

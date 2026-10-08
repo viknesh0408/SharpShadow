@@ -54,6 +54,12 @@ public class Product {
     @Column(length = 50)
     private String fileSize;
 
+    @Column(length = 500)
+    private String demoFileUrl;
+
+    @Column(length = 255)
+    private String demoFileName;
+
     @Column(length = 100)
     private String dimensions;
 

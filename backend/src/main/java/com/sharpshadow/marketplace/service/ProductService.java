@@ -207,6 +207,8 @@ public class ProductService {
                 .fileUrl(request.getFileUrl())
                 .fileName(request.getFileName())
                 .fileSize(request.getFileSize())
+                .demoFileUrl(request.getDemoFileUrl())
+                .demoFileName(request.getDemoFileName())
                 .dimensions(request.getDimensions())
                 .resolution(request.getResolution())
                 .colorMode(request.getColorMode())
@@ -262,6 +264,8 @@ public class ProductService {
         if (request.getFileUrl() != null) product.setFileUrl(request.getFileUrl());
         if (request.getFileName() != null) product.setFileName(request.getFileName());
         if (request.getFileSize() != null) product.setFileSize(request.getFileSize());
+        product.setDemoFileUrl(request.getDemoFileUrl());
+        product.setDemoFileName(request.getDemoFileName());
         if (request.getDimensions() != null) product.setDimensions(request.getDimensions());
         if (request.getResolution() != null) product.setResolution(request.getResolution());
         if (request.getColorMode() != null) product.setColorMode(request.getColorMode());

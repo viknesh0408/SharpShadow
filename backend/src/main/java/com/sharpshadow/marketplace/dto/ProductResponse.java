@@ -22,6 +22,8 @@ public class ProductResponse {
     private String thumbnailUrl;
     private String fileName;
     private String fileSize;
+    private String demoFileUrl;
+    private String demoFileName;
     private String dimensions;
     private String resolution;
     private String colorMode;

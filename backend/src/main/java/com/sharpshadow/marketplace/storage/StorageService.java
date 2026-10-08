@@ -16,6 +16,11 @@ public interface StorageService {
     FileMetadata uploadPublic(MultipartFile file);
 
     /**
+     * Uploads a public demo PDF file. Only PDF files are allowed.
+     */
+    FileMetadata uploadDemo(MultipartFile file);
+
+    /**
      * Deletes a stored file by its key/URL.
      */
     void delete(String fileUrl);
