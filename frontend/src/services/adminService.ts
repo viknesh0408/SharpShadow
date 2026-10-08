@@ -36,17 +36,41 @@ export const adminService = {
     return res.data.data!;
   },
 
-  async uploadAsset(file: File): Promise<UploadMetadata> {
+  async uploadAsset(
+    file: File,
+    onProgress?: (percent: number, loaded: number, total: number) => void,
+    signal?: AbortSignal
+  ): Promise<UploadMetadata> {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await api.post<ApiResponse<UploadMetadata>>('/admin/upload/asset', formData);
+    const res = await api.post<ApiResponse<UploadMetadata>>('/admin/upload/asset', formData, {
+      signal,
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total && progressEvent.total > 0) {
+          const percent = Math.min(100, Math.round((progressEvent.loaded * 100) / progressEvent.total));
+          onProgress?.(percent, progressEvent.loaded, progressEvent.total);
+        }
+      },
+    });
     return res.data.data!;
   },
 
-  async uploadImage(file: File): Promise<UploadMetadata> {
+  async uploadImage(
+    file: File,
+    onProgress?: (percent: number, loaded: number, total: number) => void,
+    signal?: AbortSignal
+  ): Promise<UploadMetadata> {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await api.post<ApiResponse<UploadMetadata>>('/admin/upload/image', formData);
+    const res = await api.post<ApiResponse<UploadMetadata>>('/admin/upload/image', formData, {
+      signal,
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total && progressEvent.total > 0) {
+          const percent = Math.min(100, Math.round((progressEvent.loaded * 100) / progressEvent.total));
+          onProgress?.(percent, progressEvent.loaded, progressEvent.total);
+        }
+      },
+    });
     return res.data.data!;
   },
 

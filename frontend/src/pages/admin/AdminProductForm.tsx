@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,6 +11,7 @@ import {
   Layers,
   Image as ImageIcon,
   FileCode,
+  FileText,
   Plus,
   Trash2,
   Sparkles,
@@ -20,6 +21,7 @@ import { categoryService } from '../../services/categoryService';
 import { productService } from '../../services/productService';
 import { Category } from '../../types';
 import { useToast } from '../../context/ToastContext';
+import { UploadProgressBar, UploadStatus } from '../../components/UploadProgressBar';
 
 const productSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -55,10 +57,27 @@ export const AdminProductForm: React.FC = () => {
   const [fileSize, setFileSize] = useState('');
   const [previewImages, setPreviewImages] = useState<string[]>([]);
 
-  // Uploading indicators
+  // Master asset upload progress & state
   const [uploadingAsset, setUploadingAsset] = useState(false);
+  const [assetUploadStatus, setAssetUploadStatus] = useState<UploadStatus>('idle');
+  const [assetUploadProgress, setAssetUploadProgress] = useState(0);
+  const [assetLoadedBytes, setAssetLoadedBytes] = useState(0);
+  const [assetTotalBytes, setAssetTotalBytes] = useState(0);
+  const [assetSpeed, setAssetSpeed] = useState('');
+  const [assetTimeRemaining, setAssetTimeRemaining] = useState('');
+  const [assetErrorMessage, setAssetErrorMessage] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const assetAbortControllerRef = useRef<AbortController | null>(null);
+  const assetFileInputRef = useRef<HTMLInputElement | null>(null);
+  const lastSelectedAssetFileRef = useRef<File | null>(null);
+  const lastUploadTimeRef = useRef<number>(0);
+  const lastLoadedRef = useRef<number>(0);
+
+  // Uploading indicators for thumbnail and preview images
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const [thumbnailProgress, setThumbnailProgress] = useState(0);
   const [uploadingPreview, setUploadingPreview] = useState(false);
+  const [previewProgress, setPreviewProgress] = useState(0);
 
   const {
     register,
@@ -139,6 +158,11 @@ export const AdminProductForm: React.FC = () => {
           setFileName(product.fileName || '');
           setFileSize(product.fileSize || '');
           setPreviewImages(product.previewImages || []);
+
+          if (product.fileName) {
+            setAssetUploadStatus('completed');
+            setAssetUploadProgress(100);
+          }
         })
         .catch((err) => {
           error(err.response?.data?.message || 'Could not load product');
@@ -147,34 +171,171 @@ export const AdminProductForm: React.FC = () => {
     }
   }, [id, isEdit, isPngMode, setValue]);
 
-  // Handle Private PSD / ZIP Asset Upload
-  const handleAssetUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // Handle Master PSD / PDF / ZIP Asset Upload with real-time loading bar
+  const uploadAssetFile = async (file: File) => {
+    lastSelectedAssetFileRef.current = file;
+
+    // Abort existing upload if in-flight
+    if (assetAbortControllerRef.current) {
+      assetAbortControllerRef.current.abort();
+    }
+    const abortController = new AbortController();
+    assetAbortControllerRef.current = abortController;
 
     setUploadingAsset(true);
+    setAssetUploadStatus('uploading');
+    setAssetUploadProgress(0);
+    setAssetLoadedBytes(0);
+    setAssetTotalBytes(file.size);
+    setFileName(file.name);
+    setAssetErrorMessage(null);
+    setAssetSpeed('');
+    setAssetTimeRemaining('');
+    lastUploadTimeRef.current = Date.now();
+    lastLoadedRef.current = 0;
+
+    // Auto-adjust tech specs based on file type
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (ext === 'pdf') {
+      const currentVersion = watch('photoshopVersion');
+      if (!currentVersion || currentVersion === 'Photoshop CC 2024') {
+        setValue('photoshopVersion', 'Adobe Acrobat / PDF Document');
+      }
+      const currentColor = watch('colorMode');
+      if (!currentColor || currentColor === 'CMYK') {
+        setValue('colorMode', 'CMYK / Print PDF');
+      }
+    }
+
     try {
-      const res = await adminService.uploadAsset(file);
+      const res = await adminService.uploadAsset(
+        file,
+        (percent, loaded, total) => {
+          setAssetUploadProgress(percent);
+          setAssetLoadedBytes(loaded);
+          setAssetTotalBytes(total);
+
+          // Calculate upload speed & ETA
+          const now = Date.now();
+          const timeDiff = (now - lastUploadTimeRef.current) / 1000;
+          if (timeDiff >= 0.4) {
+            const bytesDiff = loaded - lastLoadedRef.current;
+            const bytesPerSec = bytesDiff / timeDiff;
+            if (bytesPerSec > 0) {
+              const mbPerSec = (bytesPerSec / (1024 * 1024)).toFixed(1);
+              setAssetSpeed(`${mbPerSec} MB/s`);
+              const remainingBytes = total - loaded;
+              const remainingSeconds = Math.round(remainingBytes / bytesPerSec);
+              if (remainingSeconds < 60) {
+                setAssetTimeRemaining(`~${Math.max(1, remainingSeconds)}s left`);
+              } else {
+                setAssetTimeRemaining(`~${Math.round(remainingSeconds / 60)}m left`);
+              }
+            }
+            lastUploadTimeRef.current = now;
+            lastLoadedRef.current = loaded;
+          }
+
+          if (percent >= 100) {
+            setAssetUploadStatus('processing');
+          }
+        },
+        abortController.signal
+      );
+
       setPrivateFileUrl(res.fileUrl);
       setFileName(res.originalFileName);
-      setFileSize(res.formattedSize); // Automatically calculated file size (Section 16)
+      setFileSize(res.formattedSize);
+      setAssetUploadStatus('completed');
+      setAssetUploadProgress(100);
       success(`Private asset uploaded: ${res.originalFileName} (${res.formattedSize})`);
     } catch (err: any) {
+      if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
+        setAssetUploadStatus('idle');
+        return;
+      }
       const msg = err.response?.data?.message || (err.response?.status === 413 ? 'File too large (exceeds server limit)' : null) || err.message || 'Failed to upload asset';
+      setAssetErrorMessage(msg);
+      setAssetUploadStatus('error');
       error(msg);
     } finally {
       setUploadingAsset(false);
+      assetAbortControllerRef.current = null;
     }
   };
 
-  // Handle Thumbnail Upload
+  const handleAssetUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      uploadAssetFile(file);
+    }
+  };
+
+  const handleCancelAssetUpload = () => {
+    if (assetAbortControllerRef.current) {
+      assetAbortControllerRef.current.abort();
+      assetAbortControllerRef.current = null;
+    }
+    setUploadingAsset(false);
+    setAssetUploadStatus('idle');
+    setAssetUploadProgress(0);
+    setFileName('');
+    setFileSize('');
+    setPrivateFileUrl('');
+    if (assetFileInputRef.current) {
+      assetFileInputRef.current.value = '';
+    }
+  };
+
+  const handleRetryAssetUpload = () => {
+    if (lastSelectedAssetFileRef.current) {
+      uploadAssetFile(lastSelectedAssetFileRef.current);
+    } else {
+      assetFileInputRef.current?.click();
+    }
+  };
+
+  const handleRemoveAsset = () => {
+    setPrivateFileUrl('');
+    setFileName('');
+    setFileSize('');
+    setAssetUploadStatus('idle');
+    setAssetUploadProgress(0);
+    setAssetErrorMessage(null);
+    lastSelectedAssetFileRef.current = null;
+    if (assetFileInputRef.current) {
+      assetFileInputRef.current.value = '';
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      uploadAssetFile(files[0]);
+    }
+  };
+
+  // Handle Thumbnail Upload with progress
   const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploadingThumbnail(true);
+    setThumbnailProgress(0);
     try {
-      const res = await adminService.uploadImage(file);
+      const res = await adminService.uploadImage(file, (p) => setThumbnailProgress(p));
       setThumbnailUrl(res.fileUrl);
       success('Thumbnail image uploaded successfully');
     } catch (err: any) {
@@ -182,17 +343,19 @@ export const AdminProductForm: React.FC = () => {
       error(msg);
     } finally {
       setUploadingThumbnail(false);
+      setThumbnailProgress(0);
     }
   };
 
-  // Handle Preview Image Upload
+  // Handle Preview Image Upload with progress
   const handlePreviewUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploadingPreview(true);
+    setPreviewProgress(0);
     try {
-      const res = await adminService.uploadImage(file);
+      const res = await adminService.uploadImage(file, (p) => setPreviewProgress(p));
       setPreviewImages((prev) => [...prev, res.fileUrl]);
       success('Preview gallery image added');
     } catch (err: any) {
@@ -200,6 +363,7 @@ export const AdminProductForm: React.FC = () => {
       error(msg);
     } finally {
       setUploadingPreview(false);
+      setPreviewProgress(0);
     }
   };
 
@@ -439,46 +603,111 @@ export const AdminProductForm: React.FC = () => {
         <div className="bg-dark-900 border border-dark-800 rounded-3xl p-6 sm:p-7 space-y-6 shadow-card-dark">
           <h3 className="font-bold text-sm text-white uppercase tracking-wider font-mono">3. File Storage & Uploads</h3>
 
-          {/* Private Digital Asset Upload */}
-          <div className="p-4 rounded-2xl bg-dark-950 border border-dark-800 space-y-3">
+          {/* Private Digital Asset Upload (PSD, PDF, ZIP, PNG) */}
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-mono text-sharp-400 uppercase font-bold flex items-center gap-1.5">
                 <FileCode className="w-4 h-4" />
-                Master Digital Asset (.PNG, .PSD, .ZIP)
+                Master Digital Asset (.PSD, .PDF, .ZIP, .PNG) *
               </label>
-              <span className="text-[10px] bg-dark-900 text-slate-400 px-2 py-0.5 rounded font-mono">
-                Supports up to 1500MB
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] bg-dark-950 text-slate-400 border border-dark-800 px-2 py-0.5 rounded font-mono">
+                  Max: 1500MB
+                </span>
+                <span className="text-[10px] bg-sky-500/10 text-sky-400 border border-sky-500/20 px-1.5 py-0.5 rounded font-mono font-bold">
+                  PSD
+                </span>
+                <span className="text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-1.5 py-0.5 rounded font-mono font-bold">
+                  PDF
+                </span>
+              </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-dark-850 hover:bg-dark-800 text-slate-200 border border-dark-700 text-xs font-semibold flex items-center gap-2 transition-colors">
-                <Upload className="w-4 h-4" />
-                <span>{uploadingAsset ? 'Uploading File...' : 'Choose File (.PNG, .PSD, .ZIP)'}</span>
-                <input
-                  type="file"
-                  accept=".png,.psd,.zip,.jpg,.jpeg"
-                  onChange={handleAssetUpload}
-                  className="hidden"
-                  disabled={uploadingAsset}
-                />
-              </label>
+            {/* Hidden native input */}
+            <input
+              ref={assetFileInputRef}
+              type="file"
+              accept=".psd,.pdf,.zip,.png,.jpg,.jpeg"
+              onChange={handleAssetUpload}
+              className="hidden"
+              disabled={uploadingAsset}
+            />
 
-              {fileName && (
-                <div className="flex items-center gap-2 text-xs font-mono text-emerald-400">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>{fileName} ({fileSize})</span>
+            {/* Active upload or completed file progress card */}
+            {assetUploadStatus !== 'idle' || fileName ? (
+              <UploadProgressBar
+                fileName={fileName || lastSelectedAssetFileRef.current?.name || 'asset.psd'}
+                fileSize={fileSize}
+                progress={assetUploadProgress}
+                loadedBytes={assetLoadedBytes}
+                totalBytes={assetTotalBytes}
+                speed={assetSpeed}
+                timeRemaining={assetTimeRemaining}
+                status={assetUploadStatus}
+                errorMessage={assetErrorMessage}
+                onCancel={handleCancelAssetUpload}
+                onRetry={handleRetryAssetUpload}
+                onRemove={handleRemoveAsset}
+                onReplace={() => assetFileInputRef.current?.click()}
+              />
+            ) : (
+              /* Drag-and-Drop Zone */
+              <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => assetFileInputRef.current?.click()}
+                className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center transition-all ${
+                  isDragOver
+                    ? 'border-sharp-500 bg-sharp-950/25 scale-[1.005]'
+                    : 'border-dark-750 bg-dark-950 hover:border-sharp-500/50 hover:bg-dark-900/60'
+                }`}
+              >
+                <div className="flex flex-col items-center justify-center gap-3">
+                  {/* File Badges illustration */}
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 flex items-center justify-center font-bold text-xs font-mono shadow-sm group-hover:scale-105 transition-transform">
+                      PSD
+                    </div>
+                    <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center font-bold text-xs font-mono shadow-sm group-hover:scale-105 transition-transform">
+                      PDF
+                    </div>
+                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center font-bold text-xs font-mono shadow-sm group-hover:scale-105 transition-transform">
+                      ZIP
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold text-white group-hover:text-sharp-400 transition-colors">
+                      Drag & drop your Photoshop PSD or PDF master file here
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      or click to browse from your computer (.psd, .pdf, .zip, .png)
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-[11px] font-mono text-slate-500 pt-1">
+                    <span>Up to 1500MB supported</span>
+                    <span>•</span>
+                    <span>Private storage with UUID obfuscation</span>
+                  </div>
                 </div>
-              )}
-            </div>
-            <p className="text-[11px] text-slate-500">
-              Files are stored privately with UUID obfuscation and are NEVER served directly without an authorized token or download signature.
-            </p>
+              </div>
+            )}
           </div>
 
           {/* Thumbnail Upload */}
-          <div className="space-y-3">
-            <label className="text-xs font-mono text-slate-400 uppercase block">Product Thumbnail Image (4:3 Ratio) *</label>
+          <div className="space-y-3 pt-3 border-t border-dark-800">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-mono text-slate-400 uppercase block">Product Thumbnail Image (4:3 Ratio) *</label>
+              {uploadingThumbnail && (
+                <span className="text-[11px] font-mono text-sharp-400 flex items-center gap-1.5 animate-pulse">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  Uploading thumbnail ({thumbnailProgress}%)
+                </span>
+              )}
+            </div>
+
             <div className="flex items-center gap-4">
               {thumbnailUrl && (
                 <img src={thumbnailUrl} alt="Thumbnail" className="w-20 h-20 rounded-xl object-cover bg-dark-950 border border-dark-750" />
@@ -491,10 +720,20 @@ export const AdminProductForm: React.FC = () => {
                   onChange={(e) => setThumbnailUrl(e.target.value)}
                   className="w-full bg-dark-950 border border-dark-750 rounded-xl px-4 py-2 text-xs text-white outline-none"
                 />
+
+                {uploadingThumbnail && (
+                  <div className="w-full bg-dark-950 rounded-full h-1.5 overflow-hidden border border-dark-800">
+                    <div
+                      className="h-full bg-sharp-500 transition-all duration-200"
+                      style={{ width: `${thumbnailProgress}%` }}
+                    />
+                  </div>
+                )}
+
                 <label className="cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-dark-800 hover:bg-dark-750 text-slate-300 text-xs font-medium border border-dark-700">
                   <Upload className="w-3.5 h-3.5" />
-                  <span>{uploadingThumbnail ? 'Uploading...' : 'Upload Image File'}</span>
-                  <input type="file" accept="image/*" onChange={handleThumbnailUpload} className="hidden" />
+                  <span>{uploadingThumbnail ? `Uploading (${thumbnailProgress}%)...` : 'Upload Image File'}</span>
+                  <input type="file" accept="image/*" onChange={handleThumbnailUpload} className="hidden" disabled={uploadingThumbnail} />
                 </label>
               </div>
             </div>
@@ -506,10 +745,19 @@ export const AdminProductForm: React.FC = () => {
               <label className="text-xs font-mono text-slate-400 uppercase block">Preview Gallery Images</label>
               <label className="cursor-pointer inline-flex items-center gap-1.5 text-xs text-sharp-400 hover:text-sharp-300 font-semibold">
                 <Plus className="w-3.5 h-3.5" />
-                <span>{uploadingPreview ? 'Uploading...' : 'Add Preview Image'}</span>
-                <input type="file" accept="image/*" onChange={handlePreviewUpload} className="hidden" />
+                <span>{uploadingPreview ? `Uploading (${previewProgress}%)...` : 'Add Preview Image'}</span>
+                <input type="file" accept="image/*" onChange={handlePreviewUpload} className="hidden" disabled={uploadingPreview} />
               </label>
             </div>
+
+            {uploadingPreview && (
+              <div className="w-full bg-dark-950 rounded-full h-1.5 overflow-hidden border border-dark-800">
+                <div
+                  className="h-full bg-cyan-500 transition-all duration-200"
+                  style={{ width: `${previewProgress}%` }}
+                />
+              </div>
+            )}
 
             <div className="flex flex-wrap gap-3">
               {previewImages.map((img, idx) => (

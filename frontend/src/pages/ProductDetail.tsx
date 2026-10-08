@@ -128,8 +128,9 @@ export const ProductDetail: React.FC = () => {
   );
 
   const fileExt = (product.fileName?.split('.').pop() || (isPng ? 'PNG' : 'PSD')).toUpperCase();
-  const formatBadge = isPng || fileExt === 'PNG' ? 'PNG Graphic' : fileExt === 'ZIP' ? 'ZIP Archive' : 'Layered PSD';
-  const formatFull = isPng || fileExt === 'PNG' ? 'PNG (Transparent / High-Res)' : fileExt === 'ZIP' ? 'ZIP Archive' : 'PSD (Adobe Photoshop)';
+  const isPdf = fileExt === 'PDF';
+  const formatBadge = isPng || fileExt === 'PNG' ? 'PNG Graphic' : isPdf ? 'PDF Document' : fileExt === 'ZIP' ? 'ZIP Archive' : 'Layered PSD';
+  const formatFull = isPng || fileExt === 'PNG' ? 'PNG (Transparent / High-Res)' : isPdf ? 'PDF (Print & Vector Document)' : fileExt === 'ZIP' ? 'ZIP Archive' : 'PSD (Adobe Photoshop)';
 
   const handleAddToCart = () => {
     if (!inCart) {
@@ -369,7 +370,17 @@ export const ProductDetail: React.FC = () => {
                   className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 dark:bg-gradient-to-r dark:from-emerald-600 dark:to-emerald-500 dark:hover:from-emerald-500 dark:hover:to-emerald-400 text-white font-bold text-base shadow-lg shadow-emerald-600/20 hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
                 >
                   {downloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
-                  <span>{isPng ? 'Download PNG' : isFree && !product.hasPurchased ? 'Download Free PSD Asset' : 'Download PSD Asset'}</span>
+                  <span>
+                    {isPng
+                      ? 'Download PNG'
+                      : isPdf
+                      ? isFree && !product.hasPurchased
+                        ? 'Download Free PDF Asset'
+                        : 'Download PDF Asset'
+                      : isFree && !product.hasPurchased
+                      ? 'Download Free PSD Asset'
+                      : 'Download PSD Asset'}
+                  </span>
                 </button>
               ) : (
                 <>
@@ -541,6 +552,8 @@ export const ProductDetail: React.FC = () => {
                   <span>
                     {isPng
                       ? `1x Ultra-High Resolution Transparent Cutout (${product.fileName || '.PNG'})`
+                      : isPdf
+                      ? `1x High-Resolution Adobe PDF Document (${product.fileName || '.PDF'})`
                       : '1x High-Resolution Adobe Photoshop Master File (.PSD)'}
                   </span>
                 </li>
@@ -578,7 +591,7 @@ export const ProductDetail: React.FC = () => {
               <div className="flex justify-between pt-2">
                 <span className="text-slate-500 dark:text-slate-400">Format:</span>
                 <span className="font-mono text-slate-900 dark:text-white">
-                  {isPng ? '.PNG / Transparent' : '.PSD / Layered'}
+                  {isPng ? '.PNG / Transparent' : isPdf ? '.PDF / Vector Document' : '.PSD / Layered'}
                 </span>
               </div>
               <div className="flex justify-between pt-2">
